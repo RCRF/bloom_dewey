@@ -462,7 +462,7 @@ class BLOOMdb3:
         self,
         db_url_prefix="postgresql://",
         db_hostname="localhost",
-        db_pass=None,
+        db_pass=os.environ.get("PGPASSWORD"),
         db_user=os.environ.get("USER", "bloom"),
         db_name="bloom",
         app_username=os.environ.get("USER", "bloomdborm"),
