@@ -1,0 +1,178 @@
+{
+  "plasma-isolation-queue-available": {
+    "1.0": {
+      "description": "Containers available for plasma isolation in this queue.",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "instantiable_n": "*",
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "tube_xfer": {
+          "group_order": "2",
+          "group_name": "Tube Transfer Actions",
+          "actions": {
+            "action/workflow_step_queue/link_tubes_auto/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "plasma-isolation-queue-removed": {
+    "1.0": {
+      "description": "Containers Removed From Queue",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "instantiable_n": "*",
+      "expected_outputs": [
+        {
+          "container/package/generic/*/": {
+            "json_addl": {
+              "properties": {
+                "carrier_name": "str()",
+                "carrier_tracking_number": "str()"
+              }
+            }
+          }
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "plasma-isolation-queue-exception": {
+    "1.0": {
+      "description": "Containers moved to exception queue.",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "instantiable_n": "*",
+      "expected_inputs": [
+        {
+          "container/kit/generic/*/": {}
+        }
+      ],
+      "expected_outputs": [
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "test_req_2": {
+          "group_order": "2",
+          "group_name": "Test Requisition Actions",
+          "actions": {
+            "action/workflow_step_queue/ycreate_test_req_and_link_child_workflow_step/1.0/": {},
+            "action/workflow_step_queue/link_tubes_auto/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "extraction-queue-available": {
+    "1.0": {
+      "description": "Plasma To Plates For Extraction",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "fill_plate": {
+          "group_order": "2",
+          "group_name": "Fill Plate Actions",
+          "actions": {
+            "action/workflow_step_queue/fill_plate_undirected/1.0/": {},
+            "action/workflow_step_queue/fill_plate_directed/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

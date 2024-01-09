@@ -1,0 +1,34 @@
+{
+  "generic": {
+    "1.0": {
+      "description": "Generic json def file",
+      "properties": {
+        "name": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "packages": {
+          "group_order": "2",
+          "group_name": "Package Actions",
+          "actions": {
+            "action/packages/create_package_and_first_workflow_step/1.0/": {
+              "description": "Override Default Description"
+            }
+          }
+        }
+      },
+      "instantiation_layouts": []
+    }
+  }
+}

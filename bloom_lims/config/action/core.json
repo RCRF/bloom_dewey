@@ -1,0 +1,57 @@
+{
+  "set_object_status": {
+    "1.0": {
+      "action_template": {
+        "action_name": "Set Status",
+        "method_name": "do_action_set_object_status",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "_object_status": "<select name=&quot;object_status&quot;><option value=&quot;in_progress&quot;>In Progress</option><option value=&quot;complete&quot;>Complete</option><option value=&quot;failed&quot;>Fail</option><option value=&quot;abandoned&quot;>Abandon</option></select>"
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": "",
+        "description": "Set Status"
+      }
+    }
+  },
+  "print_barcode_label": {
+    "1.0": {
+      "action_template": {
+        "action_name": "Print Label",
+        "method_name": "do_action_print_barcode_label",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "no",
+        "captured_data": {
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": "",
+        "description": "Print Label"
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

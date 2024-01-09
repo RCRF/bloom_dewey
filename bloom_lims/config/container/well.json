@@ -1,0 +1,41 @@
+{
+  "fixed-plate-well": {
+    "1.0": {
+      "valid_parents": [
+        "container/plate/fixed-plate.*?/.*?"
+      ],
+      "valid_content": [
+        "content/.*"
+      ],
+      "description": "A well model for use in a fixed plate",
+      "properties": {
+        "name": "",
+        "diameter": "",
+        "height": "",
+        "volume": "",
+        "comments": "",
+        "bottom_type": ""
+      },
+      "cont_address": {
+        "row_name": "",
+        "col_name": "",
+        "row_idx": "0",
+        "col_idx": "0"
+      },
+      "expected_inputs": [],
+      "instantiable_n": "*",
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/set_object_status/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": []
+    }
+  }
+}

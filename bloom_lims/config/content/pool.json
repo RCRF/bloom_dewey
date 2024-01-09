@@ -1,0 +1,16 @@
+{
+  "generic": {
+    "1.0": {
+      "description": "Generic objects to represent pools of content.",
+      "properties": {
+        "name": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "actions": {},
+      "instantiation_layouts": []
+    }
+  }
+}

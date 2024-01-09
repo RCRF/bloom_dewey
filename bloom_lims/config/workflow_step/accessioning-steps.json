@@ -1,0 +1,204 @@
+{
+  "package-generated": {
+    "1.0": {
+      "description": "Package has been created..",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "create_child": {
+          "group_order": "2",
+          "group_name": "Acc Actions",
+          "actions": {
+            "action/workflow_step_accessioning/create_child_container_and_link_child_workflow_step/1.0/": {
+              "deactivate_when_executed": [
+                "action/core/print_barcode_label/1.0"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "kit-generated": {
+    "1.0": {
+      "description": "Register a package and begin accessioning.",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": "",
+        "equipment_euid": [],
+        "carrier_name": "",
+        "carrier_tracking_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "instantiable_n": "*",
+      "expected_outputs": [
+        {
+          "container/package/generic/*/": {
+            "json_addl": {
+              "properties": {
+                "carrier_name": "",
+                "carrier_tracking_number": ""
+              }
+            }
+          }
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "specimen_actions": {
+          "group_order": "2",
+          "group_name": "Specimen Actions",
+          "actions": {
+            "action/workflow_step_accessioning/create_child_container_and_link_child_workflow_step_specimen/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "container-generated": {
+    "1.0": {
+      "description": "Link Specimen Containers.",
+      "instantiable_n": "*",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [
+        {
+          "container/kit/generic/*/": {}
+        }
+      ],
+      "expected_outputs": [
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "test_req": {
+          "group_order": "2",
+          "group_name": "Acc Actions",
+          "actions": {
+            "action/workflow_step_accessioning/create_test_req_and_link_child_workflow_step_dup/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "test-requisition-generated2": {
+    "1.0": {
+      "description": "Link a test requisition to a specimen container.",
+      "instantiable_n": "*",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [
+        {
+          "container/kit/generic/*/": {}
+        }
+      ],
+      "expected_outputs": [
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "test_req": {
+          "group_order": "2",
+          "group_name": "Test Requisition Actions",
+          "actions": {
+            "action/workflow_step_accessioning/ycreate_test_req_and_link_child_workflow_step2/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "complete_specimen_destroy": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {},
+        "child_container_obj": {},
+        "action_name": "Reverse Destroy",
+        "method_name": "do_action_complete_specimen_destroy",
+        "action_executed": "0",
+        "max_executions": "1",
+        "action_enabled": "0",
+        "capture_data": "no",
+        "captured_data": {
+          "Comments": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "simple_value": "",
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

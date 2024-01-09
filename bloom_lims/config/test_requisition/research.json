@@ -1,0 +1,31 @@
+{
+  "noamp-wgs": {
+    "1.0": {
+      "valid_parents": [],
+      "layouts": [],
+      "description": "Generic worflow",
+      "properties": {
+        "name": "",
+        "comments": ""
+      },
+      "action_groups": {},
+      "instantiable_n": "*",
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "test_requisitions": {
+          "group_order": "2",
+          "group_name": "Test Req Actions",
+          "actions": {
+            "action/test_requisitions/*/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

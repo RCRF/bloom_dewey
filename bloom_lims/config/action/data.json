@@ -1,0 +1,62 @@
+{
+  "record_cfdna_quant_outcome": {
+    "1.0": {
+      "action_template": {
+        "action_name": "Record Quantification Outcome",
+        "method_name": "do_action_record_cfdna_quant_outcome",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "0",
+        "capture_data": "yes",
+        "captured_data": {
+          "Interpretation Comments": "",
+          "_object_status": "<select name=&quot;object_status&quot;><option value=&quot;pass&quot;>PASS</option><option value=&quot;fail&quot;>FAIL</option><option value=&quot;repeat&quot;>REPEAT</option></select>"
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "log-temperature": {
+    "1.0": {
+      "action_template": {
+        "action_name": "Log Temperature",
+        "method_name": "do_action_log_temperature",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "0",
+        "capture_data": "yes",
+        "captured_data": {
+          "Log Comment": "",
+          "Temperature (celcuius)": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

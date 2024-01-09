@@ -1,0 +1,1732 @@
+{
+  "fixed-plate-24": {
+    "1.0": {
+      "valid_parents": [],
+      "valid_content": [
+        "none"
+      ],
+      "description": "For testing purposes, 24 well plate.",
+      "instantiable_n": "*",
+      "instantiation_layouts": [
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A1",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A2",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A3",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A4",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B1",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B2",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B3",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B4",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C1",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C2",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C3",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C4",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D1",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D2",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D3",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D4",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E1",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E2",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E3",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E4",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F1",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F2",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F3",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F4",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G1",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G2",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G3",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G4",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ]
+      ],
+      "cont_address": {
+        "row_name": "",
+        "col_name": "",
+        "row_idx": "",
+        "col_idx": ""
+      },
+      "properties": {
+        "name": "",
+        "manufacturer": "",
+        "lot_number": "",
+        "lot_expiration_date": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "plate": {
+          "group_order": "2",
+          "group_name": "Plate Actions",
+          "actions": {
+            "action/plate/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "fixed-plate-96": {
+    "1.0": {
+      "valid_parents": [],
+      "valid_content": [
+        "none"
+      ],
+      "description": "Generic 96 well plate.",
+      "instantiable_n": "*",
+      "instantiation_layouts": [
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A1",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A2",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A3",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A4",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A5",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A6",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A7",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A8",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A9",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A10",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A11",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A12",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B1",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B2",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B3",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B4",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B5",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B6",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B7",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B8",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B9",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B10",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B11",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B12",
+                  "row_name": "B",
+                  "col_name": "2",
+                  "row_idx": "1",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C1",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C2",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C3",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C4",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C5",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C6",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C7",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C8",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C9",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C10",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C11",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C12",
+                  "row_name": "C",
+                  "col_name": "3",
+                  "row_idx": "2",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D1",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D2",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D3",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D4",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D5",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D6",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D7",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D8",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D9",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D10",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D11",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D12",
+                  "row_name": "D",
+                  "col_name": "4",
+                  "row_idx": "3",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E1",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E2",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E3",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E4",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E5",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E6",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E7",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E8",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E9",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E10",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E11",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "E12",
+                  "row_name": "E",
+                  "col_name": "5",
+                  "row_idx": "4",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F1",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F2",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F3",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F4",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F5",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F6",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F7",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F8",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F9",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F10",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F11",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "F12",
+                  "row_name": "F",
+                  "col_name": "6",
+                  "row_idx": "5",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G1",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G2",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G3",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G4",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G5",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G6",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G7",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G8",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G9",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G10",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G11",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "G12",
+                  "row_name": "G",
+                  "col_name": "7",
+                  "row_idx": "6",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ],
+        [
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H1",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H2",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H3",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H4",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "3"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H5",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "4"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H6",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "5"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H7",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "6"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H8",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "7"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H9",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "8"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H10",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "9"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H11",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/well/fixed-plate-well/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "H12",
+                  "row_name": "H",
+                  "col_name": "8",
+                  "row_idx": "7",
+                  "col_idx": "11"
+                }
+              }
+            }
+          }
+        ]
+      ],
+      "properties": {
+        "name": "",
+        "manufacturer": "",
+        "lot_number": "",
+        "lot_expiration_date": "",
+        "comments": ""
+      },
+      "cont_address": {
+        "row_name": "",
+        "col_name": "",
+        "row_idx": "0",
+        "col_idx": "0"
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "plate": {
+          "group_order": "2",
+          "group_name": "Plate Actions",
+          "actions": {
+            "action/plate/*/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

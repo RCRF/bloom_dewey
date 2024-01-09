@@ -1,0 +1,35 @@
+{
+  "download_quant_data": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {},
+        "child_container_obj": {},
+        "child_data_obj": {},
+        "action_name": "Download Quant Data TSV",
+        "method_name": "do_action_download_quant_data",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "0",
+        "capture_data": "no",
+        "captured_data": {
+          "Carrier Name": "",
+          "Tracking Number": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        }
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

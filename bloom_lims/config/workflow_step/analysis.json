@@ -1,0 +1,115 @@
+{
+  "plasma-quantification": {
+    "1.0": {
+      "description": "Generic json def file",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "instantiation_layouts": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "data_action": {
+          "group_order": "2",
+          "group_name": "Data Actions",
+          "actions": {
+            "action/workflow_step_analysis/download_quant_data/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "gdna-quantified": {
+    "1.0": {
+      "description": "plasma quantification",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "instantiable_n": "*",
+      "expected_inputs": [
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        }
+      ],
+      "expected_outputs": [
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        },
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        },
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        },
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

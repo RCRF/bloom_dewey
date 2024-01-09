@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Workflow Details</title>
+        <link rel="stylesheet" type="text/css" href="static/root_active.css">
+        <link rel="stylesheet" type="text/css" href="static/style.css">
+        <script src="static/action_buttons.js"></script>
+    </head>
+    <body>
+        {% macro render_step(step, accordion_states) %}
+            {% if step.polymorphic_discriminator == 'workflow_step_instance' or step.polymorphic_discriminator == 'workflow_instance' %}
+                <hr>
+                <button class="accordion"
+                        data-state="{{ accordion_states[step.euid] }}"
+                        id="{{ step.euid }}">
+                    <small style="color:var(--accordion-prefix);">step</small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a> <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} &  {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                </button>
+                <div class="workflow-step"
+                     style="display: {{ 'block' if accordion_states[step.euid] == 'open' else 'none' }}">
+                {% else %}
+                    {% if step.btype == 'plate' or step.btype == 'rack' %}
+                        <button style="width: inherit;
+                                       background-color: var(--workflow-non-step-bg-color)"
+                                class="accordion non-wf-step"
+                                data-state="{{ accordion_states[step.euid] }}"
+                                id="{{ step.euid }}">
+                            <small><a href=plate_visualization?plate_euid={{ step.euid }}> {{ step.btype }}</a> </small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a>  <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} & {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                        </button>
+                        <div class="workflow-step"
+                             style="font-size: 2px;
+                                    display: {{ 'block' if accordion_states[step.euid] == 'open' else 'none' }}">
+                        {% else %}
+                            {% if step.btype == 'package' %}
+                                <button style="width: inherit;
+                                               background-color: var( --workflow-non-step-bg-color)"
+                                        class="accordion non-wf-step"
+                                        data-state="{{ accordion_states[step.euid] }}"
+                                        id="{{ step.euid }}">
+                                    <small style="color: var(--accordion-prefix);">{{ step.btype }}</small>
+                                    <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a>
+                                    <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>
+                                    {{ step.btype }} {{ step.b_sub_type }} {{ step.version }}
+                                    :: ({{ step.bstate }} & {{ step.bstatus }})
+                                    ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                                    {% set fedex_data = step.json_addl['properties'].get('fedex_tracking_data', []) %}
+                                    {% if fedex_data|length > 0 %}
+                                        FEDEX: {{ fedex_data[0].get('Delivery_Status', '') }}
+                                        {{ (step.json_addl['properties'].get('fedex_tracking_data', [{}])[0] .get('Transit_Time_sec', 0) / 60 / 60 / 24) | round(1) }} days
+                                    {% else %}
+                                        FEDEX: N/A
+                                    {% endif %}
+                                </button>
+                                <div class="workflow-step"
+                                     style="font-size: 2px;
+                                            display: {{ 'block' if accordion_states[step.euid] == 'open' else 'none' }}">
+                                {% else %}
+                                    <button style="width: inherit;
+                                                   background-color: var(--workflow-non-step-bg-color)"
+                                            class="accordion non-wf-step"
+                                            data-state="{{ accordion_states[step.euid] }}"
+                                            id="{{ step.euid }}">
+                                        <small style="color: var(--accordion-prefix);">{{ step.btype }}</small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a>  <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a> {{ step.btype }}  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} & {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                                    </button>
+                                    <div class="workflow-step"
+                                         style="font-size: 2px;
+                                                display: {{ 'block' if accordion_states[step.euid] == 'open' else 'none' }}">
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                            <div class="panel">
+                                <ul>
+                                    <div class="action-group-group">
+                                        {% if step.json_addl and 'action_groups' in step.json_addl %}
+                                            {% for group_key, group_value in step.json_addl['action_groups'].items() %}
+                                                <div class="action-group">
+                                                    {{ group_value.group_name }}
+                                                    {% for action_key, action_value in group_value.actions.items() %}
+                                                        <button class="action_button"
+                                                                onclick="showCapturedDataForm(this, {{ action_value }}, '{{ step.euid }}', '{{ action_key }}', '{{ group_key }}')"
+                                                                {% if action_value.action_enabled == "0" %}disabled style="color: gray;"{% endif %}>
+                                                            {{ action_value.action_name }}
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <button id="property_button"
+                                                class="collapsible"
+                                                onclick="toggleCollapsible(this)">Edit Properties</button>
+                                        <div class="content">
+                                            <form id="prop-{{ step.euid }}"
+                                                  style="padding: 0px"
+                                                  method="post"
+                                                  action="/update_obj_json_addl_properties"
+                                                  class="form-container">
+                                                <input type="hidden" name="obj_euid" value="{{ step.euid }}">
+                                                {% for key, value in step.json_addl['properties'].items() %}
+                                                    <div>
+                                                        <label for="{{ step.euid }}">{{ key }}:</label>
+                                                        {% if value is string %}
+                                                            <input type="text" id="{{ step.euid }}" name="{{ key }}" value="{{ value }}">
+                                                        {% elif value is iterable %}
+                                                            <div id="list-{{ step.euid }}-{{ key }}">
+                                                                {% for item in value %}
+                                                                    <input id="{{ step.euid }}"
+                                                                           type="text"
+                                                                           name="{{ key }}[]"
+                                                                           value="{{ item }}">
+                                                                {% endfor %}
+                                                            </div>
+                                                            <button class="form-button"
+                                                                    type="button"
+                                                                    onclick="addListItem('{{ step.euid }}', '{{ key }}')">
+                                                                Add
+                                                            </button>
+                                                            <button class="form-button"
+                                                                    type="button"
+                                                                    onclick="removeListItem('{{ step.euid }}', '{{ key }}')">
+                                                                Remove
+                                                            </button>
+                                                        {% else %}
+                                                            <input type="text" id="{{ step.euid }}" name="{{ key }}" value="{{ value }}">
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                                <div>
+                                                    <input type="submit" value="Save Changes" class="form-button">
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </ul>
+                                <div>
+                                    <ul>
+                                        <!-- Recursive call for child steps -->
+                                        {% if step.parent_of_lineages %}
+                                            <div>
+                                                {% for child_step in step.get_sorted_parent_of_lineages(['container_instance']) %}
+                                                    {% if child_step.child_instance.super_type != 'workflow_step' %}
+                                                        <ul>
+                                                        {% else %}
+                                                        {% endif %}
+                                                        {{ render_step(child_step.child_instance, accordion_states) }}
+                                                        {% if child_step.child_instance.super_type != 'workflow_step' %}
+                                                        </ul>
+                                                    {% else %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endmacro %}
+                        <h1>
+                            Workflow Details: {{ workflow.name }} <span style="font-size: 18px;">: : :</span><a style="font-size: 18px;" href=euid_details?euid={{ workflow.euid }}>{{ workflow.euid }}</a>  <span style="font-size: 18px;">: : :</span><a style="font-size: 18px;"  href=dindex>( graph view )</a> <span style="font-size: 18px;">: : :</span><a href=/ style="font-size: 18px;">( B )</a>
+                        </h1>
+                        <ul>
+                            {% if workflow.json_addl and 'action_groups' in workflow.json_addl %}
+                                <div class="action-group-group">
+                                    {% for group_key, group_value in workflow.json_addl['action_groups'].items() %}
+                                        <div class="action-group">
+                                            {{ group_value.group_name }}
+                                            {% for action_key, action_value in group_value.actions.items() %}
+                                                <button class="action_button"
+                                                        onclick="showCapturedDataForm(this, {{ action_value }}, '{{ workflow.euid }}', '{{ action_key }}', '{{ group_key }}')"
+                                                        {% if action_value.action_enabled == "0" %}disabled style="color: gray;"{% endif %}>
+                                                    {{ action_value.action_name }}
+                                                </button>
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <ul>
+                                <li>
+                                    <strong>Status:</strong> {{ workflow.bstatus }}
+                                    <li>
+                                        <strong>Type:</strong> {{ workflow.btype }} :: {{ workflow.b_sub_type }} :: {{ workflow.version }}
+                                        <li>
+                                            <strong>Created at:</strong> {{ workflow.created_dt }}
+                                        </ul>
+                                    </ul>
+                                    <ul>
+                                        <h2>Workflow Steps</h2>
+                                        <div>
+                                            {% for step in workflow.get_sorted_parent_of_lineages(['workflow_instance']) %}
+                                                <h1>
+                                                    {{ render_step(step.child_instance, accordion_states) }}
+                                                {% endfor %}
+                                            </div>
+                                        </ul>
+                                        <a href="/workflow_summary">Back to WF Summary</a>
+                                        <button id="expandAll" class="floating-button">+</button>
+                                        <button id="collapseAll" class="floating-button">-</button>
+                                        <script>
+        function toggleVisibility(id) {
+            var element = document.getElementById(id);
+            if (element.style.display === "none") {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
+        }
+     
+        function expandAllAccordions() {
+            var acc = document.getElementsByClassName("accordion");
+            for (var i = 0; i < acc.length; i++) {
+                acc[i].classList.add("active");
+                acc[i].nextElementSibling.style.display = "block";
+            }
+        }
+        
+        function collapseAllAccordions() {
+            var acc = document.getElementsByClassName("accordion");
+            for (var i = 0; i < acc.length; i++) {
+                acc[i].classList.remove("active");
+                acc[i].nextElementSibling.style.display = "none";
+            }
+        }
+        
+        document.getElementById('expandAll').addEventListener('click', expandAllAccordions);
+        document.getElementById('collapseAll').addEventListener('click', collapseAllAccordions);
+                                        </script>
+                                    </body>
+                                </html>

@@ -1,0 +1,136 @@
+{
+  "add-container-to": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {},
+        "attach_under_root_workflow": {},
+        "workflow_to_attach": {},
+        "child_data_obj": {},
+        "child_container_obj": {},
+        "action_name": "Add Container To",
+        "method_name": "do_action_add_container_to",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;container_euids&quot; rows=&quot;12&quot; cols=&quot;50&quot;></textarea>"
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "simple_value": "",
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "remove-container-from": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {},
+        "child_container_obj": {},
+        "test_requisition_obj": {},
+        "action_name": "Remove Container",
+        "method_name": "do_action_remove_container_from",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "deactivate_actions_when_executed": [],
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;container_euids&quot; rows=&quot;12&quot; cols=&quot;50&quot;></textarea>"
+        },
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "download-inventory-tsv": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {},
+        "child_container_obj": {},
+        "test_requisition_obj": {},
+        "action_name": "Download Inventory TSV",
+        "method_name": "do_action_generate_inventory_tsv",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "no",
+        "deactivate_actions_when_executed": [],
+        "captured_data": {},
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "log-temperature": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {},
+        "child_container_obj": {
+          "data/generic/temperature-log/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Log Temperature",
+        "method_name": "do_action_log_temperature",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "Temperature (celcius)": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        }
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

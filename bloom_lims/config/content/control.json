@@ -1,0 +1,77 @@
+{
+  "giab-HG001": {
+    "1.0": {
+      "description": "giab NA12878",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": []
+    }
+  },
+  "giab-HG002": {
+    "1.0": {
+      "description": "giab NA24385",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": []
+    }
+  },
+  "water-ntc": {
+    "1.0": {
+      "description": "NTC - water",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": []
+    }
+  }
+}

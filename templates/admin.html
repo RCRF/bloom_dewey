@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Printer Configuration</title>
+    <link rel="stylesheet" type="text/css" href="static/root_active.css">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" > </script>
+
+
+</head>
+<body>
+    <h1>Printer Configuration</h1>
+    <ul><a href=dindex>( graph )</a> <a href= />( B )</a><ul><hr>
+
+    <table>
+        <!-- Display select dropdowns for specific keys and their current value from user data -->
+        {% for key in ['print_lab', 'printer_name', 'label_zpl_style'] %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>
+                Current: {{ user_data.get(key, 'Not set') }} 
+                <select name="{{ key }}" onchange="updatePreferenceAndReload('{{ key }}', this.value)">
+                    {% for option in printer_info[key] %}
+                        <option value="{{ option }}" {% if user_data.get(key) == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        {% endfor %}
+
+        <!-- Display other user data that are not in the specified keys -->
+        {% for key, value in user_data.items() %}
+            {% if key not in ['print_lab', 'printer_name', 'label_zpl_style'] %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+</ul></ul>
+    <script>
+
+        
+    function updatePreferenceAndReload(key, value) {
+        console.log('Updating', key, 'to', value);
+        $.ajax({
+            url: '/update_preference',
+            type: 'POST',
+            contentType: 'application/json', // Specify the content type
+            data: JSON.stringify({ key: key, value: value }), // Convert the data to a JSON string
+            success: function(response) {
+                console.log('Update successful:', response);
+                window.location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Update failed:', status, error);
+            }
+        });
+        
+    }
+    </script>
+</body>

@@ -1,0 +1,160 @@
+{
+  "freezer-m80c": {
+    "1.0": {
+      "description": "Generic freezer.",
+      "properties": {
+        "name": "",
+        "serial": "",
+        "manufacturer": "",
+        "model": "",
+        "operataional_status": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiation_layouts": [
+        [
+          {
+            "container/shelf/generic/1.0": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "Shelf-1",
+                  "row_name": "Shelf-1",
+                  "col_name": "",
+                  "row_idx": "0",
+                  "col_idx": "0",
+                  "capacity": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/shelf/generic/1.0": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "Shelf-2",
+                  "row_name": "Shelf-2",
+                  "col_name": "",
+                  "row_idx": "0",
+                  "col_idx": "1",
+                  "capacity": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/shelf/generic/1.0": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "Shelf-3",
+                  "row_name": "Shelf-3",
+                  "col_name": "",
+                  "row_idx": "0",
+                  "col_idx": "2",
+                  "capacity": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/shelf/generic/1.0": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "Shelf-4",
+                  "row_name": "Shelf-4",
+                  "col_name": "",
+                  "row_idx": "0",
+                  "col_idx": "3",
+                  "capacity": "10"
+                }
+              }
+            }
+          }
+        ]
+      ],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "fridge": {
+          "group_order": "2",
+          "group_name": "Refrigerator Actions",
+          "actions": {
+            "action/equipment/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "freezer-m20c": {
+    "1.0": {
+      "description": "Generic freezer.",
+      "properties": {
+        "name": "",
+        "serial": "",
+        "manufacturer": "",
+        "model": "",
+        "operataional_status": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiation_layouts": [
+        [
+          {
+            "container/shelf/generic/1.0": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "Shelf-1",
+                  "row_name": "Shelf-1",
+                  "col_name": "",
+                  "row_idx": "0",
+                  "col_idx": "0",
+                  "capacity": "10"
+                }
+              }
+            }
+          },
+          {
+            "container/shelf/generic/1.0": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "Shelf-2",
+                  "row_name": "Shelf-2",
+                  "col_name": "",
+                  "row_idx": "0",
+                  "col_idx": "1",
+                  "capacity": "10"
+                }
+              }
+            }
+          }
+        ]
+      ],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "fridge": {
+          "group_order": "2",
+          "group_name": "Refrigerator Actions",
+          "actions": {
+            "action/equipment/*/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

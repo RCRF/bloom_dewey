@@ -1,0 +1,49 @@
+{
+  "blood-whole": {
+    "1.0": {
+      "description": "Generic whole blood sample",
+      "instantiation_layouts": [],
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "instantiable_n": "*",
+      "expected_outputs": [],
+      "actions": {}
+    }
+  },
+  "ffpe-block": {
+    "1.0": {
+      "description": "Generic FFPE block",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "instantiation_layouts": [],
+      "actions": {}
+    }
+  },
+  "ffpe-slice": {
+    "1.0": {
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "instantiation_layouts": [],
+      "actions": {}
+    }
+  }
+}

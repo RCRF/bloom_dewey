@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Bloom LIMS</title>
+        <link rel="stylesheet" type="text/css" href="static/root_active.css">
+        <link rel="stylesheet" type="text/css" href="static/style.css">
+    </head>
+    <body>
+        <h1>
+            Bloom LIMS <small> <a href=dindex>( graph view )</a></small> <a href=https://github.com/Daylily-Informatics/bloom_lims><font style="font-size: 10px;">github</font></a>
+        </h1>
+        <hr>
+        <ul>
+            <h2>
+                <a href="/workflow_summary">Workflows</a>
+            </h2>
+            <ul>
+                <li>all visible workflows</li>
+            </ul>
+            <br>
+            <h2>
+                <a href="/object_templates_summary">Object Templates</a>
+            </h2>
+            <ul>
+                <li>all object templates available for instantiation (there are currently ~50)</li>
+            </ul>
+            <br>
+            <h2>Equipment</h2>
+            <ul>
+                <li>
+                    <a href="/equipment_overview">Equipment Management</a>
+                </li>
+            </ul>
+            <br>
+            <h2>Reagents</h2>
+            <ul>
+                <li>
+                    <a href="/reagent_overview">Reagent Management</a>
+                </li>
+            </ul>
+            
+
+            <br>
+            <h2>Zebra Printer Config</h2>
+            <ul>
+                <li>
+                    <a href="/admin">Zebra Printer Config</a>
+                </li>
+            </ul>
+
+            <br>
+            <h2>Search by EUID/Barcode</h2>
+            <ul>
+                <form action="/euid_details" method="post">
+                    <label for="euid">EUID:</label>
+                    <input class="idx_text" type="text" id="euid" name="euid" />
+                    <input type="submit" value="Submit" class="idx_button" />
+                </form>
+            </ul>
+            <h2>Plate Visualization</h2>
+            <ul>
+                <form action="/plate_visualization" method="post">
+                    <label for="plate_euid">Plate EUID:</label>
+                    <input class="idx_text" type="text" id="plate_euid" name="plate_euid">
+                    <input type="submit" value="Submit" class="idx_button">
+                </form>
+            </ul>
+            <hr>
+            <h3>ie.</h3>
+            <img src="static/plate_viz.png" alt="plate viz" width="400" height="300">
+            <img src="static/graph_ui.png" alt="graph ui" width="350" height="274">
+            <br>
+            <a href=https://github.com/Daylily-Informatics/bloom_lims>
+                <h2>Documentation</h2>
+            </a>
+        </ul>
+    </body>
+</html>

@@ -1,0 +1,338 @@
+{
+  "loading": {
+    "1.0": {
+      "description": "Loading blood-whole in tube-strek-10ml tubes.",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "instantiable_n": "*",
+      "expected_inputs": [
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        }
+      ],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "gdna-extraction": {
+    "1.0": {
+      "description": "Extracting gdna from blood-whole in tubes to wells in a fixed-plate-96.",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "instantiable_n": "*",
+      "expected_inputs": [
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        }
+      ],
+      "expected_outputs": [
+        [
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/gdna/*"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/gdna/*"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/gdna/*"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/gdna/*"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "cfdna-extracted": {
+    "1.0": {
+      "description": "Extracting cfDNA from blood-plasma in tubes to wells in a fixed-plate-96.",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "instantiable_n": "*",
+      "expected_inputs": [
+        [
+          {
+            "container/tube/tube-generic-10ml/*/": {
+              "holds_content": "content/sample/blood-plasma/*"
+            }
+          },
+          {
+            "container/tube/tube-generic-10ml/*/": {
+              "holds_content": "content/sample/blood-plasma/*"
+            }
+          },
+          {
+            "container/tube/tube-generic-10ml/*/": {
+              "holds_content": "content/sample/blood-plasma/*"
+            }
+          },
+          {
+            "container/tube/tube-generic-10ml/*/": {
+              "holds_content": "content/sample/blood-plasma/*"
+            }
+          }
+        ]
+      ],
+      "expected_outputs": [
+        [
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/cfdna/*"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/cfdna/*"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/cfdna/*"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "container/plate/fixed-plate-96/*/": {
+              "child_of_lineages": [
+                {
+                  "container/well/fixed-plate-well/*/": {
+                    "holds_content": "content/sample/cfdna/*"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "cfdna": {
+          "group_order": "2",
+          "group_name": "cfDNA Actions",
+          "actions": {
+            "action/workflow_step_extraction/cfdna_post_extraction_quant/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "plasma-isolated": {
+    "1.0": {
+      "description": "plasma isolation",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "instantiable_n": "*",
+      "expected_inputs": [
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        },
+        {
+          "container/tube/tube-strek-10ml/*/": {
+            "holds_content": "content/specimen/blood-whole/*"
+          }
+        }
+      ],
+      "expected_outputs": [
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        },
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        },
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        },
+        {
+          "container/tube/tube-generic-10ml/*/": {
+            "holds_content": "content/sample/blood-plasma/*"
+          }
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

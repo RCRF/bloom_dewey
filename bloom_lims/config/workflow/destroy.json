@@ -1,0 +1,31 @@
+{
+  "specimen-containers": {
+    "1.0": {
+      "description": "Destroy Specimen Containers",
+      "instantiation_layouts": [],
+      "properties": {
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "destroy": {
+          "group_order": "2",
+          "group_name": "Destroy Actions",
+          "actions": {
+            "action/workflow/destroy_specimen_containers/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

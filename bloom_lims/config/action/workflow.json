@@ -1,0 +1,90 @@
+{
+  "create_package_and_first_workflow_step": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/package-generated/1.0": {
+            "json_addl": {
+              "properties": {
+                "step_number": "1"
+              }
+            }
+          }
+        },
+        "new_container_obj": {
+          "container/package/generic/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": "x"
+              }
+            }
+          }
+        },
+        "action_name": "Register Package",
+        "method_name": "do_action_create_package_and_first_workflow_step",
+        "action_executed": "0",
+        "max_executions": "1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "Carrier Name": "",
+          "Tracking Number": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        }
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "destroy_specimen_containers": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/destroy-steps/specimen-containers-destroyed/1.0": {
+            "json_addl": {
+              "properties": {
+                "comment": "",
+                "step_number": "1"
+              }
+            }
+          }
+        },
+        "new_container_obj": {},
+        "action_name": "Scan Conatiner Barcodes",
+        "method_name": "do_action_destroy_specimen_containers",
+        "action_executed": "0",
+        "max_executions": "1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;discard_barcodes&quot; rows=&quot;24&quot; cols=&quot;50&quot;></textarea>"
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        }
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

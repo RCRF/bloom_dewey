@@ -1,0 +1,91 @@
+{
+  "tube-rack-generic": {
+    "1.0": {
+      "valid_parents": [],
+      "valid_content": [
+        "none"
+      ],
+      "description": "Generic tube rack with 4 positions (for demonstration, this takes 3 strek and 1 eppi.",
+      "instantiable_n": "*",
+      "instantiation_layouts": [
+        [
+          {
+            "container/tube/tube-strek-10ml/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "A1",
+                  "row_name": "A",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "0"
+                }
+              }
+            }
+          },
+          {
+            "container/tube/tube-strek-10ml/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "B1",
+                  "row_name": "B",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "1"
+                }
+              }
+            }
+          },
+          {
+            "container/tube/tube-strek-10ml/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "C1",
+                  "row_name": "C",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "2"
+                }
+              }
+            }
+          },
+          {
+            "container/tube/tube-eppi-1.5ml/*/": {
+              "json_addl": {
+                "cont_address": {
+                  "name": "D1",
+                  "row_name": "D",
+                  "col_name": "1",
+                  "row_idx": "0",
+                  "col_idx": "3"
+                }
+              }
+            }
+          }
+        ]
+      ],
+      "properties": {
+        "name": "",
+        "comments": ""
+      },
+      "cont_address": {
+        "name": "",
+        "row_name": "",
+        "col_name": "",
+        "row_idx": "0",
+        "col_idx": "0"
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

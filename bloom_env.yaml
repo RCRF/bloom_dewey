@@ -1,0 +1,27 @@
+name: BLOOM
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - cherrypy=18.8.0
+  - ipython=8.18.1
+  - parallel=20230922
+  - pip=23.3.1
+  - postgresql=16.1
+  - psycopg2=2.9.9
+  - cryptography=41.0.7
+  - python=3.12.0
+  - pytz=2023.3.post1
+  - simplejson=3.19.2
+  - sqlalchemy=2.0.23
+  - networkx=3.2.1
+  - matplotlib=3.8.2
+  - jinja2=3.0.3
+  - djlint
+  - pytz
+  - jq
+  - pip:
+    - zebra_day==0.3.4 
+    - fedex_tracking_day==0.2.6
+    - black
+prefix: /Users/daylily/miniconda/envs/BLOOM

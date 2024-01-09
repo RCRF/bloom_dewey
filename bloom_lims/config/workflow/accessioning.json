@@ -1,0 +1,31 @@
+{
+  "accession-package-kit-tubes-testreq": {
+    "1.0": {
+      "description": "Full accessioning: Package receipt, kit receipt, tube receipt, test requisition.",
+      "instantiation_layouts": [],
+      "properties": {
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "instantiable_n": "*",
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "accessioning": {
+          "group_order": "2",
+          "group_name": "Accessioning Actions",
+          "actions": {
+            "action/workflow/create_package_and_first_workflow_step/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

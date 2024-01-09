@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html width="100%">
+    <head>
+        <title>Interactive DAG Editor</title>
+        <link rel="stylesheet" type="text/css" href="static/root_active.css">
+        <link rel="stylesheet" type="text/css" href="static/style.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.19.0/cytoscape.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+        <script src="https://unpkg.com/cytoscape-dagre"></script>
+        <style>
+      #cy {
+	  height: 650px;
+	  width: 100%;
+      }
+      @media screen and (max-width: 600px) {
+	  body, html {
+              width: 100%;
+              height: 100%;
+          }
+          /* Adjust styles for mobile here */
+         .container {
+             width: 100%; /* Full width on mobile */
+         }
+	  #cy {
+          height: 650px;
+          width: 100%;
+      }
+      }
+      
+      .hidden {
+            display: none !important;
+        }
+        </style>
+        <script></script>
+    </head>
+    <body>
+        <div id="nodeDialog" class="node-dialog" style="display: none;">
+            <p id="nodeEuid">
+                EUID: <span></span>
+            </p>
+            <p id="nodeName">
+                Name: <span></span>
+            </p>
+            <a id="actionALink" href="">Action A</a>
+            <br>
+            <a id="euidInfoLink" href="">EUID Info</a>
+            <button id="closeDialogButton" class="close-dialog-btn">Close</button>
+        </div>
+        <div class="container">
+            <h1>
+                <a href= />Bloom</a> Workflow DAG Explorer (<small><a href=https://github.com/Daylily-Informatics/bloom_lims>github</a>)</small>
+            </h1>
+            <hr>
+            <table>
+                <tr>
+                    <td>
+                        <div id="cy"></div>
+                    </td>
+                    <td style="vertical-align: top; width: 10%;">
+                        <select id="layoutSelect" onchange="changeLayout(this.value)">
+                            <option value="dagre">-Choose Graph Layout-</option>
+                            <option value="dagre">Hierarchical DAG</option>
+                            <option value="cose">Cose (default)</option>
+                            <option value="breadthfirst">Breadthfirst Hierarchical</option>
+                            <option value="grid">Grid</option>
+                            <option value="circle">Circle</option>
+                            <option value="random">Random</option>
+                            <option value="concentric">Concentric</option>
+                            <!-- Add other layout options as needed -->
+                        </select>
+                        <hr>
+                        <label for="distanceSlider">Filters:</label>
+                        <table>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                        Dimmed if #edges lt :
+                        <input type="range"
+                               id="transparencySlider"
+                               min="0"
+                               max="20"
+                               style="width: 50%"
+                               value="1"
+                               oninput="updateNodeTransparency()" />
+                        <span id="transparencyDisplay" style="font-size: 9px;">1</span>
+                        <br>
+                        ...by obj super-type:
+                        <div id="btypeCheckboxes">
+                            <!-- Checkboxes will be added here -->
+                        </div>
+                        <br>
+                        ...by obj sub-type:
+                        <div id="bsubtypeButtons">
+                            <!-- Buttons/Checkboxes for b_sub_type will be added here -->
+                        </div>
+                    </td>
+                </tr>
+                <tr style="vertical-align: top;">
+                    <td>
+                        <div>
+                            <small style="color: gray;">[[ NODE INFO: click node 1x for info box @ bottom of page, click node 3x for popup dialog // DELETE (this is reflected in the database!): -edges- right click 2x on an edge to delete it  -nodes- right click 3x on a node to delete it // CREATE EDGES: hold 'l', select a node, cont. holding 'l', click a new node to create an edge // CREATE NODES: not available / VISUALIZATION: hold 'n and click a node to highlight its neighbors, with each add'l click the neighborhod expands. ]]</small>
+                        </div>
+                        <div style="align: top;" class=info-box id="node-info">
+                        </td>
+                        <td>
+                            <label for="euidInput">EUID:</label>
+                            <br>
+                            <input type="text" id="euidInput" placeholder="Enter EUID">
+                            <button onclick="centerOnEuid()">Click To Find</button>
+                            <br>
+                            Relatives distance (click node, then slide to filter)
+                            <input type="range"
+                                   id="distanceSlider"
+                                   min="0"
+                                   max="20"
+                                   style="width: 50%"
+                                   value="0"
+                                   oninput="filterNodes(this.value)" />
+                            <span style="text-align: -webkit-center;
+                                         font-size: 9px"
+                                  id="distanceDisplay">0</span>
+                            <br>
+                            <br>
+                            <br>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <button align=right id="saveButton" class="button">Save Changes</button>
+        </div>
+        <script>
+        var globalFilterLevel = parseFloat('{{ globalFilterLevel }}') || 0;
+        var globalZoom = parseFloat('{{ globalZoom }}') || 4;
+        var globalStartNodeEUID = '{{ globalStartNodeEUID }}' || null;
+        var currentLayoutName = 'dagre'; // Default layout
+
+        function filterNodes(distance) {
+            document.getElementById('distanceDisplay').innerText = distance;
+        
+            if (!cy) return;
+        
+            var selectedNodeId = cy.$('node:selected').id();
+            if (!selectedNodeId) {
+                alert('Please select a node first.');
+                return;
+            }
+        
+            if (distance === "0") {
+                // Show all elements and apply a layout when the slider is at zero
+                cy.elements().style('display', 'element');
+                // cy.layout({ name: currentLayoutName }).run();        
+                applyLayout({ name: currentLayoutName });
+
+            } else {
+                // Hide all elements initially
+                cy.elements().style('display', 'none');
+        
+                var bfs = cy.elements().bfs({
+                    roots: '#' + selectedNodeId,
+                    visit: function(v, e, u, i, depth) {
+                        if (depth <= parseInt(distance)) {
+                            v.style('display', 'element');
+                            if (e) e.style('display', 'element');
+                        }
+                    },
+                    directed: false
+                });
+        
+                // Show the selected node and its immediate neighborhood regardless of the distance
+                cy.$('#' + selectedNodeId).closedNeighborhood().style('display', 'element');
+            }
+        }
+        
+        function selectAndCenterRandomNode() {
+            if (globalStartNodeEUID) {
+                var startNode = cy.getElementById(globalStartNodeEUID);
+                if (startNode.length > 0) {
+                    startNode.select();
+                    cy.animate({
+                        center: { eles: startNode },
+                        zoom: globalZoom
+                    }, {
+                        duration: 200
+                    });
+                } else {
+                    console.log("Start node EUID not found in the graph.");
+                    selectRandomNode();
+                }
+            } else {
+                selectRandomNode();
+            }
+        }
+        
+        function selectRandomNode() {
+            var nodes = cy.nodes();
+            if (nodes.length === 0) return;
+        
+            var randomIndex = Math.floor(Math.random() * nodes.length);
+            var randomNode = nodes[randomIndex];
+            randomNode.select();
+            cy.animate({
+                center: { eles: randomNode },
+                zoom: globalZoom
+            }, {
+                duration: 200
+            });
+        }
+        var cy;
+        var clickCount = {}; // Object to keep track of clicks on nodes
+
+        $(document).ready(function() {    
+            const queryParams = new URLSearchParams(window.location.search);
+        
+    
+        
+            $.getJSON('/get_dag', function(data) {            
+
+                cy = cytoscape({
+                    container: document.getElementById('cy'),
+                    elements: data.elements || [], // Default to empty array if no elements
+                    style: [
+                    {
+                        "selector": "node",
+                        "style": {
+                            "background-color":  function(ele) { 
+                                // Use the 'color' property from the node's data
+                                return ele.data('color') || '#666'; // Default color if 'color' is not set
+                            },
+                            "label": "data(id)",
+                            "text-valign": "center",
+                            "color": "#fff",
+                            "text-outline-width": 2,
+                            "text-outline-color": "#666",
+                            "width": "60px",
+                            "height": "60px",
+                            "border-color": "#000",
+                            "border-width": "2px",
+                            "font-size": "20px"
+                        }
+                    },
+                    {
+                        "selector": "edge",
+                        "style": {
+                            "width": 3,
+                            "line-color": "#357b95",
+                            "source-arrow-color": "#357b95",
+                            "target-arrow-color": "#357b95",
+                            "source-arrow-shape": "triangle",   
+                            "curve-style": "bezier",
+                            "control-point-step-size": 40
+                        }
+                    }, 
+                    {
+                        
+                    "selector": "edge.transparent",
+                    "style": {
+                        "opacity": 0.1
+                    }
+                },
+                    {
+                        "selector": "node:selected",
+                        "style": {
+                            "background-color": "#030f26",
+                            "border-color": "#f339f6",
+                            "border-width": "9px",
+                            "width": "90px",
+                            "height": "90px",
+                            "font-size": "70px"
+                        }
+                    },
+                    {
+                        selector: 'node.transparent',
+                        style: {
+                            'opacity': 0.1 // 90% transparent
+                        }
+                    },
+                    {
+                        "selector": "edge:selected",
+                        "style": {
+                            "line-color": "#22b8f0",
+                            "source-arrow-color": "#357b95",
+                            "target-arrow-color": "#357b95",
+                            "width": "6px"
+                        }
+                    },
+                    {
+                        "selector": ".highlighted",
+                        "style": {
+                            "background-color": "#61bffc",
+                            "line-color": "#61bffc",
+                            "target-arrow-color": "#61bffc",
+                            "transition-property": "background-color, line-color, target-arrow-color",
+                            "transition-duration": "0.5s"
+                        }
+                    }
+                     ],
+                    layout: { name: currentLayoutName }, // Default to 'preset' layout
+                    zoom: data.zoom || 1, // Default zoom level
+                    pan: data.pan || { x: 0, y: 0 }, // Default pan position
+                    zoomingEnabled: data.zoomingEnabled !== undefined ? data.zoomingEnabled : true,
+                    userZoomingEnabled: data.userZoomingEnabled !== undefined ? data.userZoomingEnabled : true,
+                    panningEnabled: data.panningEnabled !== undefined ? data.panningEnabled : true,
+                    userPanningEnabled: data.userPanningEnabled !== undefined ? data.userPanningEnabled : true,
+                    boxSelectionEnabled: data.boxSelectionEnabled !== undefined ? data.boxSelectionEnabled : true
+                });
+
+                selectAndCenterRandomNode();
+                if (cy) {
+                    filterNodes(globalFilterLevel.toString()); // Convert to string as the slider input would provide
+                }
+
+                var btypes = new Set();
+                    data.elements.nodes.forEach(function(ele) {
+                    if(ele.data && ele.data.btype) {
+                        btypes.add(ele.data.btype);
+                    }
+                });
+                
+                var bsubtypes = [...new Set(data.elements.nodes.map(function(ele) {
+                    return ele.data && ele.data.b_sub_type ? ele.data.b_sub_type : null;
+                }).filter(Boolean))].sort();
+        
+
+                bsubtypes.forEach(function(bsubtype) {
+                    var button = $('<button />', { 
+                        id: 'btn_' + bsubtype, 
+                        text: bsubtype,
+                        class: 'subtype-button'
+                    });
+                    $('#bsubtypeButtons').append(button);
+                
+                    button.click(function() {
+                        // Toggle transparency
+                        var currentOpacity = cy.elements().filter('[b_sub_type = "' + bsubtype + '"]').style('opacity');
+                        var newOpacity = currentOpacity === '0.1' ? '1' : '0.1';
+                        cy.elements().filter('[b_sub_type = "' + bsubtype + '"]').style('opacity', newOpacity);
+                
+                        $(this).toggleClass('subtype-button-clicked');
+                    });
+                });
+
+                // Create checkboxes for each btype
+                btypes.forEach(function(btype) {
+                    var br = $('<br />');
+                    var checkbox = $('<input />', { type: 'checkbox', id: 'chk_' + btype, checked: 'checked' });
+                    var label = $('<label />', { 'for': 'chk_' + btype }).text(btype);
+                    $('#btypeCheckboxes').append(checkbox).append(label).append(br);
+
+                    // Attach event listener
+                    checkbox.change(function() {
+                        var checked = $(this).is(':checked');
+                        var newOpacity = checked ? '1' : '0.1'; // Set opacity to 0.1 if unchecked
+                        cy.elements().filter(function(ele) {
+                            return ele.data('btype') === btype;
+                        }).style('opacity', newOpacity);
+                    });
+                });
+                cy.on('tap', function(event) {
+                    // Hide the node info if we click on the background
+                    var target = event.target;
+                    if (target === cy) {
+                        $('#node-info').hide();
+                    
+                       for (var nodeId in clickCount) {
+                            clickCount[nodeId] = 0;
+                        }
+                    }
+
+                    var clickedOnNode = event.target !== cy;
+                    if (!clickedOnNode && selectedChildNode) {
+                        selectedChildNode.style('background-color', ''); // Reset color
+                        selectedChildNode = null; // Deselect node
+                    }
+                });
+
+
+
+                var keyHeld = null;
+
+                $(document).keydown(function(e) {
+                    if (e.key === 'n') {
+                        keyHeld = e.key;
+                    }
+                });
+            
+                $(document).keyup(function(e) {
+                    if (e.key === 'n') {
+                        keyHeld = null;
+                    }
+                });
+
+                var lastClickedNode = null;
+                var neighborhoodDepth = 1;
+
+                cy.on('tap', 'node', function(evt) { 
+                        var node = evt.target;
+                        var euid = node.data('euid');
+                        var clickCount = node.data('clickCount') || 0;
+                        clickCount++;
+                        node.data('clickCount', clickCount);
+                    
+                        // Reset click count after a delay
+                        setTimeout(function() { node.data('clickCount', 0); }, 1000); // Increase to 1000 milliseconds
+                    
+                        if (clickCount === 3) {
+                            // Handle triple click
+                            var nodeData = node.data();
+                            var dialog = $('#nodeDialog');
+                            dialog.find('#nodeEuid span').text(nodeData.euid);
+                            dialog.find('#nodeName span').text(nodeData.name);
+                            dialog.find('#actionALink').attr('href', '/do_action_1?euid=' + nodeData.euid);
+                            dialog.find('#euidInfoLink').attr('href', '/euid_details?euid=' + nodeData.euid);
+                    
+                            // Position and show dialog
+                            var renderedPosition = evt.renderedPosition;
+                            dialog.css({ top: renderedPosition.y, left: renderedPosition.x }).show();
+                    
+                            // Prevent other tap actions when triple-clicked
+                            return;
+                        }
+                           
+                            if (keyHeld === 'n') {
+                            if (lastClickedNode && lastClickedNode.id() === node.id()) {
+                                // If the same node is clicked, increase the depth
+                                neighborhoodDepth++;
+                            } else {
+                                // Reset depth if a different node is clicked
+                                neighborhoodDepth = 1;
+                            }
+
+                            // Keep track of the last clicked node
+                            lastClickedNode = node;
+
+                            // Highlight the neighborhood of the node within the specified depth
+                            var neighborhood = node.closedNeighborhood();
+                            for (var i = 1; i < neighborhoodDepth; i++) {
+                                neighborhood = neighborhood.union(neighborhood.closedNeighborhood());
+                            }
+                            neighborhood.addClass('highlighted');
+                            setTimeout(function() {
+                                neighborhood.removeClass('highlighted');
+                            }, 1700); // Highlight duration
+                        }
+                    if (keyHeld === 'l') {
+
+                        if (!selectedChildNode) {
+                            selectedChildNode = node;
+                            node.style('background-color', 'red'); // Highlight node as child
+                        } else {
+                            // Link to parent node and create edge
+                            node.style('background-color', 'red'); // Flash parent node red
+                            setTimeout(function() {
+                                node.style('background-color', ''); // Reset parent node color
+                            }, 500); // Flash duration
+            
+                            var newEdge = cy.add({
+                                group: 'edges',
+                                data: { target: selectedChildNode.id(), source: node.id() },
+                                style: { 'line-color': 'aqua'}
+                            });
+                            setTimeout(function() {
+                                newEdge.style('line-color', ''); // Reset edge color after 2 seconds
+                            }, 2000); // Edge highlight duration
+            
+                        
+                            selectedChildNode.style('background-color', ''); // Reset child node color
+                            selectedChildNode = null; // Deselect child node
+                        }
+                    } else {
+                        if (node.isNode()) {
+                            // AJAX request to the server for node info
+                            $.getJSON('/get_node_info', { euid: euid }, function(data) {
+                                if (!data.error) {
+                                    var content = 'EUID: ' + data.euid + ' // '+data.uuid+' ( '+data.btype +':::'+data.b_sub_type+' ) <br>Name: ' + data.name + ' ( '+data.status+' )<br>json_addl: ' + data.json_addl;
+                                    $('#node-info').html(content).show();
+                                } else {
+                                    $('#node-info').html('Node information not found').show();
+                                }
+                            });
+                        }
+                    }
+                });
+
+
+                cy.on('cxttap', 'node', function(evt) {
+                    var node = evt.target;
+                    var nodeId = node.id();
+
+                    clickCount[nodeId] = (clickCount[nodeId] || 0) + 1;
+                    if (clickCount[nodeId] === 3) {
+                        cy.remove(node);
+                        var nodeEuid = node.data('euid');
+                        handleDeleteNode(nodeEuid);
+                        clickCount[nodeId] = 0; // Reset click count
+                    }
+                });
+
+                var lastEdgeClicked;
+                var lastClickTime;
+
+                cy.on('cxttap', 'edge', function(evt) {
+                    var edge = evt.target;
+                    var edgeUuid = edge.data('id'); // Retrieve the euid of the edge
+                    var currentTime = new Date().getTime();
+
+                    if (lastEdgeClicked === edge && currentTime - lastClickTime < 300) { // 300 ms for double-click
+                        cy.remove(edge);
+                        handleDeleteEdge(edgeUuid);
+                        lastEdgeClicked = null;
+                    } else {
+                        lastEdgeClicked = edge;
+                        lastClickTime = currentTime;
+                    }
+                });    
+                            
+// Call this function after initializing the graph and whenever the graph is updated
+updateNodeTransparency();
+
+                $('#makeConnectionButton').click(function() {
+                    var parentNodeId = $('#parent-node').val();
+                    var childNodeId = $('#child-node').val();
+
+                    if (cy.getElementById(parentNodeId).length && cy.getElementById(childNodeId).length) {
+                        cy.add({
+                            group: 'edges',
+                            data: { source: parentNodeId, target: childNodeId }
+                        });
+                        // cy.layout({ name: currentLayoutName }).run();        
+                        applyLayout({ name: currentLayoutName });
+
+                    } else {
+                        alert('One or both node IDs do not exist.');
+                    }
+                });
+
+                 // Close dialog button functionality
+                $('#closeDialogButton').on('click', function() {
+                    $('#nodeDialog').hide();
+                });
+
+                $('#addNodeButton').click(function() {
+                    $.ajax({
+                        url: '/add_new_node',
+                        type: 'GET',
+                        success: function(response) {
+                            var euid = response.euid;
+                            var nodeId = response.euid;
+                            cy.add({
+                                group: 'nodes',
+                                data: { id: nodeId, type: 'child', euid: euid, name: 'New Node', btype: '' },
+                                position: { x: 100, y: 100 } // You can set a default position or calculate it
+                            });
+                            // cy.layout({ name: currentLayoutName }).run();
+                            applyLayout({ name: currentLayoutName });
+
+                            console.log('Added new node:', euid);
+                        },
+                        error: function(error) {
+                            console.log('Error adding new node:', error);
+                        }
+                    });
+                });
+                // Save button functionality
+                $('#saveButton').click(function() {
+                    var graphData = {
+                        nodes: cy.nodes().map(node => node.data()),
+                        edges: cy.edges().map(edge => edge.data())
+                    };
+                    var updatedData = cy.json();
+                    $.ajax({
+                        type: "POST",
+                        url: "/update_dag",
+                        contentType: "application/json",
+                        data: JSON.stringify(updatedData),
+                        success: function(response) {
+                            alert("DAG updated!");
+                        }
+                    });
+                });
+
+                var selectedChildNode = null;
+                var keyHeld = null;
+
+                $(document).keydown(function(e) {
+                    if (e.key === 'l' ) {
+                        keyHeld = e.key;
+                    }
+                });
+            
+                $(document).keyup(function(e) {
+                    if (e.key === 'l') {
+                        keyHeld = null;
+                        if (selectedChildNode) {
+                            selectedChildNode.style('background-color', ''); // Reset color
+                            selectedChildNode = null; // Deselect node
+                        }
+                    }
+                });
+
+                // Function to handle new edge creation
+                
+                function handleNewEdge(sourceNodeUuid, targetNodeUuid) {
+                    $.ajax({
+                        url: '/add_new_edge',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ child_uuid: targetNodeUuid, parent_uuid: sourceNodeUuid }),
+                        success: function(response) {
+                            // Assuming 'response' contains the new edge's euid
+                            var newEdgeUuid = response.euid;
+
+                            // Update the edge in the graph with this new euid
+                            var edge = cy.edges().filter(function(ele){
+                                return ele.data('target') === sourceNodeUuid && ele.data('source') === targetNodeUuid;
+                            });
+                            edge.data('euid', newEdgeUuid);
+                        },
+                        error: function(error) {
+                            console.log('Error adding new edge:', error);
+                        }
+                    });
+                }
+
+                // Example usage when a new edge is created in Cytoscape.js
+                cy.on('add', 'edge', function(event) {
+                    var edge = event.target;
+                    var sourceNodeUuid = edge.data('source');
+                    var targetNodeUuid = edge.data('target');
+
+                    if (doesCreateCycle(sourceNodeUuid, targetNodeUuid)) {
+                        // If a cycle is created, remove the edge and alert the user
+                        cy.remove(edge);
+                        alert("Cannot create edge. It would result in a cycle.");
+                    } else {
+                        handleNewEdge(sourceNodeUuid, targetNodeUuid);
+                    }
+                });
+
+                // Function to handle edge deletion
+                function handleDeleteEdge(edgeUuid) {
+                    $.ajax({
+                        url: '/delete_object',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ euid: edgeUuid }),
+                        success: function(response) {
+                            console.log('Edge deletion successful:', response);
+                        },
+                        error: function(error) {
+                            console.error('Error deleting edge:', error);
+                        }
+                    });
+                }
+
+                // Function to handle node deletion
+                function handleDeleteNode(nodeEuid) {
+                    $.ajax({
+                        url: '/delete_object',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ euid: nodeEuid }),
+                        success: function(response) {
+                            console.log('Node deletion successful:', response);
+                        },
+                        error: function(error) {
+                            console.error('Error deleting node:', error);
+                        }
+                    });
+                }
+
+                // Function to check for cycles
+                function doesCreateCycle(sourceId, targetId) {
+                    let visited = new Set();
+                    let stack = [targetId];
+
+                    while (stack.length > 0) {
+                        let current = stack.pop();
+
+                        if (current === sourceId) {
+                            return true; // Cycle detected
+                        }
+
+                        if (!visited.has(current)) {
+                            visited.add(current);
+                            let neighbors = cy.nodes(`#${current}`).outgoers('node');
+                            neighbors.forEach(node => {
+                                if (!visited.has(node.id())) {
+                                    stack.push(node.id());
+                                }
+                            });
+                        }
+                    }
+
+                    return false; // No cycle detected
+                }
+
+
+           });
+        });
+        function centerOnEuid() {
+            var euid = document.getElementById('euidInput').value;
+            var node = cy.getElementById(euid);
+        
+            if (node.length > 0) {
+                cy.animate({
+                    center: { eles: node },
+                    zoom: globalZoom
+                }, {
+                    duration: 200
+                });
+            } else {
+                alert('EUID not found in the DAG.');
+            }
+        }
+
+        function updateNodeTransparency() {
+            var edgeThreshold = parseInt(document.getElementById('transparencySlider').value);
+            document.getElementById('transparencyDisplay').innerText = edgeThreshold;
+        
+            cy.nodes().forEach(function(node) {
+                if (node.connectedEdges().length <= edgeThreshold) {
+                    node.addClass('transparent');
+                    node.connectedEdges().addClass('transparent');
+                } else {
+                    node.removeClass('transparent');
+                    node.connectedEdges().removeClass('transparent');
+                }
+            });
+        }
+        
+        function changeLayout(layoutName) {
+            currentLayoutName = layoutName;
+                // cy.layout({ name: currentLayoutName }).run();        
+                applyLayout({ name: currentLayoutName });
+
+         }
+         function applyLayout(layoutOptions) {
+            var layout = cy.layout(layoutOptions);
+            layout.run();
+        
+            if (layoutOptions.name === 'breadthfirst') {
+                // Wait for the layout to finish with a timeout
+                setTimeout(function() {
+                    cy.nodes().forEach(function(node) {
+                        var yPos = node.position('y');
+                        // Invert the Y-coordinate
+                        node.position('y', -yPos);
+                    });
+                    // Optionally, adjust the viewport to fit the new layout
+                    cy.fit();
+                }, 500); // Adjust timeout as needed for larger graphs
+            }
+        }
+        
+                
+        
+        </script>
+    </body>
+</html>

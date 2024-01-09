@@ -1,0 +1,34 @@
+{
+  "download_plate_map": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {},
+        "new_container_obj": {},
+        "action_name": "Download Plate Map TSV",
+        "method_name": "do_action_download_plate_map",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "no",
+        "captured_data": {
+          "Carrier Name": "",
+          "Tracking Number": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        }
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

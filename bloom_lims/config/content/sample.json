@@ -1,0 +1,50 @@
+{
+  "gdna": {
+    "1.0": {
+      "description": "genomic DNA sample",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "instantiable_n": "*",
+      "expected_outputs": [],
+      "actions": {},
+      "instantiation_layouts": []
+    }
+  },
+  "cfdna": {
+    "1.0": {
+      "description": "cell free DNA sample",
+      "instantiable_n": "*",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "actions": {},
+      "instantiation_layouts": []
+    }
+  },
+  "blood-plasma": {
+    "1.0": {
+      "description": "Generic blood plasma sample",
+      "instantiable_n": "*",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "actions": {},
+      "instantiation_layouts": []
+    }
+  }
+}

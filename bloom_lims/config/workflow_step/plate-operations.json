@@ -1,0 +1,129 @@
+{
+  "heat-seal": {
+    "1.0": {
+      "description": "Heatseal a plate",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "instantiable_n": "*",
+      "expected_inputs": [
+        {
+          "container/plate/*/*/": {}
+        }
+      ],
+      "expected_outputs": [
+        {
+          "container/plate/*/*/": {}
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "extraction-plate-filled": {
+    "1.0": {
+      "description": "Extraction Plate",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [
+        {
+          "container/plate/*/*/": {}
+        }
+      ],
+      "expected_outputs": [
+        {
+          "container/plate/*/*/": {}
+        }
+      ],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "plate_operations": {
+          "group_order": "2",
+          "group_name": "Plate Operations",
+          "actions": {
+            "action/workflow_step_plate_operations/stamp_copy_plate/1.0/": {},
+            "action/workflow_step_plate_operations/cfdna_quant/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "stamp-copy-plate": {
+    "1.0": {
+      "description": "Copy Plate With No Well Address Changes",
+      "instantiable_n": "*",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "plate_operations": {
+          "group_order": "2",
+          "group_name": "Plate Operations",
+          "actions": {
+            "action/workflow_step_plate_operations/stamp_copy_plate/1.0/": {},
+            "action/workflow_step_plate_operations/cfdna_quant/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "specimen-containers-destroyed": {
+    "1.0": {
+      "description": "Specimens Destroyed",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "destroyed": {
+          "group_order": "2",
+          "group_name": "Destroy Actions",
+          "actions": {
+            "action/workflow_step_destroy/complete_specimen_destroy/*/1.0/": {}
+          }
+        }
+      }
+    }
+  }
+}

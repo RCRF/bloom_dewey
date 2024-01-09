@@ -1,0 +1,231 @@
+{
+  "link_tubes_auto": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/queue/extraction-queue-available/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": "",
+                "step_number": "0"
+              }
+            }
+          }
+        },
+        "attach_under_root_workflow": {
+          "workflow/assay/hla-typing/1.2/": {}
+        },
+        "workflow_to_attach": {
+          "workflow/assay-workset/hla-typing/1.2/": {
+            "json_addl": {
+              "properties": {
+                "comments": "",
+                "step_number": "0"
+              }
+            }
+          }
+        },
+        "child_data_obj": {},
+        "child_container_obj": {},
+        "action_name": "Plasma Isolation Tube to Tube",
+        "method_name": "do_action_link_tubes_auto",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;discard_barcodes&quot; rows=&quot;24&quot; cols=&quot;50&quot;></textarea>"
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "simple_value": "",
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "create_test_req_and_link_child_workflow_step": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/test-requisition-generated2/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {},
+        "test_requisition_obj": {
+          "test_requisition/clinical/pan-cancer-panel/1.0/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Create New Test Req & Assoc To Specimen Tube",
+        "method_name": "do_action_create_test_req_and_link_child_workflow_step",
+        "action_executed": "0",
+        "max_executions": "1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "deactivate_actions_when_executed": [
+          "ycreate_test_req_and_link_child_workflow_step"
+        ],
+        "captured_data": {
+          "Patient Name": "",
+          "Physician": "",
+          "Order Type": ""
+        },
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "ycreate_test_req_and_link_child_workflow_step": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/test-requisition-generated2/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {},
+        "method_name": "do_action_ycreate_test_req_and_link_child_workflow_step",
+        "test_requisition_obj": {
+          "test_requisition/clinical/pan-cancer-panel/1.0/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Link Tube To Existing  Req.b",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "Test Requisition EUID": "",
+          "Tube EUID": "",
+          "Comment": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "fill_plate_undirected": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/plate-operations/extraction-plate-filled/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": "",
+                "step_number": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {},
+        "action_name": "Map Tubes To Extraction Plate Wells",
+        "method_name": "do_action_fill_plate_undirected",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;discard_barcodes&quot; rows=&quot;24&quot; cols=&quot;50&quot;></textarea>"
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "simple_value": "",
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "fill_plate_directed": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/plate-operations/plate-filled/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": "",
+                "step_number": "auto(int())"
+              }
+            }
+          }
+        },
+        "child_container_obj": {},
+        "action_name": "Fill Plate & Specify Map",
+        "method_name": "do_action_fill_plate_directed",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "0",
+        "capture_data": "yes",
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;discard_barcodes&quot; rows=&quot;24&quot; cols=&quot;50&quot;></textarea>"
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "simple_value": "",
+        "curr_user": ""
+      }
+    }
+  }
+}

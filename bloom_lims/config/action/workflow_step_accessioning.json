@@ -1,0 +1,260 @@
+{
+  "create_child_container_and_link_child_workflow_step": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/kit-generated/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {
+          "container/kit/generic/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Register Kit",
+        "method_name": "do_action_create_child_container_and_link_child_workflow_step",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "Kit Barcode": "",
+          "Comments": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "simple_value": "",
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "create_child_container_and_link_child_workflow_step_specimen": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/container-generated/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {
+          "container/tube/tube-strek-10ml/*/": {
+            "instantiation_layouts": [
+              [
+                {
+                  "content/specimen/blood-whole/*/": {
+                    "json_addl": {
+                      "properties": {
+                        "comment": ""
+                      }
+                    }
+                  }
+                }
+              ]
+            ],
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Register Specimen Container",
+        "method_name": "do_action_create_child_container_and_link_child_workflow_step",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "Collection Date": "",
+          "MRN": "",
+          "DOB": "",
+          "QC Pass": "",
+          "Comment": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "simple_value": "",
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "create_test_req_and_link_child_workflow_step_dup": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/test-requisition-generated2/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {},
+        "test_requisition_obj": {
+          "test_requisition/clinical/pan-cancer-panel/1.0/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Create New Test Req & Assoc To Specimen Tube",
+        "method_name": "do_action_create_test_req_and_link_child_workflow_step",
+        "action_executed": "0",
+        "max_executions": "1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "deactivate_actions_when_executed": [
+          "action/workflow_step_accessioning/create_test_req_and_link_child_workflow_step_dup/1.0"
+        ],
+        "captured_data": {
+          "Patient Name": "",
+          "Physician": "",
+          "Order Type": ""
+        },
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      }
+    }
+  },
+  "ycreate_test_req_and_link_child_workflow_step": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/test-requisition-generated2/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {},
+        "test_requisition_obj": {
+          "test_requisition/clinical/pan-cancer-panel/1.0/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Link Tube To Existing  Req.b",
+        "method_name": "do_action_ycreate_test_req_and_link_child_workflow_step",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "Test Requisition EUID": "",
+          "Tube EUID": "",
+          "Comment": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  },
+  "ycreate_test_req_and_link_child_workflow_step2": {
+    "1.0": {
+      "action_template": {
+        "child_workflow_step_obj": {
+          "workflow_step/accessioning-steps/test-requisition-generated2/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "child_container_obj": {},
+        "test_requisition_obj": {
+          "test_requisition/clinical/pan-cancer-panel/1.0/": {
+            "json_addl": {
+              "properties": {
+                "comments": ""
+              }
+            }
+          }
+        },
+        "action_name": "Link Tube To Existing  Req.b",
+        "method_name": "do_action_ycreate_test_req_and_link_child_workflow_step",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "Test Requisition EUID": "",
+          "Tube EUID": "",
+          "Comment": ""
+        },
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "printer_opts": {
+          "printer_name": "",
+          "label_style": ""
+        },
+        "curr_user": ""
+      },
+      "properties": {
+        "name": "",
+        "comments": ""
+      }
+    }
+  }
+}

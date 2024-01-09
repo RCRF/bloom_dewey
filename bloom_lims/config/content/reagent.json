@@ -1,0 +1,68 @@
+{
+  "naoh": {
+    "1.0": {
+      "description": "NaOH",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": "",
+        "manufacturer": "",
+        "lot_number": "",
+        "expiration_date": "",
+        "received_date": "",
+        "storage_conditions": "",
+        "qualification_status": ""
+      },
+      "expected_inputs": [],
+      "instantiable_n": "*",
+      "expected_outputs": [],
+      "actions": {},
+      "instantiation_layouts": []
+    }
+  },
+  "idt-probes-rare-mendelian": {
+    "1.0": {
+      "description": "idt probes for rare mendelian disease, v1.0",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": "",
+        "manufacturer": "",
+        "lot_number": "",
+        "expiration_date": "",
+        "received_date": "",
+        "storage_conditions": "",
+        "qualification_status": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "actions": {},
+      "instantiation_layouts": []
+    }
+  },
+  "ILMN-nova-seq-kit": {
+    "1.0": {
+      "description": "Novaseq sequencing kit",
+      "instantiable_n": "*",
+      "properties": {
+        "name": "",
+        "volume": "",
+        "volume_units": "",
+        "comments": "",
+        "manufacturer": "",
+        "lot_number": "",
+        "expiration_date": "",
+        "received_date": "",
+        "storage_conditions": "",
+        "qualification_status": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "actions": {},
+      "instantiation_layouts": []
+    }
+  }
+}

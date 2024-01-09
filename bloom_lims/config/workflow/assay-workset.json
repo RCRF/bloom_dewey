@@ -1,0 +1,91 @@
+{
+  "hla-typing": {
+    "1.2": {
+      "description": "Workset for hla-typing 1.2",
+      "valid_parents": [
+        {
+          "workflow/assay/hla-typing/1.2/": {}
+        }
+      ],
+      "properties": {
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "instantiable_n": "*",
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [
+        []
+      ]
+    }
+  },
+  "carrier-screen": {
+    "3.9": {
+      "description": "Workset for carrier-screen 3.9",
+      "instantiable_n": "*",
+      "valid_parents": [
+        {
+          "workflow/assay/carrier-screen/3.9/": {}
+        }
+      ],
+      "properties": {
+        "comments": ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [
+        [
+          {
+            "workflow_step/queue/plasma-isolation-queue-available/1.0/": {
+              "json_addl": {
+                "properties": {
+                  "comments": "",
+                  "step_number": "1"
+                }
+              }
+            }
+          },
+          {
+            "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
+              "json_addl": {
+                "properties": {
+                  "comments": "",
+                  "step_number": "2"
+                }
+              }
+            }
+          },
+          {
+            "workflow_step/queue/plasma-isolation-queue-exception/1.0/": {
+              "json_addl": {
+                "properties": {
+                  "comments": "",
+                  "step_number": "3"
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  }
+}
