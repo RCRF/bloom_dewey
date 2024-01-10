@@ -1,3 +1,6 @@
+import os
+import sys
+
 def get_object_history(euid, session, bloom_core):
     # Function to fetch and format the details of a given object
     def fetch_object_details(orm_instance):
@@ -39,7 +42,7 @@ bob = BloomWorkflow(BLOOMdb3())
 
 # Usage
 
-report = get_object_history("CX5", bob.session, bob.Base.classes.generic_instance)
+report = get_object_history(sys.argv[1], bob.session, bob.Base.classes.generic_instance)
 
 # Printing the report
 for item in report:

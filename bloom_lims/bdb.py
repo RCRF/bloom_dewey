@@ -1404,6 +1404,81 @@ class BloomObj:
 
         return False
 
+    def get_cost_of_euid_children(self, euid):
+        # Function to fetch and calculate the COGS for a given object
+        def calculate_cogs(orm_instance):
+            if 'cogs' not in orm_instance.json_addl or 'state' not in orm_instance.json_addl['cogs']:
+                raise ValueError(f"COGS or state information missing for EUID: {orm_instance.euid}")
+            
+            if orm_instance.json_addl['cogs']['state'] != 'active':
+                return 0
+
+            cost = float(orm_instance.json_addl['cogs']['cost'])
+            fractional_cost = float(orm_instance.json_addl['cogs'].get('fractional_cost', 1))
+            allocation_type = orm_instance.json_addl['cogs'].get('allocation_type', 'single')
+
+            active_children = len([child for child in orm_instance.parent_of_lineages if 'cogs' in child.json_addl and child.json_addl['cogs'].get('state') == 'active'])
+            if active_children == 0:
+                active_children = 1.0
+            return cost * float(fractional_cost) / float(active_children)
+
+        # Recursive function to traverse the graph and accumulate COGS
+        def traverse_and_calculate_children_cogs(orm_instance):
+            total_cogs = 0  # No need to calculate COGS for the initial instance
+
+            # Traverse parent_of_lineages to find child instances and accumulate their COGS
+            for lineage in orm_instance.parent_of_lineages:
+                child_instance = lineage.child_instance
+                if child_instance:
+                    total_cogs += calculate_cogs(child_instance) + traverse_and_calculate_children_cogs(child_instance)
+
+            return total_cogs
+
+        # Start with the provided EUID
+        initial_instance = self.session.query(self.Base.classes.generic_instance).filter_by(euid=euid).first()
+        if initial_instance:
+            return traverse_and_calculate_children_cogs(initial_instance)
+        else:
+            return 0
+
+    def get_cogs_to_produce_euid(self, euid):
+
+        # Function to fetch and calculate the COGS for a given object
+        def calculate_cogs(orm_instance):
+            if 'cogs' not in orm_instance.json_addl or 'state' not in orm_instance.json_addl['cogs']:
+                raise ValueError(f"COGS or state information missing for EUID: {orm_instance.euid}")
+            
+            if orm_instance.json_addl['cogs']['state'] != 'active':
+                return 0
+
+            cost = float(orm_instance.json_addl['cogs']['cost'])
+            fractional_cost = float(orm_instance.json_addl['cogs'].get('fractional_cost', 1))
+            allocation_type = orm_instance.json_addl['cogs'].get('allocation_type', 'single')
+
+
+            active_children = len([child for child in orm_instance.child_of_lineages if 'cogs' in child.json_addl and child.json_addl['cogs'].get('state') == 'active'])
+            if active_children == 0:
+                active_children = 1.0
+            return cost * float(fractional_cost) / float(active_children)
+    
+        # Recursive function to traverse the graph and accumulate COGS
+        def traverse_history_and_calculate_cogs(orm_instance):
+            total_cogs = calculate_cogs(orm_instance)
+            
+            # Traverse child_of_lineages to find parent instances and accumulate their COGS
+            for lineage in orm_instance.child_of_lineages:
+                parent_instance = lineage.parent_instance
+                if parent_instance:
+                    total_cogs += traverse_history_and_calculate_cogs(parent_instance)
+
+            return total_cogs
+
+        # Start with the provided EUID
+        initial_instance = self.session.query(self.Base.classes.generic_instance).filter_by(euid=euid).first()
+        if initial_instance:
+            return traverse_history_and_calculate_cogs(initial_instance)
+        else:
+            return 0
 
 class BloomContainer(BloomObj):
     def __init__(self, bdb):
