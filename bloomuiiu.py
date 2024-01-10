@@ -15,7 +15,7 @@ from bloom_lims.bdb import BloomObj, BloomWorkflow, BloomWorkflowStep
 
 from collections import defaultdict
 
-SKIP_AUTH = False if len(sys.argv) < 2 else True
+SKIP_AUTH = False if len(sys.argv) < 3 else True
 
 
 def is_instance(value, type_name):
@@ -106,8 +106,24 @@ class WorkflowService(object):
 
     @cherrypy.expose
     def index(self):
+        user_logged_in = True if 'user_data' in cherrypy.session else False
         template = self.env.get_template("index.html")
-        return template.render( style=self.get_root_style())
+        return template.render( style=self.get_root_style(), user_logged_in=user_logged_in)
+
+
+
+    @cherrypy.expose
+    def logout(self):
+        # Check if a user is currently logged in
+        if 'user' in cherrypy.session:
+            # Clear the session data to log out the user
+            cherrypy.session.pop('user_data', None)
+            cherrypy.session.pop('user', None)
+            cherrypy.lib.sessions.expire()  # Optionally, expire the session cookie
+
+        # Redirect the user to the login page or another appropriate page after logging out
+        raise cherrypy.HTTPRedirect('/')
+
 
     @cherrypy.expose
     def login(self, email=None, password=None):
@@ -133,7 +149,7 @@ class WorkflowService(object):
         
         if email and email not in user_data:
             # New user, create entry
-            user_data[email] = {'style_css': 'static/skins/root.css'}
+            user_data[email] = {'style_css': 'static/skins/bloom.css'}
             with open(user_data_file, 'w') as f:
                 json.dump(user_data, f)
 
@@ -146,7 +162,8 @@ class WorkflowService(object):
     
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def admin(self):
+    def admin(self,dest='na'):
+        dest_section = {'section':dest}
         template = self.env.get_template("admin.html")
 
         # Assuming user_data is stored in the CherryPy session
@@ -172,13 +189,17 @@ class WorkflowService(object):
         }
 
         # Render the template with user data and printer info
-        return template.render(style=self.get_root_style(),user_data=user_data, printer_info=printer_info)
+        return template.render(style=self.get_root_style(),user_data=user_data, printer_info=printer_info, dest_section=dest_section)
 
     @cherrypy.expose
-    def get_root_style(self):        
-        user_data = cherrypy.session.get('user_data', {})
+    def get_root_style(self):   
+        rs_obj = {"skin_css": 'static/skins/bloom.css'}
+        try:
+            user_data = cherrypy.session.get('user_data', {})
+            rs_obj = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        except Exception as e:
+            pass
 
-        rs_obj = {"skin_css": user_data.get('style_css', 'static/skins/root.css')}
         return rs_obj
         
     @cherrypy.expose

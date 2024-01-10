@@ -4,7 +4,7 @@
     --primary-hover-color: #61fe39; /* updated to a bright green for contrast */
     --secondary-color: #3a47ff; /* updated to the strong blue */
     --secondary-hover-color: #36525c; /* updated to the deep blue-gray */
-    --accent-color: #8c96ee; /* updated to the soft violet */
+    --accent-color:#151bb1;/* updated to the soft violet */
     --url-color: #3a47ff; /* updated to match the strong blue */
     --addl-button-color: #3a47ff; /* updated to match the strong blue */
     --background-color: #36525c; /* updated to the deep blue-gray */
@@ -38,7 +38,7 @@
     --th-background-color: #8c96ee; /* updated to the soft violet */
     --filter-button-active: #3a47ff; /* updated to the strong blue */
     --filter-button-color: white; /* unchanged */
-    --workflow-non-step-bg-color: #36525c; /* updated to the deep blue-gray */
+    --workflow-non-step-bg-color: rgb(82,11,149); /* updated to the deep blue-gray */
     --accordion-prefix: #8c96ee; /* updated to the soft violet */
     --disabled-action-btn: #acb6b7; /* unchanged */
 }

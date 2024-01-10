@@ -2000,10 +2000,11 @@ class BloomWorkflowStep(BloomObj):
         # could look for this key dynamically in the future.
         # ___workflow/assay/ .... this indicates the template to use is 'worflow/assay' and the remaining is the assay_selection value
         # I made some progress in this direction, now using state to flag locked AYs
-        super_type = "workflow"
-        btype = "assay"
-        b_sub_type = action_ds["captured_data"]["assay_selection"].split("/")[0]
-        version = action_ds["captured_data"]["assay_selection"].split("/")[1]
+
+        super_type = action_ds["captured_data"]["assay_selection"].split("/")[0]
+        btype = action_ds["captured_data"]["assay_selection"].split("/")[1]
+        b_sub_type = action_ds["captured_data"]["assay_selection"].split("/")[2]
+        version = action_ds["captured_data"]["assay_selection"].split("/")[3]
         state = "locked"
 
         cont_euid = action_ds["captured_data"]["Container EUID"]

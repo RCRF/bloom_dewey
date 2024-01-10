@@ -10,6 +10,44 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
         <script src="https://unpkg.com/cytoscape-dagre"></script>
         <style>
+                .modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 1;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: auto;
+                    background-color: rgb(0,0,0);
+                    background-color: rgba(0,0,0,0.4);
+                    padding-top: 60px;
+                }
+            
+                .modal-content {
+                    background-color: #fefefe;
+                    margin: 5% auto;
+                    padding: 20px;
+                    border: 1px solid #888;
+                    width: 80%;
+                }
+            
+                .closeBtn {
+                    color: #aaa;
+                    float: right;
+                    font-size: 28px;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+            
+                .closeBtn:hover,
+                .closeBtn:focus {
+                    color: black;
+                    text-decoration: none;
+                    cursor: pointer;
+                }
+
+
       #cy {
 	  height: 650px;
 	  width: 100%;
@@ -33,7 +71,6 @@
             display: none !important;
         }
         </style>
-        <script></script>
     </head>
     <body>
         <div id="nodeDialog" class="node-dialog" style="display: none;">
@@ -48,95 +85,104 @@
             <a id="euidInfoLink" href="">EUID Info</a>
             <button id="closeDialogButton" class="close-dialog-btn">Close</button>
         </div>
-        <div class="container">
-            <h1>
-                <a href= />Bloom</a> Workflow DAG Explorer (<small><a href=https://github.com/Daylily-Informatics/bloom_lims>github</a>)</small>
-            </h1>
+        <div class="container" style="margin-top: 0px; padding: 0px;" >
+            <h1><a href= />Bloom</a> Workflow DAG Explorer (<small><a href=https://github.com/Daylily-Informatics/bloom_lims>github</a>)</small></h1>
             <hr>
-            <table>
-                <tr>
-                    <td>
-                        <div id="cy"></div>
-                    </td>
-                    <td style="vertical-align: top; width: 10%;">
-                        <select id="layoutSelect" onchange="changeLayout(this.value)">
-                            <option value="dagre">-Choose Graph Layout-</option>
-                            <option value="dagre">Hierarchical DAG</option>
-                            <option value="cose">Cose (default)</option>
-                            <option value="breadthfirst">Breadthfirst Hierarchical</option>
-                            <option value="grid">Grid</option>
-                            <option value="circle">Circle</option>
-                            <option value="random">Random</option>
-                            <option value="concentric">Concentric</option>
-                            <!-- Add other layout options as needed -->
-                        </select>
-                        <hr>
-                        <label for="distanceSlider">Filters:</label>
-                        <table>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        </table>
-                        Dimmed if #edges lt :
-                        <input type="range"
-                               id="transparencySlider"
+            <div style="display: flex;" >
+
+            <div style="width: 92%;">
+            <div  id="cy"></div>
+        <hr>
+            <div  style="display: -webkit-inline-box;">
+                <label for="btypeCheckboxes">Filter By Class:</label>
+                <div style="display: -webkit-inline-box;" id="btypeCheckboxes">
+                    <!-- Checkboxes will be added here -->
+                </div>
+                <font color=darkgrey>
+                 ‖              
+                ‒
+                ‖ </font>
+                <select id="layoutSelect" onchange="changeLayout(this.value)">
+                    <option value="cose">Alter Layout</option>
+                    <option value="dagre">Hierarchical</option>
+                    <option value="cose">Cose (default)</option>
+                    <option value="breadthfirst">Breadthfirst</option>
+                    <option value="grid">Grid</option>
+                    <option value="circle">Circle</option>
+                    <option value="random">Random</option>
+                    <option value="concentric">Concentric</option>
+                    <!-- Add other layout options as needed -->
+                </select>
+                <font color=darkgrey>
+                    ‖              
+                   ‒
+                   ‖ </font>
+                Filter if #edges ≤ :<span id="transparencyDisplay" >1</span>
+                <input type="range"
+                id="transparencySlider"
+                min="0"
+                max="20"
+                value="1"
+                oninput="updateNodeTransparency()" />
+         
+                <hr>
+                    </div>
+                    <div  style="display: -webkit-inline-box;">
+
+                
+                        <input type="text" style="width:99px;"  id="euidInput" placeholder="enter EUID -->"/>
+                        <button onclick="centerOnEuid()"><-- find EUID </button>
+                        <font color=darkgrey>
+                            ‖              
+                           ‒
+                           ‖ </font>
+                            Show nodes within <span id="distanceDisplay">0</span> distant from selected node, 0=all.
+                           <input type="range"
+                               id="distanceSlider"
                                min="0"
                                max="20"
-                               style="width: 50%"
-                               value="1"
-                               oninput="updateNodeTransparency()" />
-                        <span id="transparencyDisplay" style="font-size: 9px;">1</span>
-                        <br>
-                        ...by obj super-type:
-                        <div id="btypeCheckboxes">
-                            <!-- Checkboxes will be added here -->
-                        </div>
-                        <br>
-                        ...by obj sub-type:
+                               value="0"
+                               oninput="filterNodes(this.value)" />
+                               <font color=darkgrey>
+                                ‖              
+                               ‒
+                               ‖ </font>
+                               <button id="helpBtn">graph interaction tips</button>
+
+                               <div id="helpModal" class="modal">
+                                   <div class="modal-content">
+                                       <span class="closeBtn">&times;</span>
+                                       <div>
+                                           <small style="color: gray;">
+                                            <br>
+                                            NODE INFO: click node 1x for info box at bottom of page, click node 3x for popup dialog<br>
+                                            DELETE (this is reflected in the database!): -edges- right click 2x on an edge to delete it -nodes- right click 3x on a node to delete it <br>
+                                            CREATE EDGES: hold 'l', select a node, cont. holding 'l', click a new node to create an edge <br>
+                                            CREATE NODES: not available <br>
+                                            VISUALIZATION: hold 'n and click a node to highlight its neighbors, with each add'l click the neighborhood expands.</small>
+                                       </div>
+                                   </div>
+                               </div>
+            </div>
+            <div style="align: top;" class=info-box id="node-info"></div>
+
+            </div>
+            <div style="width: 8%;">
+                        <label for="distanceSlider">Filter sub-types:</label>
+
                         <div id="bsubtypeButtons">
                             <!-- Buttons/Checkboxes for b_sub_type will be added here -->
                         </div>
-                    </td>
-                </tr>
-                <tr style="vertical-align: top;">
-                    <td>
-                        <div>
-                            <small style="color: gray;">[[ NODE INFO: click node 1x for info box @ bottom of page, click node 3x for popup dialog // DELETE (this is reflected in the database!): -edges- right click 2x on an edge to delete it  -nodes- right click 3x on a node to delete it // CREATE EDGES: hold 'l', select a node, cont. holding 'l', click a new node to create an edge // CREATE NODES: not available / VISUALIZATION: hold 'n and click a node to highlight its neighbors, with each add'l click the neighborhod expands. ]]</small>
-                        </div>
-                        <div style="align: top;" class=info-box id="node-info">
-                        </td>
-                        <td>
-                            <label for="euidInput">EUID:</label>
-                            <br>
-                            <input type="text" id="euidInput" placeholder="Enter EUID">
-                            <button onclick="centerOnEuid()">Click To Find</button>
-                            <br>
-                            Relatives distance (click node, then slide to filter)
-                            <input type="range"
-                                   id="distanceSlider"
-                                   min="0"
-                                   max="20"
-                                   style="width: 50%"
-                                   value="0"
-                                   oninput="filterNodes(this.value)" />
-                            <span style="text-align: -webkit-center;
-                                         font-size: 9px"
-                                  id="distanceDisplay">0</span>
-                            <br>
-                            <br>
-                            <br>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+        </div>
+            </div>     
+         </div>
             <button align=right id="saveButton" class="button">Save Changes</button>
         </div>
         <script>
         var globalFilterLevel = parseFloat('{{ globalFilterLevel }}') || 0;
         var globalZoom = parseFloat('{{ globalZoom }}') || 4;
         var globalStartNodeEUID = '{{ globalStartNodeEUID }}' || null;
-        var currentLayoutName = 'dagre'; // Default layout
+        var currentLayoutName = 'cose'; // Default layout
 
         function filterNodes(distance) {
             document.getElementById('distanceDisplay').innerText = distance;
@@ -345,7 +391,7 @@
 
                 // Create checkboxes for each btype
                 btypes.forEach(function(btype) {
-                    var br = $('<br />');
+                    var br = $('<div />');
                     var checkbox = $('<input />', { type: 'checkbox', id: 'chk_' + btype, checked: 'checked' });
                     var label = $('<label />', { 'for': 'chk_' + btype }).text(btype);
                     $('#btypeCheckboxes').append(checkbox).append(label).append(br);
@@ -759,5 +805,35 @@ updateNodeTransparency();
                 
         
         </script>
+
+
+        <script>
+            // Get the modal
+            var modal = document.getElementById("helpModal");
+        
+            // Get the button that opens the modal
+            var btn = document.getElementById("helpBtn");
+        
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("closeBtn")[0];
+        
+            // When the user clicks the button, open the modal 
+            btn.onclick = function() {
+                modal.style.display = "block";
+            }
+        
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+        
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        
+                </script>
     </body>
 </html>

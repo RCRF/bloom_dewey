@@ -207,6 +207,7 @@ bloom_lims/config
 ```
 
 #### Second level types
+* Assay is an exception to all of this, they can be instantiated 1x only, and their state is locked so no other DB entries may be made. 
 ```bash
 tree -L 2 bloom_lims/config
 bloom_lims/config

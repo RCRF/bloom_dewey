@@ -38,12 +38,12 @@
             <h2>Administration</h2>
             <ul>
                 <li>
-                    <a href="/admin">Session Settings :: Skin CSS</a>
+                    <a href="/admin?dest=skin">Session Settings :: Change UI Skin</a>
                 </il><li>
-                    <a href="/admin">Session Settings ::  Zebra Printer Config</a>
+                    <a href="/admin?dest=zebra">Session Settings ::  Zebra Printer Config</a>
                 </il><li>
 
-                    <a href="/admin">Instance Template Report</a>
+                    <a href="/admin?dest=template">Instance Template Report</a>
                 </li>
             </ul>
 
@@ -73,5 +73,15 @@
                 <h2>Documentation</h2>
             </a>
         </ul>
+
+        <div>
+    <button class="floating-button2 floating-button-logout2" onclick="location.href='/admin?dest=skin'">🎨</button>
+    
+    {% if user_logged_in %} <!-- You'll need to replace this with actual server-side code -->
+        <button class="floating-button2 floating-button-skin2" onclick="location.href='/logout'"  >🏃‍♂️</button>
+    {% else %}
+        <button class="floating-button2 floating-button-skin2" onclick="location.href='/login'" >🔑</button>
+    {% endif %}
+        </div>
     </body>
 </html>

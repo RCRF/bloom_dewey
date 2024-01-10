@@ -13,7 +13,8 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 * [x] You fully control your data.
 * [x] Lowers business continuity risk profile.
 * [x] Air-gapable (no internet connection required, some _a small number of js libs would need to be served locally_)
-* [x] Runs on a laptop, desktop box, terrestial cluster, cloud. (MacOS, Ubuntu & Centos)
+* [x] Runs on a diversity of hardware: laptop, desktop box, terrestial cluster, cloud instances.
+* [x] Suported OSes: MacOS, Ubuntu & Centos.
 * [x] Tech stack comprised of well adopted technologies so dev/maintainence work can be done by a wide range of folks.
 * [x] Backup and recovery covered by well adopted postgres management practices.
 * [x] Conceptually Rigorous Implementation (models strive to be as atomic as possible)
@@ -51,6 +52,8 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 * Expanded reporting tools (if even needed... better to focus on external tools for this ?).
 * Move to more robust UI stack (away from cherrypy)
 * Expose formal REST API ( technically, sqlalchemy can expose this, just no attention has been given to it yet )
+* chatGPT4 believes Bloom could be ported to Windows w/out too much trouble.  the core code is pretty OS agnostic, the work would be in the helper scripts which assume dir structures and whatnot.  This is not a priority for me.
+* 
 
 
 # Spoilers

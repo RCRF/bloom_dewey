@@ -2,7 +2,7 @@
 :root {
     --primary-color: #e74c3c;
     --primary-hover-color: #7e2916;
-    --actionsubmit-bg-color: pink;
+    --actionsubmit-bg-color: rgb(204,11,139);
     --actionsubmit-color: #ffffff;
     --secondary-color: #3d6db2;
     --secondary-hover-color: #02607e;

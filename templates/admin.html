@@ -7,7 +7,20 @@
     <link rel="stylesheet" type="text/css" href="static/style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" > </script>
 
-
+    <style> 
+    </style>
+    <script>
+        $(document).ready(function() {
+            // Assuming 'dest_section.sec' is a variable available in your templating engine
+            {% if dest_section.section == 'skin' %}
+                $('#skin-css-section').addClass('flash-effect');
+            {% elif  dest_section.section == 'zebra' %}
+                $('#zebra-css-section').addClass('flash-effect');
+            {% elif  dest_section.section == 'template' %}
+                $('#template-css-section').addClass('flash-effect');
+            {% endif %}
+        });
+    </script>
 </head>
 <body>
 
@@ -15,17 +28,57 @@
     <ul><a href=dindex>( graph )</a> <a href= />( B )</a><ul><hr>
 
 
+    <h2> LOGOUT // END SESSION </h2>
+    <ul>
+        <li><a href="/logout">logout</a></li>
+    </ul>
+
+    <br>
+    <div id="template-css-section" >
+
     <h2> Templates Available & Instantiation </h2>
     <ul>
         <li><a href="/object_templates_summary">all object templates available for instantiation (there are currently ~100)</a></li>
     </ul>
-
+</div>
     <br>
     <h2>User Session Configuration </h2>
-    <i><small>these map to the user email, and are saved for latter sessions</small></i>
+
+    <ul>
+        <hr>
+
+        <div id="zebra-css-section" >
+    <h3>Zebra Printer Config</h3>
+    <ul>
+    
     <table>
         <!-- Display select dropdowns for specific keys and their current value from user data -->
-        {% for key in ['print_lab', 'printer_name', 'label_zpl_style', 'style_css'] %}
+        {% for key in ['print_lab', 'printer_name', 'label_zpl_style'] %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>
+                Current: {{ user_data.get(key, 'Not set') }} 
+                <select name="{{ key }}" onchange="updatePreferenceAndReload('{{ key }}', this.value)">
+                    {% for option in printer_info[key] %}
+                        <option value="{{ option }}" {% if user_data.get(key) == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        
+        {% endfor %}
+    </table></div>
+    <br>
+    </ul>
+    <hr>
+    <div id="skin-css-section" >
+    <h3 >Change The Bloom Skin CSS</h3>
+    <small>Placing a valid css file in static/skins will make the CSS available here.</small>
+
+    <ul>
+    <table>
+        <!-- Display select dropdowns for specific keys and their current value from user data -->
+        {% for key in ['style_css'] %}
         <tr>
             <td>{{ key }}</td>
             <td>
@@ -38,7 +91,15 @@
             </td>
         </tr>
         {% endfor %}
+    </table></div>
+</ul>
 
+    <br>
+    <hr>
+    <h3>Bloom Other Session Settings</h3>
+    <ul>
+
+    <table>
         <!-- Display other user data that are not in the specified keys -->
         {% for key, value in user_data.items() %}
             {% if key not in ['print_lab', 'printer_name', 'label_zpl_style', 'style_css' ] %}
@@ -49,6 +110,9 @@
             {% endif %}
         {% endfor %}
     </table>
+    </ul>
+
+
 </ul></ul>
     <script>
 
