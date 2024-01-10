@@ -78,6 +78,9 @@ jobs:
         run: |
           dnf install -y wget sudo
           useradd -m bloom
+          ls -lta .
+          cat bloom_lims/env/install_postgres.sh
+          sleep 10
           chmod -R a+wrx ./
           ogpwd=$(pwd)
           echo 'bloom ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
