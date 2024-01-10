@@ -1,6 +1,14 @@
 name: BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   macos-job:

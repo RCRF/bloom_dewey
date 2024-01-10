@@ -547,13 +547,10 @@ class BloomObj:
         self.Base = bdb.Base
 
 
-
-
     def _rebuild_printer_json(self, lab='BLOOM'):
         self.zpld.probe_zebra_printers_add_to_printers_json(lab=lab)
         self.zpld.save_printer_json(self.zpld.printers_filename.split('zebra_day')[-1])
         self._config_printers()
-        os.system('sleep 4')
 
     def _config_printers(self):
         if len(self.zpld.printers['labs'].keys()) == 0:
