@@ -77,15 +77,23 @@ jobs:
       - name: Set up Miniconda
         run: |
           dnf install -y wget
+          useradd -m bloom
+          
+          # Create the setup script
+          cat <<'EOF' >setup_bloom.sh
+          #!/bin/bash
           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-          bash miniconda.sh -b -p $HOME/miniconda
-          export PATH="$HOME/miniconda/bin:$PATH"
+          bash miniconda.sh -b -p /home/bloom/miniconda
+          export PATH="/home/bloom/miniconda/bin:$PATH"
           conda init
-          source ~/.bashrc          
+          source /home/bloom/.bashrc          
           conda env list
-          # Install dependencies from environment file if needed
-          # conda env update --name BLOOM --file bloom_env.yaml
-          #pip3 install pytest psycopg2-binary sqlalchemy zebra_day==0.3.0.4 pytz fedex_tracking_day==0.2.6
-          # Adjust PostgreSQL setup script if needed
           source bloom_lims/env/install_postgres.sh
           pytest
+          EOF
+
+          # Make the script executable
+          chmod +x setup_bloom.sh
+
+          # Execute the script as the 'bloom' user
+          su - bloom -c "./setup_bloom.sh"
