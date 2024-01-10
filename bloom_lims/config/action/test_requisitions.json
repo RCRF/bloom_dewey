@@ -9,7 +9,8 @@
         "action_enabled": "1",
         "capture_data": "yes",
         "captured_data": {
-          "comment": ""
+          "comment": "",
+          "Verification Status" : ""
         },
         "deactivate_actions_when_executed": [],
         "executed_datetime": [],
@@ -39,7 +40,7 @@
         "capture_data": "yes",
         "captured_data": {
           "Container EUID": "",
-          "___workflow/assay/": "<select name=&quot;assay_selection&quot;><option value=&quot;hla-typing/1.2&quot;>HLA Typing v1.2</option><option value=&quot;carrier-screen/3.9&quot;>Carrier Screen v3.9</option></select>"
+          "___workflow/assay/": "<select name=&quot;assay_selection&quot;><option value=&quot;/add/an/assay/wf&quot;>AddAnAssayInTheObjectActionDef</option></select>"
         },
         "deactivate_actions_when_executed": [],
         "executed_datetime": [],

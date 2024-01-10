@@ -31,10 +31,9 @@
           "actions": {
             "action/test_requisitions/set_verification_state/1.0/": {},
             "action/test_requisitions/add_container_to_assay_q/1.0/": {
-              "available_assays" : {
-                "workflow/assay/hla-typing/1.2/": {}
-              ,
-                "workflow/assay/carrier-screen/3.9/": {}
+
+              "captured_data": {
+                "___workflow/assay/": "<select name=&quot;assay_selection&quot;><option value=&quot;workflow/assay/hla-typing/1.2&quot;>HLA Typing v1.2</option><option value=&quot;workflow/assay/carrier-screen/3.9&quot;>Carrier Screen v3.9</option></select>"
               }
 
             }

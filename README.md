@@ -31,6 +31,7 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 * [x] Github Actions Running (for Mac and Linux: tests covering happy path presently).
 * [x] FEDEX Tracking Integration (works out of the box)
 * [x] Barcode Label Printing Integration (works out of the box)
+* [x] A font selected to minimize common reading and transcription errors (some of the worst character offenders: 1, l, I, 0, O, g, j, p, q ... etc).
 
 # Roadmap
 * Evaluate the action model, and re-implement with lessons learned.  The ideal end point being a system where users can define some degree of actions w/out requiring mucs/or any core code changes...

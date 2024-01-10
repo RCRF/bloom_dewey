@@ -736,12 +736,20 @@ class BloomObj:
                 print(ai)
                 if len(res) == 0:
                     raise Exception(f"Action import {ai} not found in database")
+
                 for r in res:
                     action_key = f"{r.super_type}/{r.btype}/{r.b_sub_type}/{r.version}"
 
                     ret_ds[group]["actions"][action_key] = r.json_addl[
                         "action_template"
                     ]
+                    
+                    #  I'm allowing overrides to the action properties FROM
+                    # The non-action object action definition.  Its mostly shaky b/c the overrides are applied to all actions
+                    # in the matched group... so, when all core are imported for example, an override will match all
+                    # I think...  for singleton imports should be ok.
+                    # this is to be used mostly for the assay links for test requisitions
+                    _update_recursive(ret_ds[group]["actions"][action_key], action_imports[group]["actions"][ai])
 
         return ret_ds
 

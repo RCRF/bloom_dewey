@@ -23,7 +23,8 @@
           "group_name": "Package Actions",
           "actions": {
             "action/packages/create_package_and_first_workflow_step/1.0/": {
-              "description": "Override Default Description"
+              "description": "Override Default Description",
+              "action_name": "Override Action Name"
             }
           }
         }
