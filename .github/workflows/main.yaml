@@ -81,8 +81,10 @@ jobs:
           ls -lta .
           cat bloom_lims/env/install_postgres.sh
 
-          chmod -R a+wrx ./
+          chmod -R a+wrx ./*
+          chown -R bloom:bloom ./*
           cp -r ./* /home/bloom/
+          chown -R bloom:bloom /home/bloom/*
           ogpwd=$PWD
 
           echo $PWD 
