@@ -76,7 +76,7 @@ jobs:
 
       - name: Set up Miniconda
         run: |
-          dnf install -y wget
+          dnf install -y wget sudo
           useradd -m bloom
           
           # Create the setup script
@@ -92,8 +92,9 @@ jobs:
           pytest
           EOF
 
+
           # Make the script executable
           chmod +x setup_bloom.sh
 
           # Execute the script as the 'bloom' user
-          su - bloom -c "./setup_bloom.sh"
+          su - bloom ./setup_bloom.sh
