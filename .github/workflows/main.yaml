@@ -83,6 +83,10 @@ jobs:
           sleep 10
           chmod -R a+wrx ./
           ogpwd=$(pwd)
+
+          echo $PWD 
+          echo GOGOGOGO
+          sleep 10
           echo 'bloom ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           
           # Create the setup script
