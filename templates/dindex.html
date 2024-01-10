@@ -80,7 +80,11 @@
             <p id="nodeName">
                 Name: <span></span>
             </p>
-            <a id="actionALink" href="">Calculate COGS</a>
+            <a id="actionALink" href="">Calculate COGS To Produce</a>
+            ... $ <span id="actionAOutput"></span>            
+            <br>
+            <a id="actionBLink" href="">Calculate COGS Of Children</a>
+            ... $ <span id="actionBOutput"></span>
             <br>
             <a id="euidInfoLink" href="">EUID Info</a>
             <button id="closeDialogButton" class="close-dialog-btn">Close</button>
@@ -425,6 +429,17 @@
                 var keyHeld = null;
 
                 $(document).keydown(function(e) {
+                    if (e.key === 'p' || e.key === 'c') {
+                        keyHeld = e.key;
+                    }
+                });
+            
+                $(document).keyup(function(e) {
+                    if (e.key === 'p' || e.key === 'c') {
+                        keyHeld = null;
+                    }
+                });
+                $(document).keydown(function(e) {
                     if (e.key === 'n') {
                         keyHeld = e.key;
                     }
@@ -440,6 +455,9 @@
                 var neighborhoodDepth = 1;
 
                 cy.on('tap', 'node', function(evt) { 
+                        // Stop propagation to prevent the global click handler from firing
+                        evt.originalEvent.stopPropagation();
+
                         var node = evt.target;
                         var euid = node.data('euid');
                         var clickCount = node.data('clickCount') || 0;
@@ -453,9 +471,15 @@
                             // Handle triple click
                             var nodeData = node.data();
                             var dialog = $('#nodeDialog');
+
+                            // Clear previous COGS values
+                            $('#actionAOutput').text('');
+                            $('#actionBOutput').text('');
+
                             dialog.find('#nodeEuid span').text(nodeData.euid);
                             dialog.find('#nodeName span').text(nodeData.name);
-                            dialog.find('#actionALink').attr('href', '/calculate_cogs?euid=' + nodeData.euid);
+                            dialog.find('#actionALink').attr('href', '/calculate_cogs_parents?euid=' + nodeData.euid);
+                            dialog.find('#actionBLink').attr('href', '/calculate_cogs_children?euid=' + nodeData.euid);
                             dialog.find('#euidInfoLink').attr('href', '/euid_details?euid=' + nodeData.euid);
                     
                             // Position and show dialog
@@ -488,6 +512,22 @@
                                 neighborhood.removeClass('highlighted');
                             }, 1700); // Highlight duration
                         }
+
+                                
+                    if (clickCount >= 1 && keyHeld) {
+                        var url = keyHeld === 'p' ? '/calculate_cogs_parents?euid=' + euid : '/calculate_cogs_children?euid=' + euid;
+                        var position = keyHeld === 'p' ? 'above' : 'below';
+
+                        // AJAX request to get COGS value
+                        $.ajax({
+                            url: url,
+                            success: function(response) {
+                                var cogsValue = JSON.parse(response).cogs_value;
+                                displayCogsValue(node, position, cogsValue);
+                            }
+                        });
+                    }
+
                     if (keyHeld === 'l') {
 
                         if (!selectedChildNode) {
@@ -559,7 +599,12 @@
                         lastClickTime = currentTime;
                     }
                 });    
-                            
+                
+                $(document).on('click', function(event) {
+                    // Remove all COGS labels
+                    $('.cogs-value-label').remove();
+                });
+
 // Call this function after initializing the graph and whenever the graph is updated
 updateNodeTransparency();
 
@@ -583,6 +628,9 @@ updateNodeTransparency();
                  // Close dialog button functionality
                 $('#closeDialogButton').on('click', function() {
                     $('#nodeDialog').hide();
+                    // Clear the content of the COGS value elements
+                    $('#actionAOutput').text('');
+                    $('#actionBOutput').text('');
                 });
 
                 $('#addNodeButton').click(function() {
@@ -803,6 +851,66 @@ updateNodeTransparency();
         
         </script>
 
+        <script>
+
+    // Function to display COGS value
+    function displayCogsValue(node, position, cogsValue) {
+        // Create a label element with the COGS value
+        var label = $('<div/>', {
+            class: 'cogs-label',
+            text: '$' + cogsValue,
+            css: {
+                position: 'absolute',
+                top: position === 'above' ? (node.renderedPosition().y - 30) + 'px' : (node.renderedPosition().y + 30) + 'px',
+                left: node.renderedPosition().x + 'px',
+                color: 'black',
+                backgroundColor: position === 'below' ? 'magenta' : 'pink',
+                padding: '5px',
+                borderRadius: '5px',
+                textAlign: 'center'
+            }
+        });
+        label.addClass('cogs-value-label');
+
+        // Append the label to the body
+        $('body').append(label);
+    }
+        </script>
+        <script>
+            $(document).ready(function() {
+                // Handle click event for actionALink
+                $('#actionALink').click(function(event) {
+                    event.preventDefault();
+                    var euid = $('#nodeEuid span').text(); // Get the EUID from the dialog
+                    $.ajax({
+                        url: '/calculate_cogs_parents?euid=' + euid,
+                        success: function(response) {
+                            // Display response in the dialog
+                            $('#actionAOutput').text( JSON.parse(response).cogs_value );
+                        }
+                    });
+                });
+            
+           
+            });
+
+
+            $(document).ready(function() {
+                // Handle click event for actionALink
+                $('#actionBLink').click(function(event) {
+                    event.preventDefault();
+                    var euid = $('#nodeEuid span').text(); // Get the EUID from the dialog
+                    $.ajax({
+                        url: '/calculate_cogs_children?euid=' + euid,
+                        success: function(response) {
+                            // Display response in the dialog
+                            $('#actionBOutput').text( JSON.parse(response).cogs_value );
+                        }
+                    });
+                });
+            
+            });
+        </script>
 
         <script>
             // Get the modal

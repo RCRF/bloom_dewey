@@ -162,6 +162,30 @@ class WorkflowService(object):
     
     @cherrypy.expose
     @require_auth(redirect_url="/login")
+    def calculate_cogs_children(self, euid):
+        try:
+            bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+            cogs_value =round(bobdb.get_cost_of_euid_children(euid),2)
+            return json.dumps({"success": True, "cogs_value": cogs_value})
+        except Exception as e:
+            cherrypy.log("Error in calculate_cogs_children: ", traceback=True)
+            return json.dumps({"success": False, "message": str(e)})
+    
+    
+    
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def calculate_cogs_parents(self, euid):
+        try:
+            bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+            cogs_value = round(bobdb.get_cogs_to_produce_euid(euid),2)
+            return json.dumps({"success": True, "cogs_value": cogs_value})
+        except Exception as e:
+            cherrypy.log("Error in calculate_cogs_parents: ", traceback=True)
+            return json.dumps({"success": False, "message": str(e)})
+    
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
     def admin(self,dest='na'):
         dest_section = {'section':dest}
         template = self.env.get_template("admin.html")
