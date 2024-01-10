@@ -8,7 +8,7 @@ from sqlalchemy.orm.attributes import flag_modified
 if sys.argv[1] != "go":
     raise ("this is only for initial seeding of the database")
 
-bob = BloomObj(BLOOMdb3())
+bob = BloomObj(BLOOMdb3(app_username="test_user"))
 
 
 for tobe_locked_assay in (
@@ -17,7 +17,7 @@ for tobe_locked_assay in (
     .filter(bob.Base.classes.generic_template.btype == "assay")
     .all()
 ):
-    print(tobe_locked_assay)
+    print(f"WHATISTHIS::: {tobe_locked_assay}")
     gi = bob.create_instances(tobe_locked_assay.euid)[0][0]
     gi.bstate = "locked"
     flag_modified(gi, "bstate")

@@ -101,6 +101,7 @@ jobs:
           export PATH="/home/bloom/miniconda/bin:$PATH"
           conda init
           pwd
+          export USER=bloom
           source /home/bloom/.bashrc          
           conda env list
           cd $ogpwd
