@@ -80,7 +80,7 @@
             <p id="nodeName">
                 Name: <span></span>
             </p>
-            <a id="actionALink" href="">Action A</a>
+            <a id="actionALink" href="">Calculate COGS</a>
             <br>
             <a id="euidInfoLink" href="">EUID Info</a>
             <button id="closeDialogButton" class="close-dialog-btn">Close</button>
@@ -94,60 +94,57 @@
             <div  id="cy"></div>
         <hr>
             <div  style="display: -webkit-inline-box;">
-                <label for="btypeCheckboxes">Filter By Class:</label>
+                <div  style="display: -webkit-inline-box;">
+                    <label for="btypeCheckboxes"  >Filter Class:</label><br>
                 <div style="display: -webkit-inline-box;" id="btypeCheckboxes">
                     <!-- Checkboxes will be added here -->
                 </div>
-                <font color=darkgrey>
-                 ‖              
-                ‒
-                ‖ </font>
-                <select id="layoutSelect" onchange="changeLayout(this.value)">
-                    <option value="cose">Alter Layout</option>
-                    <option value="dagre">Hierarchical</option>
-                    <option value="cose">Cose (default)</option>
-                    <option value="breadthfirst">Breadthfirst</option>
-                    <option value="grid">Grid</option>
-                    <option value="circle">Circle</option>
-                    <option value="random">Random</option>
-                    <option value="concentric">Concentric</option>
+            </div>
+      
+                <select style="font-size: 10px;" id="layoutSelect" onchange="changeLayout(this.value)">
+                    <option style="font-size: 10px;" value="cose">Alter Layout</option>
+                    <option style="font-size: 10px;" value="dagre">Hierarchical</option>
+                    <option style="font-size: 10px;" value="cose">Cose (default)</option>
+                    <option style="font-size: 10px;" value="breadthfirst">Breadthfirst</option>
+                    <option style="font-size: 10px;" value="grid">Grid</option>
+                    <option style="font-size: 10px;" value="circle">Circle</option>
+                    <option style="font-size: 10px;" value="random">Random</option>
+                    <option style="font-size: 10px;" value="concentric">Concentric</option>
                     <!-- Add other layout options as needed -->
                 </select>
-                <font color=darkgrey>
-                    ‖              
-                   ‒
-                   ‖ </font>
-                Filter if #edges ≤ :<span id="transparencyDisplay" >1</span>
+                <font color=darkgrey>‒‒</font>
+
+                <div  style="display: -webkit-inline-box;">
+                Filter #edges ≤  <span style="font-size: 10px;" id="transparencyDisplay" >1</span>
+                <br>
                 <input type="range"
                 id="transparencySlider"
                 min="0"
-                max="20"
+                max="15"
+                style="width: 100px;"
                 value="1"
                 oninput="updateNodeTransparency()" />
-         
-                <hr>
-                    </div>
-                    <div  style="display: -webkit-inline-box;">
+                </div>
+                <font color=darkgrey>‒‒</font>
+                <div  style="display: -webkit-inline-box;">
+                        <input type="text" style="width:70px; font-size: 10px; margin:0px;"  id="euidInput" placeholder="EUID"/>
+                        <br>
+                        <button style="font-size: 10px;width:70px;" onclick="centerOnEuid()">find</button>
+                </div>
+                <font color=darkgrey>‒‒</font>
+                           <div  style="display: -webkit-inline-box;">
 
-                
-                        <input type="text" style="width:99px;"  id="euidInput" placeholder="enter EUID -->"/>
-                        <button onclick="centerOnEuid()"><-- find EUID </button>
-                        <font color=darkgrey>
-                            ‖              
-                           ‒
-                           ‖ </font>
-                            Show nodes within <span id="distanceDisplay">0</span> distant from selected node, 0=all.
+                           <label style="font-size: 10px;" for="distanceSlider"  >RELATIVE DISANCE, (0=all) ::  <span id="distanceDisplay" style="font-size: 10px;" >0</span>  </label>
+                            <br>
                            <input type="range"
                                id="distanceSlider"
                                min="0"
-                               max="20"
+                               max="15"
                                value="0"
+                               style="width: 100px; font-size: 10px;"
                                oninput="filterNodes(this.value)" />
-                               <font color=darkgrey>
-                                ‖              
-                               ‒
-                               ‖ </font>
-                               <button id="helpBtn">graph interaction tips</button>
+                           </div>
+                               <button id="helpBtn">?</button>
 
                                <div id="helpModal" class="modal">
                                    <div class="modal-content">
@@ -164,11 +161,11 @@
                                    </div>
                                </div>
             </div>
-            <div style="align: top;" class=info-box id="node-info"></div>
+            <div style="align: top; padding-top:0px;" class=info-box id="node-info"></div>
 
             </div>
             <div style="width: 8%;">
-                        <label for="distanceSlider">Filter sub-types:</label>
+                        <label for="distanceSlider">Filter:</label>
 
                         <div id="bsubtypeButtons">
                             <!-- Buttons/Checkboxes for b_sub_type will be added here -->
@@ -391,9 +388,9 @@
 
                 // Create checkboxes for each btype
                 btypes.forEach(function(btype) {
-                    var br = $('<div />');
+                    var br = $('<span/>');
                     var checkbox = $('<input />', { type: 'checkbox', id: 'chk_' + btype, checked: 'checked' });
-                    var label = $('<label />', { 'for': 'chk_' + btype }).text(btype);
+                    var label = $('<label style="font-size: 10px;" />', {  'for': 'chk_' + btype }).text(btype);
                     $('#btypeCheckboxes').append(checkbox).append(label).append(br);
 
                     // Attach event listener
@@ -458,7 +455,7 @@
                             var dialog = $('#nodeDialog');
                             dialog.find('#nodeEuid span').text(nodeData.euid);
                             dialog.find('#nodeName span').text(nodeData.name);
-                            dialog.find('#actionALink').attr('href', '/do_action_1?euid=' + nodeData.euid);
+                            dialog.find('#actionALink').attr('href', '/calculate_cogs?euid=' + nodeData.euid);
                             dialog.find('#euidInfoLink').attr('href', '/euid_details?euid=' + nodeData.euid);
                     
                             // Position and show dialog

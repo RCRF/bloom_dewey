@@ -15,7 +15,7 @@
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",
-        "cost" : "1.00",
+        "cost" : "0.00",
         "cost_split_by_children" : [{"*/*/*/*":{}}],
         "allocation_type" : ""
       }
@@ -37,7 +37,7 @@
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",
-        "cost" : "1.00",
+        "cost" : "0.00",
         "cost_split_by_children" : [{"*/*/*/*":{}}],
         "allocation_type" : ""
       }
@@ -59,7 +59,7 @@
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",
-        "cost" : "1.00",
+        "cost" : "0.00",
         "cost_split_by_children" : [{"*/*/*/*":{}}],
         "allocation_type" : ""
       }
