@@ -13,7 +13,7 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 * [x] You fully control your data.
 * [x] Lowers business continuity risk profile.
 * [x] Air-gapable (no internet connection required, some _a small number of js libs would need to be served locally_)
-* [x] Runs on a laptop, desktop box, terrestial cluster, cloud. (Mac & Linux)
+* [x] Runs on a laptop, desktop box, terrestial cluster, cloud. (MacOS, Ubuntu & Centos)
 * [x] Tech stack comprised of well adopted technologies so dev/maintainence work can be done by a wide range of folks.
 * [x] Backup and recovery covered by well adopted postgres management practices.
 * [x] Conceptually Rigorous Implementation (models strive to be as atomic as possible)
@@ -134,10 +134,18 @@ Indeed, `sqlalchemy` is aptly named.
 So many nodes and edges.
 
 
-# Build Test Status (MacOS & Ubuntu 22.04)
-_46 tests and counting_
+# Build Test Status (MacOS / Ubuntu 22.04 / Centos 9  )
+_~100 tests and counting_
 
-[![BLOOM LIMS Build Tests, MacOS & Ubuntu](https://github.com/Daylily-Informatics/bloom_lims/actions/workflows/main.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom_lims/actions/workflows/main.yaml)
+## MacOS
+[![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml)
+
+## Ubuntu 22.04
+[![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml)
+
+## Centos 9
+[![BLOOM CENTOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml)
+
 
 
 # Installation
