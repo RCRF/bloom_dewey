@@ -14,9 +14,10 @@
       "actions": {},
       "instantiation_layouts": [],
       "cogs" : {
-        "fractional_cost" : "1.00",
-        "fractional_n" : "1.0",
-        "allocation_type" : "single"
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
       }
     }
   },
@@ -33,7 +34,13 @@
       "expected_inputs": [],
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "blood-plasma": {
@@ -51,9 +58,10 @@
       "actions": {},
       "instantiation_layouts": [],
       "cogs" : {
-        "fractional_cost" : "1.00",
-        "fractional_n" : "1.0",
-        "allocation_type" : "single"
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
       }
     }
   }

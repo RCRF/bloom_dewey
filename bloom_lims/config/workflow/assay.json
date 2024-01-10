@@ -10,9 +10,10 @@
       "expected_outputs": [],
       "action_groups": {},
       "cogs" : {
-        "fractional_cost" : "1.00",
-        "fractional_n" : "1.0",
-        "allocation_type" : "single"
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
       },
       "action_imports": {
         "core": {
@@ -79,9 +80,10 @@
         }
       },
       "cogs" : {
-        "fractional_cost" : "1.00",
-        "fractional_n" : "1.0",
-        "allocation_type" : "single"
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
       },
       "instantiation_layouts": [
         [
