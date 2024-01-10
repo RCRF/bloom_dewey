@@ -80,13 +80,14 @@ jobs:
           useradd -m bloom
           ls -lta .
           cat bloom_lims/env/install_postgres.sh
-          sleep 10
+
           chmod -R a+wrx ./
+          cp -r ./* /home/bloom/
           ogpwd=$PWD
 
           echo $PWD 
           echo GOGOGOGO
-          sleep 10
+
           echo 'bloom ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           
           # Create the setup script
@@ -98,13 +99,14 @@ jobs:
           export PATH="/home/bloom/miniconda/bin:$PATH"
           conda init
           pwd
-          sleep 5
           source /home/bloom/.bashrc          
           conda env list
-          sleep 5
           cd $ogpwd
           ls -lta .
           sleep 5
+          echo $PWD
+          ls -lta ./
+          sleep 10
           source bloom_lims/env/install_postgres.sh
           pytest
           EOF
