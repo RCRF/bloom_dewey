@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Bloom LIMS</title>
-        <link rel="stylesheet" type="text/css" href="static/root_active.css">
+        <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
     </head>
     <body>
@@ -17,13 +17,7 @@
             <ul>
                 <li>all visible workflows</li>
             </ul>
-            <br>
-            <h2>
-                <a href="/object_templates_summary">Object Templates</a>
-            </h2>
-            <ul>
-                <li>all object templates available for instantiation (there are currently ~50)</li>
-            </ul>
+           
             <br>
             <h2>Equipment</h2>
             <ul>
@@ -41,10 +35,10 @@
             
 
             <br>
-            <h2>Zebra Printer Config</h2>
+            <h2>Administration</h2>
             <ul>
                 <li>
-                    <a href="/admin">Zebra Printer Config</a>
+                    <a href="/admin">Templates / Zebra Printer Config</a>
                 </li>
             </ul>
 

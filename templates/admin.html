@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Printer Configuration</title>
-    <link rel="stylesheet" type="text/css" href="static/root_active.css">
+    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
     <link rel="stylesheet" type="text/css" href="static/style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" > </script>
 
 
 </head>
 <body>
-    <h1>Printer Configuration</h1>
+
+    <h1>Bloom Administration</h1>
     <ul><a href=dindex>( graph )</a> <a href= />( B )</a><ul><hr>
+
+
+    <h2> <a href="/object_templates_summary">Templates Available & Instantiation </a></h2>
+    <ul>
+        <li>all object templates available for instantiation (there are currently ~50)</li>
+    </ul>
+
+    <br>
+    <h2>Printer ConfigurationSettings</h2>
 
     <table>
         <!-- Display select dropdowns for specific keys and their current value from user data -->
-        {% for key in ['print_lab', 'printer_name', 'label_zpl_style'] %}
+        {% for key in ['print_lab', 'printer_name', 'label_zpl_style', 'style_css'] %}
         <tr>
             <td>{{ key }}</td>
             <td>
@@ -31,7 +41,7 @@
 
         <!-- Display other user data that are not in the specified keys -->
         {% for key, value in user_data.items() %}
-            {% if key not in ['print_lab', 'printer_name', 'label_zpl_style'] %}
+            {% if key not in ['print_lab', 'printer_name', 'label_zpl_style', 'style_css' ] %}
                 <tr>
                     <td>{{ key }}</td>
                     <td>{{ value }}</td>

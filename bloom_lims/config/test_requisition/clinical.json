@@ -30,7 +30,14 @@
           "group_name": "Test Req Actions",
           "actions": {
             "action/test_requisitions/set_verification_state/1.0/": {},
-            "action/test_requisitions/add_container_to_assay_q/1.0/": {}
+            "action/test_requisitions/add_container_to_assay_q/1.0/": {
+              "available_assays" : {
+                "workflow/assay/hla-typing/1.2/": {}
+              ,
+                "workflow/assay/carrier-screen/3.9/": {}
+              }
+
+            }
           }
         }
       }

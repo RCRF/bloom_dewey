@@ -3,6 +3,54 @@ _an opinionated LIMS & conceptual gambit leveraging 'Abstract Polymorphism'_
 
 Built from first principles and drawing upon 30 years experience scaling laboratory process. Constructed with as few object model shortcuts as I could manage ( I believe these shortcuts are among the main reasons LIMS nearly universally dissapoint ). Supporting both arbitrary and prescribed interacting objects. Intended for use: by small to factory scale laboratories, in regulated environments, for both research & operations usecases.  Bloom can handle multiple areas LIS tend to touch: acessioning, lab processes, specimen/sample management, equipment, regulatory and compliance.  Bloom is still in a _functional proof of concept_, so buyer beware. Thoughts, collaborators & [consulting](https://www.linkedin.com/in/john--major/) projects are all welcome! 
 
+
+
+# Feature List
+* [x] Hackable!
+* [x] Free & Open Source (implementation and development consulting services available!)
+* [x] Compliant w/CLIA, CAP, HIPAA, GDPR, etc ( as compliant as you wish make the deployment environment )
+* [x] You fully control your data.
+* [x] Lowers business continuity risk profile.
+* [x] Air-gapable (no internet connection required, some _a small number of js libs would need to be served locally_)
+* [x] Runs on a laptop, desktop box, terrestial cluster, cloud. (Mac & Linux)
+* [x] Tech stack comprised of well adopted technologies so dev/maintainence work can be done by a wide range of folks.
+* [x] Backup and recovery covered by well adopted postgres management practices.
+* [x] Conceptually Rigorous Implementation (models strive to be as atomic as possible)
+* [x] Feature Complete Accessioning Process Modeled (atomic detail level)
+* [x] Feature Complete Plasma Isolation -> DNA Extraction -> DNA Quant Process Modeled (atomic detail level)
+* [x] Comprehensive Audit Trails
+* [x] Strict Partitions Between Abstract Objects, Templated Objects & Object Interactions (slightly less so, but plan to improve)
+* [x] Complete CRUD UI For All Objects
+* [x] Graph CRUD UI For All Objects
+* [x] UI Skinnable (ie: dark, light, color blind friendly, add your own!)
+* [x] Out of the box objects which cover the large majority of Mol Bio lab use cases.
+* [x] Labware / Container Model Supports Any Configuration Labware Modelable via a multidimensional matrix.
+* [x] Flexible and Extensible Object Definitions (ie: add your own w/some coding, soon via UI?)
+* [x] Quick Start Instance (conda now, docker soon)
+* [x] Github Actions Running (for Mac and Linux: tests covering happy path presently).
+* [x] FEDEX Tracking Integration (works out of the box)
+* [x] Barcode Label Printing Integration (works out of the box)
+
+# Roadmap
+* Evaluate the action model, and re-implement with lessons learned.  The ideal end point being a system where users can define some degree of actions w/out requiring mucs/or any core code changes...
+* Add json schema validation to the template files.
+  * Build UI to allow creating new versions of existing templates... eventually new tempates completely.
+* re-work graph view for better performance and more features.
+* Stress test loading the database with data to failure, assess and improve.
+* Integrate with dashboarding and reporting tools ( ie: [SUPERSET](https://superset.apache.org/) ) 
+* Improve test coverage
+* Lean into postgres JSONB features more.
+* Abstract out the postgres specific bits to allow for any sqlalchemy supported database. (maybe, pg has some valuable features, esp at scale)
+  * Given the abstract state of the core db.... create a version which could run on salesforce...? Seems plausible data model wise, the lift would be getting sqlalchemy or similar to work with salesforce.  Daunting and dull.
+* Add support for ingesting external system UUIDS?
+* Integrate with other UID authorities (ie: google sheets, salesforce, ERM, etc) : for specific cases of linking to things like Patient, Physician, etc. (this can be handled in Bloom, but prob lives more nicely where these objects more naturally live).
+* Layer in COGS tracking to allow cost accounting, predictive analytics, and even in-flight process decision making.
+* Migration tools for importing existing data from other LIMS && tools to dump to other systems.
+* Expanded reporting tools (if even needed... better to focus on external tools for this ?).
+* Move to more robust UI stack (away from cherrypy)
+* Expose formal REST API ( technically, sqlalchemy can expose this, just no attention has been given to it yet )
+
+
 # Spoilers
 _bloom early peeks_
 
@@ -364,5 +412,4 @@ pytest
 * Requirements should not be created assuming what is/is not possible.  This is one of the most insidious drivers of LIMS failures.
 * Is the tech stack approachable?
 * Is the tech stack sustainable?  
- 
  

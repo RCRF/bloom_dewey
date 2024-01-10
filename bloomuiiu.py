@@ -17,6 +17,7 @@ from collections import defaultdict
 
 SKIP_AUTH = False if len(sys.argv) < 2 else True
 
+
 def is_instance(value, type_name):
     return isinstance(value, eval(type_name))
 
@@ -106,7 +107,7 @@ class WorkflowService(object):
     @cherrypy.expose
     def index(self):
         template = self.env.get_template("index.html")
-        return template.render()
+        return template.render( style=self.get_root_style())
 
     @cherrypy.expose
     def login(self, email=None, password=None):
@@ -120,7 +121,7 @@ class WorkflowService(object):
             else:
                 # Show the login page
                 template = self.env.get_template("login.html")
-                return template.render()
+                return template.render(style=self.get_root_style())
         
         # Load or create user data
         if not os.path.exists(user_data_file):
@@ -132,7 +133,7 @@ class WorkflowService(object):
         
         if email and email not in user_data:
             # New user, create entry
-            user_data[email] = {'style_css': 'static/style.css', "blah": "yes"}
+            user_data[email] = {'style_css': 'static/skins/root.css'}
             with open(user_data_file, 'w') as f:
                 json.dump(user_data, f)
 
@@ -159,16 +160,27 @@ class WorkflowService(object):
         if 'print_lab' in user_data:
             bobdb.get_lab_printers(user_data['print_lab'])
 
+        csss = []
+        for css in sorted(os.popen('ls -1 static/skins/*css').readlines()):
+            csss.append(css.rstrip())
+            
         printer_info = {
             'print_lab': bobdb.printer_labs,
             'printer_name': bobdb.site_printers,
-            'label_zpl_style': bobdb.zpl_label_styles
+            'label_zpl_style': bobdb.zpl_label_styles,
+            'style_css': csss
         }
 
         # Render the template with user data and printer info
-        return template.render(user_data=user_data, printer_info=printer_info)
+        return template.render(style=self.get_root_style(),user_data=user_data, printer_info=printer_info)
 
+    @cherrypy.expose
+    def get_root_style(self):        
+        user_data = cherrypy.session.get('user_data', {})
 
+        rs_obj = {"skin_css": user_data.get('style_css', 'static/skins/root.css')}
+        return rs_obj
+        
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
@@ -178,13 +190,30 @@ class WorkflowService(object):
         data = cherrypy.request.json
         key = data.get('key')
         value = data.get('value')
+        
+        # Load existing user data from the file
+        user_data_file = './etc/udat.json'
+        if os.path.exists(user_data_file):
+            with open(user_data_file, 'r') as f:
+                user_data = json.load(f)
+        else:
+            return {'status': 'error', 'message': 'User data file not found'}
+
+        # Update the user data in memory
+        email = cherrypy.session.get('user')
+        if email in user_data:
+            user_data[email][key] = value
+        else:
+            return {'status': 'error', 'message': 'User not found in user data'}
+
+        # Write updated user data back to the file
+        with open(user_data_file, 'w') as f:
+            json.dump(user_data, f)
 
         # Update the user session dictionary
-        if 'user_data' in cherrypy.session:
-            cherrypy.session['user_data'][key] = value
-            return {'status': 'success', 'message': 'User preference updated'}
-        else:
-            return {'status': 'error', 'message': 'User data not found in session'}
+        cherrypy.session['user_data'] = user_data[email]
+        
+        return {'status': 'success', 'message': 'User preference updated'}
 
     
     @cherrypy.expose
@@ -204,7 +233,7 @@ class WorkflowService(object):
             if temp.super_type not in grouped_templates:
                 grouped_templates[temp.super_type] = []
             grouped_templates[temp.super_type].append(temp)
-        return template.render(grouped_templates=grouped_templates)
+        return template.render(style=self.get_root_style(),grouped_templates=grouped_templates)
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -251,7 +280,7 @@ class WorkflowService(object):
         # Convert defaultdict to regular dict for Jinja2 compatibility
         workflow_statistics = {k: dict(v) for k, v in workflow_statistics.items()}
 
-        return template.render(
+        return template.render(style=self.get_root_style(),
             workflows=workflows,
             workflow_statistics=workflow_statistics,
             unique_workflow_types=unique_workflow_types,
@@ -289,7 +318,7 @@ class WorkflowService(object):
         )
 
         # Render the template with the fetched data
-        return template.render(
+        return template.render(style=self.get_root_style(),
             equipment_list=equipment_instances, template_list=equipment_templates
         )
 
@@ -326,7 +355,7 @@ class WorkflowService(object):
             .all()
         )
         # Render the template with the fetched data
-        return template.render(
+        return template.render(style=self.get_root_style(),
             instance_list=reagent_instances, template_list=reagent_templates
         )
 
@@ -348,7 +377,7 @@ class WorkflowService(object):
             .all()
         )
         # Render the template with the fetched data
-        return template.render(
+        return template.render(style=self.get_root_style(),
             instance_list=control_instances, template_list=control_templates
         )
 
@@ -373,7 +402,7 @@ class WorkflowService(object):
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         instance = bobdb.get_by_euid(euid)
         template = self.env.get_template("vertical_exp.html")
-        return template.render(instance=instance)
+        return template.render(style=self.get_root_style(),instance=instance)
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -391,7 +420,7 @@ class WorkflowService(object):
         related_plates = self.get_related_plates(main_plate)
         related_plates.append(main_plate)
         # Render the template with the main plate and related plates data
-        return template.render(main_plate=main_plate, related_plates=related_plates)
+        return template.render(style=self.get_root_style(),main_plate=main_plate, related_plates=related_plates)
 
 
     def get_related_plates(self, main_plate):
@@ -457,7 +486,7 @@ class WorkflowService(object):
         if not plate:
             return "Plate not found."
         # Render the template with the plate data
-        return template.render(plate=plate)
+        return template.render(style=self.get_root_style(),plate=plate)
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -483,7 +512,7 @@ class WorkflowService(object):
         stats_7d = get_stats(7)
         stats_30d = get_stats(30)
 
-        return self.env.get_template("database_statistics.html").render(
+        return self.env.get_template("database_statistics.html").render(style=self.get_root_style(),
             stats_1d=stats_1d, stats_7d=stats_7d, stats_30d=stats_30d
         )
 
@@ -505,7 +534,7 @@ class WorkflowService(object):
             set(t.polymorphic_discriminator for t in generic_templates)
         )
 
-        return template.render(
+        return template.render(style=self.get_root_style(),
             generic_templates=generic_templates,
             unique_discriminators=unique_discriminators,
         )
@@ -529,7 +558,7 @@ class WorkflowService(object):
         obj_dict['parent_template_euid'] = obj.parent_template.euid if hasattr(obj, 'parent_template') else ""
         audit_logs = bobdb.query_audit_log_by_euid(euid)
         # Pass the dictionary to the template
-        return template.render(
+        return template.render(style=self.get_root_style(),
             object=obj_dict,
             relationships=relationship_data,
             audit_logs=audit_logs,
@@ -605,7 +634,7 @@ class WorkflowService(object):
         template = self.env.get_template("workflow_details.html")
         workflow = bwfdb.get_sorted_euid(workflow_euid)
         accordion_states = dict(cherrypy.session)
-        return template.render(workflow=workflow, accordion_states=accordion_states)
+        return template.render(style=self.get_root_style(),workflow=workflow, accordion_states=accordion_states)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -720,7 +749,7 @@ class WorkflowService(object):
         tmpl = self.env.get_template("dindex.html")
 
         # Render the template with parameters
-        return tmpl.render(
+        return tmpl.render(style=self.get_root_style(),
             globalFilterLevel=globalFilterLevel,
             globalZoom=globalZoom,
             globalStartNodeEUID=globalStartNodeEUID,
