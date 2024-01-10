@@ -58,11 +58,11 @@ jobs:
           source bloom_lims/env/install_postgres.sh skip
           pytest
 
-  centos-job:
-    runs-on: ubuntu-latest  # Use an Ubuntu runner to host the CentOS Docker container
+  centos-stream-job:
+    runs-on: ubuntu-latest  # Host OS for the Docker container
 
     container:
-      image: centos:latest  # Specify the CentOS Docker image
+      image: quay.io/centos/centos:stream9  # Using CentOS Stream 9
 
     steps:
       - name: Check out repository
@@ -70,7 +70,7 @@ jobs:
 
       - name: Set up Python
         run: |
-          yum install -y python3
+          dnf install -y python3
           python3 -m ensurepip
           python3 -m pip install --upgrade pip
 
@@ -85,8 +85,6 @@ jobs:
           # Install dependencies from environment file if needed
           # conda env update --name BLOOM --file bloom_env.yaml
           pip3 install pytest psycopg2-binary sqlalchemy zebra_day==0.3.0.4 pytz fedex_tracking_day==0.2.6
-          # CentOS specific PostgreSQL setup if different from Ubuntu/MacOS
-          source bloom_lims/env/install_postgres.sh centos
+          # Adjust PostgreSQL setup script if needed
+          source bloom_lims/env/install_postgres.sh centos-stream
           pytest
-
-
