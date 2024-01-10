@@ -143,7 +143,7 @@ trf_assay_data = trf.json_addl["action_groups"]["test_requisitions"]["actions"][
 ]
 # This is super brittle, how I am currently linking Assay to TestReq...
 # = tr.json_addl["actions"]["add_container_to_assay_q"]
-trf_assay_data["captured_data"]["assay_selection"] = "hla-typing/1.2"
+trf_assay_data["captured_data"]["assay_selection"] = "workflow/assay/hla-typing/1.2"
 trf_assay_data["captured_data"]["Container EUID"] = trf_child_cont.euid
 
 set_status(bob_wfs, new_child_wfs, "complete")
