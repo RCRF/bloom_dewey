@@ -3,11 +3,16 @@
     "1.0": {
       "description": "Generic whole blood sample",
       "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "properties": {
         "name": "",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "instantiable_n": "*",
@@ -22,12 +27,17 @@
         "name": "",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "instantiable_n": "*",
       "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "actions": {}
     }
   },
@@ -37,12 +47,17 @@
         "name": "",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "instantiable_n": "*",
       "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "actions": {}
     }
   }

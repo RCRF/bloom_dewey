@@ -13,9 +13,14 @@
       "properties": {
         "name": "",
         "comments": "",
-        "step_number": ""
+        "step_number": "","lab_code":""
       },
       "expected_inputs": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "expected_outputs": [],
       "instantiable_n": "*",
       "instantiation_layouts": [],
@@ -101,6 +106,11 @@
         }
       ],
       "action_groups": {},
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "action_imports": {
         "core": {
           "group_order": "1",

@@ -6,10 +6,15 @@
         []
       ],
       "properties": {
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "action_groups": {},
       "instantiable_n": "*",
       "action_imports": {
@@ -30,9 +35,14 @@
         []
       ],
       "properties": {
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "instantiable_n": "*",
       "expected_outputs": [],
       "action_groups": {},

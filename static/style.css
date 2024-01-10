@@ -89,7 +89,6 @@ button:hover {
 }
     
 form {
-    background-color: var(--panel-bg-color);
     padding: 0px;
     margin: 2px;
 }

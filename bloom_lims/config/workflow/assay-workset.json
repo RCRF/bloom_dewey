@@ -8,7 +8,7 @@
         }
       ],
       "properties": {
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -25,7 +25,12 @@
       },
       "instantiation_layouts": [
         []
-      ]
+      ],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   },
   "carrier-screen": {
@@ -38,7 +43,7 @@
         }
       ],
       "properties": {
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -51,6 +56,11 @@
             "action/core/*/1.0/": {}
           }
         }
+      },
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
       },
       "instantiation_layouts": [
         [

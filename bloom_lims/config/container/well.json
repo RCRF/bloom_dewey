@@ -14,7 +14,7 @@
         "height": "",
         "volume": "",
         "comments": "",
-        "bottom_type": ""
+        "bottom_type": "","lab_code":""
       },
       "cont_address": {
         "row_name": "",
@@ -35,7 +35,12 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   }
 }

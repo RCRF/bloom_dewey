@@ -10,7 +10,7 @@
         "NPI": "",
         "Phone": "",
         "Fax": "",
-        "Address": ""
+        "Address": "","lab_code":""
       },
       "expected_inputs": [],
       "instantiable_n": "*",
@@ -39,7 +39,7 @@
         "NPI": "",
         "Phone": "",
         "Fax": "",
-        "Address": ""
+        "Address": "","lab_code":""
       },
       "expected_inputs": [],
       "instantiable_n": "*",
@@ -54,7 +54,12 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   }
 }

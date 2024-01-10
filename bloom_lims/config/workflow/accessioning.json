@@ -4,10 +4,15 @@
       "description": "Full accessioning: Package receipt, kit receipt, tube receipt, test requisition.",
       "instantiation_layouts": [],
       "properties": {
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "action_groups": {},
       "instantiable_n": "*",
       "action_imports": {

@@ -53,6 +53,8 @@ try:
 except Exception as e:
     pass  # not running in github action for some reason
 
+# Universal printer behavior on
+PGLOBAL = False if os.environ.get("PGLOBAL", False) else True
 
 def get_datetime_string():
     # Choose your desired timezone, e.g., 'US/Eastern', 'Europe/London', etc.
@@ -1230,16 +1232,16 @@ class BloomObj:
             action (str()): action name from object json_addl['actions']
             action_ds (dict): the dictionary keyed by the object json_addl['action'][action]
         """
-        
+        bobj = self.get_by_euid(euid)
 
         lab = action_ds.get("lab","")
         printer_name = action_ds.get("printer_name","")
         label_zpl_style = action_ds.get("label_style","")
-        alt_a = action_ds.get("alt_a","")
-        alt_b = action_ds.get("alt_b","")
-        alt_c = action_ds.get("alt_c","")
-        alt_d = action_ds.get("alt_d","")
-        alt_e = action_ds.get("alt_e","")
+        alt_a = action_ds.get("alt_a","") if not PGLOBAL else f"{bobj.b_sub_type}-{bobj.version}" 
+        alt_b = action_ds.get("alt_b","") if not PGLOBAL else bobj.json_addl.get("properties",{}).get("name","__namehere__")
+        alt_c = action_ds.get("alt_c","") if not PGLOBAL else bobj.json_addl.get("properties",{}).get("lab_code","N/A")
+        alt_d = action_ds.get("alt_d","") 
+        alt_e = action_ds.get("alt_e","")  if not PGLOBAL else str(bobj.created_dt).split(' ')[0]  
         alt_f = action_ds.get("alt_f","")
         
         self.logger.info(            

@@ -398,9 +398,14 @@
         "manufacturer": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {
@@ -429,6 +434,11 @@
       ],
       "description": "Generic 96 well plate.",
       "instantiable_n": "*",
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "instantiation_layouts": [
         [
           {
@@ -1700,7 +1710,7 @@
         "manufacturer": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "cont_address": {
         "row_name": "",

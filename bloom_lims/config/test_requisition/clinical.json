@@ -10,10 +10,15 @@
         }
       ],
       "layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "description": "Generic worflow",
       "properties": {
         "name": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "action_groups": {},
       "instantiable_n": "*",

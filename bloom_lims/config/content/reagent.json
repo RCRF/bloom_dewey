@@ -12,13 +12,18 @@
         "expiration_date": "",
         "received_date": "",
         "storage_conditions": "",
-        "qualification_status": ""
+        "qualification_status": "","lab_code":""
       },
       "expected_inputs": [],
       "instantiable_n": "*",
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   },
   "idt-probes-rare-mendelian": {
@@ -40,7 +45,12 @@
       "expected_outputs": [],
       "instantiable_n": "*",
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   },
   "ILMN-nova-seq-kit": {
@@ -62,7 +72,12 @@
       "expected_inputs": [],
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   }
 }

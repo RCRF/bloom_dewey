@@ -65,7 +65,7 @@
       ],
       "properties": {
         "name": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "cont_address": {
         "name": "",
@@ -77,6 +77,11 @@
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "action_imports": {
         "core": {
           "group_order": "1",

@@ -10,7 +10,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "install-bloom-lims=bloom_lims.install_couchdb:main",
+            "install-bloom=bloom_lims.thing:main",
         ],
     },
 )

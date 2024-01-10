@@ -13,11 +13,16 @@
       "properties": {
         "name": "",
         "comments": "",
-        "step_number": ""
+        "step_number": "","lab_code":""
       },
       "instantiation_layouts": [],
       "expected_inputs": [],
       "expected_outputs": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      },
       "instantiable_n": "*",
       "action_groups": {},
       "action_imports": {

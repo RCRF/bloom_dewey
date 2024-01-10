@@ -6,13 +6,18 @@
         "name": "",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "instantiable_n": "*",
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   },
   "cfdna": {
@@ -23,7 +28,7 @@
         "name": "",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -39,12 +44,17 @@
         "name": "",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "fractional_cost" : "1.00",
+        "fractional_n" : "1.0",
+        "allocation_type" : "single"
+      }
     }
   }
 }
