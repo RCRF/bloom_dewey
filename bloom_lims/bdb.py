@@ -908,6 +908,7 @@ class BloomObj:
     def get(self, uuid):
         return self.get_by_uuid(uuid)
 
+    # Also a holdover from the all table query nonsense.  can be removed
     def get_by_uuid(self, uuid):
         """Return the euid for a uuid
 
@@ -923,7 +924,7 @@ class BloomObj:
             uuid,
             super_type,
             polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)[0]
+        ) = self.query_all_tables_by_uuid(uuid)
 
         no = class_name.replace("generic", super_type)
         return self.session.get(getattr(self.Base.classes, no), uuid)
@@ -935,7 +936,7 @@ class BloomObj:
             uuid,
             super_type,
             polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)[0]
+        ) = self.query_all_tables_by_euid(euid)
         no = class_name.replace("generic", super_type)
         return self.session.get(getattr(self.Base.classes, no), uuid)
 
@@ -954,7 +955,7 @@ class BloomObj:
             uuid,
             super_type,
             polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)[0]
+        ) = self.query_all_tables_by_euid(euid)
         self.session.flush()
         return (
             self.session.query(getattr(self.Base.classes, class_name))
@@ -969,7 +970,7 @@ class BloomObj:
             uuid,
             super_type,
             polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)[0]
+        ) = self.query_all_tables_by_uuid(uuid)
         self.session.flush()
         return (
             self.session.query(getattr(self.Base.classes, class_name))
@@ -986,10 +987,37 @@ class BloomObj:
         Returns:
             [] : Array of rows
         """
-        return self.session.execute(
-            text(f"SELECT * FROM query_for_uuid('{str(uuid)}')")
+        
+        res = self.session.query(self.Base.classes.generic_instance).filter(
+                self.Base.classes.generic_instance.uuid == uuid,
+            ).all()
+        res2 = self.session.query(self.Base.classes.generic_template).filter(
+            self.Base.classes.generic_template.uuid == uuid,
         ).all()
+        res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
+            self.Base.classes.generic_instance_lineage.uuid == uuid,
+        ).all()
+        
+        combined_result = res + res2 + res3
 
+        if len(combined_result) > 1:
+            raise Exception(f"Multiple templates found for {uuid}") 
+        elif len(combined_result) == 0:
+            self.logger.debug(f"No template found with uuid:", uuid)
+            return []
+        else:
+             return [
+                 combined_result[0].polymorphic_discriminator, 
+                 combined_result[0].euid, 
+                 combined_result[0].uuid, 
+                 combined_result[0].super_type, 
+                 combined_result[0].polymorphic_discriminator
+                 ]  
+
+
+    # This is a holdover from when the schema had many more tables and I wanted a unified euid query... 
+    # Looping through the 3 tables gets me this effect and removes a special database function!
+    # This all might be jettisonable also
     def query_all_tables_by_euid(self, euid):
         """Global query for euid across all tables in schema with 'euid' field
            note: does not handle is_deleted!
@@ -999,9 +1027,33 @@ class BloomObj:
         Returns:
             [] : Array of rows
         """
-        return self.session.execute(
-            text(f"SELECT * FROM query_for_euid('{str(euid)}')")
+        res = self.session.query(self.Base.classes.generic_instance).filter(
+                self.Base.classes.generic_instance.euid == euid,
+            ).all()
+        res2 = self.session.query(self.Base.classes.generic_template).filter(
+            self.Base.classes.generic_template.euid == euid,
         ).all()
+        res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
+            self.Base.classes.generic_instance_lineage.euid == euid,
+        ).all()
+        
+        combined_result = res + res2 + res3
+
+
+        if len(combined_result) > 1:
+            raise Exception(f"Multiple templates found for {euid}") 
+        elif len(combined_result) == 0:
+            self.logger.debug(f"No template found with euid:", euid)
+            return []
+        else:
+             return [
+                 combined_result[0].polymorphic_discriminator, 
+                 combined_result[0].euid, 
+                 combined_result[0].uuid, 
+                 combined_result[0].super_type, 
+                 combined_result[0].polymorphic_discriminator
+                 ]  
+
 
     def query_instance_by_component_v2(
         self, super_type=None, btype=None, b_sub_type=None, version=None, bstate=None
@@ -1101,7 +1153,7 @@ class BloomObj:
             uuid,
             super_type,
             polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)[0]
+        ) = self.query_all_tables_by_euid(euid)
         self.session.query(getattr(self.Base.classes, class_name)).filter_by(
             uuid=uuid, is_deleted=self.is_deleted
         ).update(update_dict)
@@ -1115,7 +1167,7 @@ class BloomObj:
             uuid,
             super_type,
             polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)[0]
+        ) = self.query_all_tables_by_uuid(uuid)
         self.session.query(getattr(self.Base.classes, class_name)).filter_by(
             uuid=uuid, is_deleted=self.is_deleted
         ).update(update_dict)

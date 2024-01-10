@@ -72,7 +72,7 @@ def create_template_from_json(json_file, db):
 
 
 def main():
-    db = BLOOMdb3(app_username="test_user")
+    db = BLOOMdb3(app_username="bloom_db_init")
     # Path to the JSON file
     json_file_path = sys.argv[1]
 

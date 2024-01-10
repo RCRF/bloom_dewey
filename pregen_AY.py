@@ -8,7 +8,7 @@ from sqlalchemy.orm.attributes import flag_modified
 if sys.argv[1] != "go":
     raise ("this is only for initial seeding of the database")
 
-bob = BloomObj(BLOOMdb3(app_username="test_user"))
+bob = BloomObj(BLOOMdb3(app_username="bloom_db_init"))
 
 
 for tobe_locked_assay in (
