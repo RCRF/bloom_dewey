@@ -78,6 +78,8 @@ jobs:
         run: |
           dnf install -y wget sudo
           useradd -m bloom
+          chmod -R a+wrx ./
+          ogpwd=$(pwd)
           echo 'bloom ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           
           # Create the setup script
@@ -92,6 +94,9 @@ jobs:
           sleep 5
           source /home/bloom/.bashrc          
           conda env list
+          sleep 5
+          cd $ogpwd
+          ls -lta .
           sleep 5
           source bloom_lims/env/install_postgres.sh
           pytest
