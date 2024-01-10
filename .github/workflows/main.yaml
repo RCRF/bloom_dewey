@@ -78,6 +78,7 @@ jobs:
         run: |
           dnf install -y wget sudo
           useradd -m bloom
+          echo 'bloom ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
           
           # Create the setup script
           cat <<'EOF' >setup_bloom.sh
@@ -92,9 +93,8 @@ jobs:
           pytest
           EOF
 
-
           # Make the script executable
           chmod +x setup_bloom.sh
 
           # Execute the script as the 'bloom' user
-          su - bloom ./setup_bloom.sh
+          sudo -u bloom ./setup_bloom.sh
