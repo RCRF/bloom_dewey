@@ -3,7 +3,7 @@
     "1.0": {
       "description": "giab NA12878",
       "properties": {
-        "name": "",
+        "name": "giab NA12878",
         "volume": "",
         "volume_units": "",
         "comments": "","lab_code":""
@@ -34,7 +34,7 @@
     "1.0": {
       "description": "giab NA24385",
       "properties": {
-        "name": "",
+        "name": "giab NA24385",
         "volume": "",
         "volume_units": "",
         "comments": "","lab_code":""
@@ -65,7 +65,7 @@
     "1.0": {
       "description": "NTC - water",
       "properties": {
-        "name": "",
+        "name": "NTC - water",
         "volume": "",
         "volume_units": "",
         "comments": "","lab_code":""

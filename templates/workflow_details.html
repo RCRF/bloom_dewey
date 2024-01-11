@@ -13,7 +13,7 @@
                 <button class="accordion"
                         data-state="{{ accordion_states[step.euid] }}"
                         id="{{ step.euid }}">
-                    <small style="color:var(--accordion-prefix);">step</small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a> <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} &  {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                    <small style="color:var(--accordion-prefix);">step</small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a> <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.json_addl['properties'].get('name', 'NONAME') }}  :: ({{ step.bstate }} &  {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
                 </button>
                 <div class="workflow-step"
                      style="display: {{ 'block' if accordion_states[step.euid] == 'open' else 'none' }}">

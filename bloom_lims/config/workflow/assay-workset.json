@@ -8,7 +8,9 @@
         }
       ],
       "properties": {
-        "comments": "","lab_code":""
+        "name":"Workset for hla-typing 1.2",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -44,7 +46,9 @@
         }
       ],
       "properties": {
-        "comments": "","lab_code":""
+        "name":"Workset for carrier-screen 3.9",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

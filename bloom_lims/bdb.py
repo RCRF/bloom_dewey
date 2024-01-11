@@ -578,7 +578,14 @@ class BloomObj:
         
     def get_lab_printers(self, lab):
         self.selected_lab = lab
-        self.site_printers = self.zpld.printers['labs'][self.selected_lab].keys()
+        try:
+            self.site_printers = self.zpld.printers['labs'][self.selected_lab].keys()
+        except Exception as e:
+            self.logger.error(f'Error getting printers for lab {lab}')
+            self.logger.error(e)
+            self.logger.error('\n\n\nAttempting to rebuild printer json !!! THIS WILL TAKE TIME !!!\n\n\n')
+            self._rebuild_printer_json()
+            
 
     def print_label(self, lab=None, printer_name=None, label_zpl_style="tube_2inX1in", euid="", alt_a="", alt_b="", alt_c="", alt_d="", alt_e="", alt_f="", print_n=1):
 
@@ -1062,6 +1069,7 @@ class BloomObj:
             self.do_action_set_object_status(euid, action_ds, action_group, action)
         elif action_method == "do_action_print_barcode_label":
             self.do_action_print_barcode_label(euid, action_ds)
+            
         elif action_method == "do_action_destroy_specimen_containers":
             self.do_action_destroy_specimen_containers(euid, action_ds)
         else:
@@ -1184,7 +1192,7 @@ class BloomObj:
         #                 #bobj.json_addl["actions"][action]["action_executed"]
 
         if "action_groups" in bobj.json_addl:
-            # from IPython import embed;  embed()
+            
             curr_action_count = int(
                 bobj.json_addl["action_groups"][action_group]["actions"][action][
                     "action_executed"
@@ -1807,13 +1815,25 @@ class BloomWorkflowStep(BloomObj):
         cx_tube_template = cx_results[0]
 
         parent_wf = wfs.child_of_lineages[0].parent_instance
+
+
+        active_workset_q_wfs = ""
+        (super_type, btype, b_sub_type, version) = list(action_ds["attach_under_root_workflow_queue"].keys())[0].lstrip('/').rstrip('/').split('/')
+        for pwf_child_lin in parent_wf.parent_of_lineages:
+            if pwf_child_lin.child_instance.btype == btype and pwf_child_lin.child_instance.b_sub_type == b_sub_type:
+                active_workset_q_wfs = pwf_child_lin.child_instance
+                break
+        if active_workset_q_wfs == "":
+            self.logger.exception(f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}")
+            raise Exception(f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}")
+        
         new_wf = ""
         for wlayout_str in action_ds["workflow_to_attach"]:
             new_wf = self.create_instance_by_code(
                 wlayout_str, action_ds["workflow_to_attach"][wlayout_str]
             )
             self.session.commit()
-        self.create_generic_instance_lineage_by_euids(parent_wf.euid, new_wf.euid)
+        self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, new_wf.euid)
 
         child_wfs = ""
         for layout_strc in action_ds["child_workflow_step_obj"]:

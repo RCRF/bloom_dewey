@@ -11,9 +11,10 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Specimens Destroyed",
         "comments": "",
-        "step_number": "","lab_code":""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "expected_inputs": [],

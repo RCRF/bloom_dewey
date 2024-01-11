@@ -1,10 +1,11 @@
 {
   "generic": {
     "1.0": {
-      "description": "Generic objects to represent pools of content.",
+      "description": "Pool of Contents",
       "properties": {
-        "name": "",
-        "comments": "","lab_code":""
+        "name": "Pool of Contents",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

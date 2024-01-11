@@ -7,10 +7,11 @@
       "valid_content": [
         ""
       ],
-      "description": "A shelf",
+      "description": "Shelf",
       "properties": {
-        "name": "",
-        "comments": "","lab_code":""
+        "name": "Shelf",
+        "comments": "",
+        "lab_code":""
       },
       "cont_address": {
         "row_name": "",

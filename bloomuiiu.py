@@ -705,6 +705,7 @@ class WorkflowService(object):
         bobdb = BloomWorkflow(BLOOMdb3(app_username=cherrypy.session['user']))
         bo = bobdb.get_by_euid(euid)
 
+
         ds["curr_user"] = cherrypy.session.get("user", "bloomui-user")
         udat = cherrypy.session.get("user_data",{}  )
         ds['lab'] = udat.get("print_lab", "BLOOM")
@@ -715,7 +716,6 @@ class WorkflowService(object):
         ds['alt_c'] = udat.get("alt_c",)
         ds['alt_d'] = udat.get("alt_d","")   
         ds['alt_e'] = udat.get("alt_e","")                                     
-                                     
                                      
         if bo.__class__.__name__ == "workflow_instance":
             bwfdb = BloomWorkflow(BLOOMdb3(app_username=cherrypy.session['user']))

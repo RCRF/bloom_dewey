@@ -6,14 +6,15 @@
       "valid_content": [
         "content/.*"
       ],
-      "description": "strek 10ml tube",
+      "description": "strek 10ml",
       "properties": {
-        "name": "",
+        "name": "strek 10ml",
         "manufacturer": "",
         "manufacturer_other": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": "","lab_code":""
+        "comments": "",
+        "lab_code":""
       },
       "cont_address": {
         "name": "",
@@ -51,7 +52,7 @@
       ],
       "description": "Generic 10ml tube",
       "properties": {
-        "name": "",
+        "name": "10ml tube generic",
         "manufacturer": "",
         "manufacturer_other": "",
         "lot_number": "",
@@ -92,9 +93,9 @@
       "valid_content": [
         "content/.*"
       ],
-      "description": "Generic 1.5ml tube",
+      "description": "1.5ml eppi tube",
       "properties": {
-        "name": "",
+        "name": "1.5ml eppi tube",
         "manufacturer": "",
         "manufacturer_other": "",
         "lot_number": "",

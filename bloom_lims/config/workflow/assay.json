@@ -30,11 +30,11 @@
         [
           {
             "workflow_step/queue/plasma-isolation-queue-available/1.0/": {
-              "description" : "Ready For Plasma Isolation",
+              "description" : "Ready For Plasma Isolation Queue",
               "json_addl": {
-                "description": "Ready For Plasma Isolation",
+                "description": "Ready For Plasma Isolation Queue",
                 "properties": {
-                  "name": "Ready For Plasma Isolation",
+                  "name": "Ready For Plasma Isolation Queue",
                   "comments": "",
                   "step_number": "1",
                   "lab_code":""
@@ -43,12 +43,12 @@
             }
           },
           {
-            "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
-              "description" : "Completed Worflow Sets",
+            "workflow_step/queue/all-purpose/1.0/": {
+              "description" : "In Progress / Active WorkSets",
               "json_addl": {
-                "description": "Completed Worflow Sets",
+                "description": "In Progress / Active  WorkSets",
                 "properties": {
-                  "name":"Completed Workflow Sets",
+                  "name":"In Propgress / Active WorkSets",
                   "comments": "",
                   "step_number": "2",
                   "lab_code":""
@@ -56,15 +56,30 @@
               }
             }
           },
+
           {
-            "workflow_step/queue/plasma-isolation-queue-exception/1.0/": {
-              "description" : "Exception Workflow Sets",
+            "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
+              "description" : "Completed WorkSets",
               "json_addl": {
-                "description": "Exception Workflow Sets", 
+                "description": "Completed WorkSets",
                 "properties": {
-                 "name": "Exception Workflow Sets", 
+                  "name":"Completed WorkSets",
                   "comments": "",
                   "step_number": "3",
+                  "lab_code":""
+                }
+              }
+            }
+          },
+          {
+            "workflow_step/queue/plasma-isolation-queue-exception/1.0/": {
+              "description" : "Exception Queue of WorkSets",
+              "json_addl": {
+                "description": "Exception Queue of WorkSets", 
+                "properties": {
+                 "name": "Exception Queue of WorkSets", 
+                  "comments": "",
+                  "step_number": "4",
                   "lab_code":""
                 }
               }
@@ -76,9 +91,12 @@
   },
   "carrier-screen": {
     "3.9": {
-      "description": "Generic json def file",
+      "description": "Carrier Screen v3.9",
+
       "properties": {
-        "comments": "","lab_code":""
+        "name": "Carrier Screen v3.9",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "singleton": "1",

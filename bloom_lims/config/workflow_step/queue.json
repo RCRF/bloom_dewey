@@ -1,5 +1,43 @@
 {
-  "plasma-isolation-queue-available": {
+  "all-purpose": {
+    "1.0": {
+      "description": "OVERRIDEME",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "OVERRIDEME",
+        "comments": "",
+        "step_number": "OVERRIDEME",
+        "lab_code":""
+      },
+      "instantiation_layouts": [],
+      "expected_inputs": [],
+      "singleton": "0",
+      "expected_outputs": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },"plasma-isolation-queue-available": {
     "1.0": {
       "description": "Containers available for plasma isolation in this queue.",
       "step_properties": {
@@ -11,9 +49,10 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Containers available for plasma isolation in this queue.",
         "comments": "",
-        "step_number": "","lab_code":""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "expected_inputs": [],
@@ -56,7 +95,7 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Containers Removed From Queue",
         "comments": "",
         "step_number": "","lab_code":""
       },
@@ -95,7 +134,7 @@
   },
   "plasma-isolation-queue-exception": {
     "1.0": {
-      "description": "Containers moved to exception queue.",
+      "description": "Plasma Isolation Exception Queue",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -105,9 +144,10 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Plasma Isolation Exception Queue",
         "comments": "",
-        "step_number": "","lab_code":""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "cogs" : {
@@ -165,7 +205,7 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Plasma To Plates For Extraction",
         "comments": "",
         "step_number": "","lab_code":""
       },

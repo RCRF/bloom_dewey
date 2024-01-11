@@ -1,7 +1,7 @@
 {
   "package-generated": {
     "1.0": {
-      "description": "Package has been created..",
+      "description": "Register Kits To Package",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -11,9 +11,10 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Register Kits To Package",
         "comments": "",
-        "step_number": "","lab_code":""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "cogs" : {
@@ -50,7 +51,7 @@
   },
   "kit-generated": {
     "1.0": {
-      "description": "Register a package and begin accessioning.",
+      "description": "Register Specimen Containers To Kit",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -60,7 +61,7 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Register Specimen Containers To Kit",
         "comments": "",
         "step_number": "",
         "equipment_euid": [],
@@ -109,7 +110,7 @@
   },
   "container-generated": {
     "1.0": {
-      "description": "Link Specimen Containers.",
+      "description": "Register Specimen Container To Test Req // Assay",
       "singleton": "0",
       "step_properties": {
         "start_timestamp": "",
@@ -117,12 +118,13 @@
         "start_operator": "",
         "end_operator": "",
         "comments": "",
-        "step_number": "","lab_code":""
+        "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Register Specimen Containers To Test Req // Assay",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "cogs" : {
@@ -168,20 +170,22 @@
   },
   "test-requisition-generated2": {
     "1.0": {
-      "description": "Link a test requisition to a specimen container.",
+      "description": "Associate Other Specimen Containers To Test Requisition",
       "singleton": "0",
       "step_properties": {
+        "name": "",
         "start_timestamp": "",
         "end_timestamp": "",
         "start_operator": "",
         "end_operator": "",
         "comments": "",
-        "step_number": "","lab_code":""
+        "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Associate Other Specimen Containers To Test Requisition",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "cogs" : {

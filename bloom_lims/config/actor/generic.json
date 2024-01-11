@@ -1,16 +1,17 @@
 {
-  "generic": {
+  "patient": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Patient",
       "properties": {
-        "name": "",
+        "name": "Patient",
         "state": "",
         "status": "",
         "comments": "",
         "NPI": "",
         "Phone": "",
         "Fax": "",
-        "Address": "","lab_code":""
+        "Address": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "singleton": "0",
@@ -30,9 +31,9 @@
   },
   "physician": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Clinician",
       "properties": {
-        "name": "",
+        "name": "Clinician",
         "state": "",
         "status": "",
         "comments": "",

@@ -9,6 +9,7 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 # Feature List
 * [x] Hackable!
 * [x] Free & Open Source (implementation and development consulting services available!)
+* [x] Exquisite COGs Visibility. Integrate cost as a real time metric with utility beyond accounting, but also as an in real time process decision making tool.
 * [x] Compliant w/CLIA, CAP, HIPAA, GDPR, etc ( as compliant as you wish make the deployment environment )
 * [x] You fully control your data.
 * [x] Lowers business continuity risk profile.

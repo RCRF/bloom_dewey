@@ -3,8 +3,9 @@
     "1.0": {
       "description": "DNA Quant Data",
       "properties": {
-        "name": "",
-        "comments": "","lab_code":""
+        "name": "DNA Quant Data",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -45,8 +46,9 @@
         "allocation_type" : ""
       },
       "properties": {
-        "name": "",
-        "comments": "","lab_code":""
+        "name": "Temperate Log Data",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

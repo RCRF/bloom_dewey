@@ -15,10 +15,14 @@
         "attach_under_root_workflow": {
           "workflow/assay/hla-typing/1.2/": {}
         },
+        "attach_under_root_workflow_queue": {
+          "workflow_step/queue/all-purpose/1.0/": {}
+        },
         "workflow_to_attach": {
           "workflow/assay-workset/hla-typing/1.2/": {
             "json_addl": {
               "properties": {
+                "name" : "hey user, SET THIS NAME ",
                 "comments": "",
                 "step_number": "0"
               }

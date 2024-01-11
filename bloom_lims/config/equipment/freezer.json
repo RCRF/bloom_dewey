@@ -1,9 +1,9 @@
 {
   "freezer-m80c": {
     "1.0": {
-      "description": "Generic freezer.",
+      "description": "-80C Freezer.",
       "properties": {
-        "name": "",
+        "name": "-80C Freezer",
         "serial": "",
         "manufacturer": "",
         "model": "",
@@ -100,9 +100,9 @@
   },
   "freezer-m20c": {
     "1.0": {
-      "description": "Generic freezer.",
+      "description": "-20C Freezer",
       "properties": {
-        "name": "",
+        "name": "-20C Freezer",
         "serial": "",
         "manufacturer": "",
         "model": "",

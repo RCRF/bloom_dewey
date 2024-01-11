@@ -1,7 +1,7 @@
 {
   "plasma-quantification": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Plasma QUANT",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -11,9 +11,10 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Plasma QUANT",
         "comments": "",
-        "step_number": "","lab_code":""
+        "step_number": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "cogs" : {
@@ -46,7 +47,7 @@
   },
   "gdna-quantified": {
     "1.0": {
-      "description": "plasma quantification",
+      "description": "DNA QUANTIFIED",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -56,9 +57,10 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "DNA QUANTIFIED",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "singleton": "0",

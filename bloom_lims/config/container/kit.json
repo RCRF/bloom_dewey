@@ -1,10 +1,11 @@
 {
   "generic": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Collection Kit",
       "properties": {
-        "name": "",
-        "comments": "","lab_code":""
+        "name": "Collection Kit",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

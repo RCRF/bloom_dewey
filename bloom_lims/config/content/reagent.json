@@ -3,7 +3,7 @@
     "1.0": {
       "description": "NaOH",
       "properties": {
-        "name": "",
+        "name": "NaOH",
         "volume": "",
         "volume_units": "",
         "comments": "",
@@ -31,7 +31,7 @@
     "1.0": {
       "description": "idt probes for rare mendelian disease, v1.0",
       "properties": {
-        "name": "",
+        "name": "idt probes for rare mendelian disease, v1.0",
         "volume": "",
         "volume_units": "",
         "comments": "",
@@ -60,7 +60,7 @@
       "description": "Novaseq sequencing kit",
       "singleton": "0",
       "properties": {
-        "name": "",
+        "name": "Novaseq sequencing kit",
         "volume": "",
         "volume_units": "",
         "comments": "",

@@ -1,10 +1,12 @@
 {
   "accession-package-kit-tubes-testreq": {
     "1.0": {
-      "description": "Full accessioning: Package receipt, kit receipt, tube receipt, test requisition.",
+      "description": "Carrier Package, Kit, Specimen Container, Test Requisition Accessioning & Specimen Assay Queue Registration",
       "instantiation_layouts": [],
       "properties": {
-        "comments": "","lab_code":""
+        "name": "Carrier Package, Kit, Specimen Container, Test Requisition Accessioning & Specimen Assay Queue Registration",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

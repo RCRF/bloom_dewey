@@ -1,7 +1,7 @@
 {
   "blood-whole": {
     "1.0": {
-      "description": "Generic whole blood sample",
+      "description": "Whole Blood",
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",
@@ -10,10 +10,11 @@
         "allocation_type" : ""
       },
       "properties": {
-        "name": "",
+        "name": "Whole Blood",
         "volume": "",
         "volume_units": "",
-        "comments": "","lab_code":""
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "singleton": "0",
@@ -23,12 +24,13 @@
   },
   "ffpe-block": {
     "1.0": {
-      "description": "Generic FFPE block",
+      "description": "FFPE Block",
       "properties": {
-        "name": "",
+        "name": "FFPE Block",
         "volume": "",
         "volume_units": "",
-        "comments": "","lab_code":""
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -45,8 +47,9 @@
   },
   "ffpe-slice": {
     "1.0": {
+      "description": "FFPE Slides",
       "properties": {
-        "name": "",
+        "name": "FFPE Slides",
         "volume": "",
         "volume_units": "",
         "comments": "","lab_code":""

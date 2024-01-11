@@ -5,7 +5,7 @@
       "valid_content": [
         "none"
       ],
-      "description": "For testing purposes, 24 well plate.",
+      "description": "24 fixed well plate",
       "singleton": "0",
       "instantiation_layouts": [
         [
@@ -433,7 +433,7 @@
       "valid_content": [
         "none"
       ],
-      "description": "Generic 96 well plate.",
+      "description": "96 well fixed plate",
       "singleton": "0",
       "cogs" : {
         "state" : "active",
@@ -1708,7 +1708,7 @@
         ]
       ],
       "properties": {
-        "name": "",
+        "name": "96 well plate fixed",
         "manufacturer": "",
         "lot_number": "",
         "lot_expiration_date": "",

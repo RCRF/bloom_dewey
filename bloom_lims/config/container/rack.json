@@ -5,7 +5,7 @@
       "valid_content": [
         "none"
       ],
-      "description": "Generic tube rack with 4 positions (for demonstration, this takes 3 strek and 1 eppi.",
+      "description": "4 position Rack",
       "singleton": "0",
       "instantiation_layouts": [
         [
@@ -64,8 +64,9 @@
         ]
       ],
       "properties": {
-        "name": "",
-        "comments": "","lab_code":""
+        "name": "4 position Rack",
+        "comments": "",
+        "lab_code":""
       },
       "cont_address": {
         "name": "",

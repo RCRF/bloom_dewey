@@ -7,9 +7,9 @@
       "valid_content": [
         "content/.*"
       ],
-      "description": "A well model for use in a fixed plate",
+      "description": "plate well - fixed",
       "properties": {
-        "name": "",
+        "name": "plate well - fixed",
         "diameter": "",
         "height": "",
         "volume": "",

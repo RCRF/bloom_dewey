@@ -1,10 +1,11 @@
 {
   "generic": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Generic Object Description",
       "properties": {
-        "name": "",
-        "comments": "","lab_code":""
+        "name": "Generic Object Name (displayed in UI, can be easily overidded in child template references)",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

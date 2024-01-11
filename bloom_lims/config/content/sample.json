@@ -1,9 +1,9 @@
 {
   "gdna": {
     "1.0": {
-      "description": "genomic DNA sample",
+      "description": "genomic DNA",
       "properties": {
-        "name": "",
+        "name": "genomic DNA",
         "volume": "",
         "volume_units": "",
         "comments": "","lab_code":""
@@ -23,10 +23,10 @@
   },
   "cfdna": {
     "1.0": {
-      "description": "cell free DNA sample",
+      "description": "cell free DNA ",
       "singleton": "0",
       "properties": {
-        "name": "",
+        "name": "cfDNA",
         "volume": "",
         "volume_units": "",
         "comments": "","lab_code":""
@@ -45,13 +45,14 @@
   },
   "blood-plasma": {
     "1.0": {
-      "description": "Generic blood plasma sample",
+      "description": "plasma (whole blood)",
       "singleton": "0",
       "properties": {
-        "name": "",
+        "name": "plasma (whole blood)",
         "volume": "",
         "volume_units": "",
-        "comments": "","lab_code":""
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
