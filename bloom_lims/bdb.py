@@ -621,26 +621,12 @@ class BloomObj:
 
         template = self.get_by_euid(template_euid)
 
-        # Special case for objects, like assays, which should only be instantiable 1x
-        # These are VERY special caase instances, who should only be created from a template ONE time.
-        # The need for these presently is to enable one instance of an ASSAY(special workflow)
-        singleton_only = template.json_addl.get("singleton", "0")
-        if singleton_only in [1, "1"]:
-            obj_check = self.query_instance_by_component_v2(
-                super_type=template.super_type,
-                btype=template.btype,
-                b_sub_type=template.b_sub_type,
-                version=template.version,
-            )
-            if len(obj_check) > 1:
-                raise Exception(
-                    f"Template {template_euid} is only allowed to be instantiated as a singleton {len(obj_check)} instances"
-                )
-
         if not template:
             self.logger.debug(f"No template found with euid:", template_euid)
             return
-
+                
+        is_singleton = False if template.json_addl.get("singleton", "0") in [0,"0"] else True
+        
         cname = template.polymorphic_discriminator.replace("_template", "_instance")
         parent_instance = getattr(self.Base.classes, f"{cname}")(
             name=template.name,
@@ -652,6 +638,7 @@ class BloomObj:
             bstate=template.bstate,
             bstatus=template.bstatus,
             super_type=template.super_type,
+            is_singleton=is_singleton,
             polymorphic_discriminator=template.polymorphic_discriminator.replace(
                 "_template", "_instance"
             ),
@@ -662,11 +649,18 @@ class BloomObj:
             if "action_imports" in parent_instance.json_addl
             else {}
         )
-        json_addl_overrides["action_groups"] = ai
-        _update_recursive(parent_instance.json_addl, json_addl_overrides)
-        self.session.add(parent_instance)
-        self.session.flush()
-        self.session.commit()
+        try:
+            json_addl_overrides["action_groups"] = ai
+            _update_recursive(parent_instance.json_addl, json_addl_overrides)
+            self.session.add(parent_instance)
+            self.session.flush()
+            self.session.commit()
+        except Exception as e:
+            self.logger.error(f"Error creating instance from template {template_euid}")
+            self.logger.error(e)
+            self.session.rollback()
+            raise Exception(f"Error creating instance from template {template_euid} ... {e} .. Likely Singleton Violation")
+
 
         return parent_instance
 
@@ -769,8 +763,6 @@ class BloomObj:
                     layout_str = i
                     layout_ds = ds[i]
                     child_instance = self._create_child_instance(layout_str, layout_ds)
-                    ## self.session.add(child_instance)
-                    ## self.session.flush()
                     lineage_record = self.Base.classes.generic_instance_lineage(
                         parent_instance_uuid=parent_instance.uuid,
                         child_instance_uuid=child_instance.uuid,
