@@ -51,10 +51,8 @@ $$ LANGUAGE plpgsql;
 commit;
 
 /*
-Generic Instance Relationships?
+......
 */
-
-
 CREATE SEQUENCE generic_template_seq;
 CREATE TABLE generic_template (
     uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -115,6 +113,8 @@ CREATE SEQUENCE cwx_instance_seq;
 CREATE SEQUENCE ay_instance_seq;
 CREATE SEQUENCE xx_instance_seq;
 CREATE SEQUENCE wsq_instance_seq;
+CREATE SEQUENCE mrxq_instance_seq;
+CREATE SEQUENCE mcxq_instance_seq;
 
 CREATE TABLE generic_instance (
     uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -178,6 +178,8 @@ BEGIN
             WHEN prefix = 'AY' THEN nextval('ay_instance_seq')
             WHEN prefix = 'XX' THEN nextval('xx_instance_seq')
             WHEN prefix = 'QX' THEN nextval('wsq_instance_seq')
+            WHEN prefix = 'MRX' THEN nextval('mrxq_instance_seq')
+            WHEN prefix = 'MCX' THEN nextval('mcxq_instance_seq')
             -- Add more cases for other prefixes
             ELSE nextval('generic_instance_seq') -- Default sequence
         END;
@@ -402,7 +404,5 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_dt();
 CREATE TRIGGER update_generic_template_mod_dt
 BEFORE UPDATE ON generic_template
 FOR EACH ROW EXECUTE FUNCTION update_modified_dt();
-
-
 
 -- FIN

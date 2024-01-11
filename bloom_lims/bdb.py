@@ -1030,6 +1030,31 @@ class BloomObj:
                 super_type, btype, b_sub_type, version
             )[0].euid
         )
+        
+    # Is this too special casey? Belong lower?
+    def create_container_with_content(self,cx_quad_tup, mx_quad_tup):
+        """ie CX=container, MX=content (material)
+        ("content", "control", "giab-HG002", "1.0"),
+        ("container", "tube", "tube-generic-10ml", "1.0")
+        """
+        container = self.create_instance(
+            self.query_template_by_component_v2(
+                cx_quad_tup[0], cx_quad_tup[1], cx_quad_tup[2], cx_quad_tup[3]
+            )[0].euid
+        )
+        content = self.create_instance(
+            self.query_template_by_component_v2(
+                mx_quad_tup[0], mx_quad_tup[1], mx_quad_tup[2], mx_quad_tup[3]
+            )[0].euid
+        )
+
+        container.json_addl['properties']['name'] = content.json_addl['properties']["name"]
+        flag_modified(container, "json_addl")
+        self.session.flush()
+        self.session.commit() 
+        self.create_generic_instance_lineage_by_euids(container.euid, content.euid)
+
+        return container, content
 
     # Delete Methods
     # Do not cascade delete!

@@ -129,5 +129,50 @@
         "allocation_type" : ""
       }
     }
+  },
+  "tube-10ml-glass": {
+    "1.0": {
+      "valid_parents": [],
+      "valid_content": [
+        "content/.*"
+      ],
+      "description": "10ml glass tube",
+      "properties": {
+        "name": "10ml glass tube",
+        "manufacturer": "",
+        "manufacturer_other": "",
+        "lot_number": "",
+        "lot_expiration_date": "",
+        "comments": "","lab_code":""
+      },
+      "cont_address": {
+        "name": "",
+        "row_name": "",
+        "col_name": "",
+        "row_idx": "0",
+        "col_idx": "0"
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "4.70",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
+    }
   }
 }
+
+
