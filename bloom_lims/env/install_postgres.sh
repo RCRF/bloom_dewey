@@ -32,13 +32,15 @@ if [[ "$1" == "" ]]; then
     fi
 fi
 
+export PGPORT=5445
+
 # Create database
 initdb -D $PGDATA
 
 # start server
-pg_ctl -D $PGDATA  -l $PGDATA/db.log start 
+pg_ctl -D $PGDATA -o "-p $PGPORT" -l $PGDATA/db.log start 
 
-psql -U $PGUSER -d postgres << EOF
+PGPORT=5445 psql -U $PGUSER -d postgres << EOF
 
 ALTER USER $PGUSER PASSWORD '$PGPASSWORD';
 
@@ -60,12 +62,6 @@ fi
 
 echo "\n\n\nSeeding the database templates now...\n\n\n"
 
-#ls ./bloom_lims/config/content/*json  | grep -v 'metadata.json' | sort | parallel  'python seed_db_containersGeneric.py {}' 
-#ls ./bloom_lims/config/workflow_step/*json  | grep -v 'metadata.json' | sort | parallel  'python seed_db_containersGeneric.py {}' 
-
-#ls ./bloom_lims/config/{workflow_step,content}/*json  | grep -v 'metadata.json' | sort | parallel  'python seed_db_containersGeneric.py {}' 
-
-# ls ./bloom_lims/config/*/*json  | grep -v 'metadata.json' | sort | parallel  'python seed_db_containersGeneric.py {}' 
 
 # The actions need to be available for some other containers to be seeded, so we do them first
 for file in $(ls ./bloom_lims/config/*/*json | grep  'action/' | grep -v 'metadata.json' | sort); do
