@@ -12,7 +12,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -37,7 +37,7 @@
   "carrier-screen": {
     "3.9": {
       "description": "Workset for carrier-screen 3.9",
-      "instantiable_n": "*",
+      "singleton": "0",
       "valid_parents": [
         {
           "workflow/assay/carrier-screen/3.9/": {}

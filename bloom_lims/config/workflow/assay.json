@@ -5,7 +5,7 @@
       "properties": {
         "comments": "","lab_code":""
       },
-      "instantiable_n": "1",
+      "singleton": "1",
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
@@ -67,7 +67,7 @@
         "comments": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "1",
+      "singleton": "1",
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {

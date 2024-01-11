@@ -16,7 +16,7 @@
         "comments": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "actions": {}
     }
@@ -32,7 +32,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",
@@ -53,7 +53,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",

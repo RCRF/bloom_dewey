@@ -13,7 +13,7 @@
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_imports": {
         "core": {
           "group_order": "1",

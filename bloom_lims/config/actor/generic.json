@@ -13,7 +13,7 @@
         "Address": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {
@@ -42,7 +42,7 @@
         "Address": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {

@@ -9,7 +9,7 @@
         "comments": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "actions": {},
       "instantiation_layouts": [],
@@ -24,7 +24,7 @@
   "cfdna": {
     "1.0": {
       "description": "cell free DNA sample",
-      "instantiable_n": "*",
+      "singleton": "0",
       "properties": {
         "name": "",
         "volume": "",
@@ -46,7 +46,7 @@
   "blood-plasma": {
     "1.0": {
       "description": "Generic blood plasma sample",
-      "instantiable_n": "*",
+      "singleton": "0",
       "properties": {
         "name": "",
         "volume": "",

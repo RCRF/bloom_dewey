@@ -72,7 +72,7 @@
           }
         ]
       ],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "cogs" : {
         "state" : "inactive",
@@ -143,7 +143,7 @@
           }
         ]
       ],
-      "instantiable_n": "*",
+      "singleton": "0",
       "cogs" : {
         "state" : "inactive",
         "cost" : "0.00",

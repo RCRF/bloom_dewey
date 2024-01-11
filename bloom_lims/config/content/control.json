@@ -10,7 +10,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -41,7 +41,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -72,7 +72,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {

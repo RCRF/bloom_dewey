@@ -618,10 +618,11 @@ class BloomObj:
 
         template = self.get_by_euid(template_euid)
 
-        # Special case for objects, like assays, which should only be instantiable 1x <-- I'm not sure I love this special case complexity...
-        # Specifically for assay instances, which should only have one active instance of it at a time.
-        instantiation_n_allowed = template.json_addl.get("instantiable_n", "*")
-        if instantiation_n_allowed in [1, "1"]:
+        # Special case for objects, like assays, which should only be instantiable 1x
+        # These are VERY special caase instances, who should only be created from a template ONE time.
+        # The need for these presently is to enable one instance of an ASSAY(special workflow)
+        singleton_only = template.json_addl.get("singleton", "0")
+        if singleton_only in [1, "1"]:
             obj_check = self.query_instance_by_component_v2(
                 super_type=template.super_type,
                 btype=template.btype,
@@ -630,7 +631,7 @@ class BloomObj:
             )
             if len(obj_check) > 1:
                 raise Exception(
-                    f"Template {template_euid} is only allowed to be instantiated once, but already has {len(obj_check)} instances"
+                    f"Template {template_euid} is only allowed to be instantiated as a singleton {len(obj_check)} instances"
                 )
 
         if not template:

@@ -6,7 +6,7 @@
         "none"
       ],
       "description": "For testing purposes, 24 well plate.",
-      "instantiable_n": "*",
+      "singleton": "0",
       "instantiation_layouts": [
         [
           {
@@ -434,7 +434,7 @@
         "none"
       ],
       "description": "Generic 96 well plate.",
-      "instantiable_n": "*",
+      "singleton": "0",
       "cogs" : {
         "state" : "active",
         "cost" : "4.00",

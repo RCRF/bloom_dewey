@@ -23,7 +23,7 @@
         "allocation_type" : ""
       },
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "instantiation_layouts": [],
       "action_groups": {},
       "action_imports": {
@@ -61,7 +61,7 @@
         "step_number": ""
       },
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_inputs": [
         {
           "container/tube/tube-strek-10ml/*/": {

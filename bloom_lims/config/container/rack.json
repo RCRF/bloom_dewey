@@ -6,7 +6,7 @@
         "none"
       ],
       "description": "Generic tube rack with 4 positions (for demonstration, this takes 3 strek and 1 eppi.",
-      "instantiable_n": "*",
+      "singleton": "0",
       "instantiation_layouts": [
         [
           {

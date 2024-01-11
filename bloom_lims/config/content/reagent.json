@@ -15,7 +15,7 @@
         "qualification_status": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "actions": {},
       "instantiation_layouts": [],
@@ -44,7 +44,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "actions": {},
       "instantiation_layouts": [],
       "cogs" : {
@@ -58,7 +58,7 @@
   "ILMN-nova-seq-kit": {
     "1.0": {
       "description": "Novaseq sequencing kit",
-      "instantiable_n": "*",
+      "singleton": "0",
       "properties": {
         "name": "",
         "volume": "",

@@ -8,7 +8,7 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "actions": {},
       "instantiation_layouts": [],
       "cogs" : {

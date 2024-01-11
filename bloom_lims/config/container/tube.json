@@ -2,7 +2,7 @@
   "tube-strek-10ml": {
     "1.0": {
       "valid_parents": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "valid_content": [
         "content/.*"
       ],

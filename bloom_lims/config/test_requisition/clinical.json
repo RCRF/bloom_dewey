@@ -22,7 +22,7 @@
         "comments": "","lab_code":""
       },
       "action_groups": {},
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_imports": {
         "core": {
           "group_order": "1",

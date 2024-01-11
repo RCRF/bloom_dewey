@@ -168,7 +168,7 @@ BEGIN
             WHEN prefix = 'CWX' THEN nextval('cwx_instance_seq')
             WHEN prefix = 'AY' THEN nextval('ay_instance_seq')
             WHEN prefix = 'XX' THEN nextval('xx_instance_seq')
-            WHEN prefix = 'WSQ' THEN nextval('wsq_instance_seq')
+            WHEN prefix = 'QX' THEN nextval('wsq_instance_seq')
             -- Add more cases for other prefixes
             ELSE nextval('generic_instance_seq') -- Default sequence
         END;
