@@ -8,7 +8,9 @@ bob_wf = BloomWorkflow(BLOOMdb3())
 
 bob_wfs = BloomWorkflowStep(BLOOMdb3())
 
+from random import randint
 
+ASSAY = "workflow/assay/hla-typing/1.2" if randint(0,9) < 4 else "workflow/assay/carrier-screen/3.9"
 
 giab_cx, giab_mx = bob_wf.create_container_with_content(
         ("container", "tube", "tube-generic-10ml", "1.0"),
@@ -176,7 +178,7 @@ def create_tubes(n=1):
         ]
         # This is super brittle, how I am currently linking Assay to TestReq...
         # = tr.json_addl["actions"]["add_container_to_assay_q"]
-        trf_assay_data["captured_data"]["assay_selection"] = "workflow/assay/hla-typing/1.2"
+        trf_assay_data["captured_data"]["assay_selection"] = ASSAY
         trf_assay_data["captured_data"]["Container EUID"] = trf_child_cont.euid
 
         set_status(bob_wfs, new_child_wfs, "complete")
