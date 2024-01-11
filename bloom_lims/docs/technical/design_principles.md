@@ -297,3 +297,4 @@ There are currently almost 100 instantiable object types. You can view them in t
 # Other Crap
 ## PGadmin Dashboard
 ![PGadmin Dashboard](../imgs/pgadmin_dashboard.png)
+* I will not entertain messaging based event driven architectures.  I think they are a mistake for this application. And unecessary AFAICT.  

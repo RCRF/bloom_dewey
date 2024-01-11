@@ -22,7 +22,7 @@
           "workflow/assay-workset/hla-typing/1.2/": {
             "json_addl": {
               "properties": {
-                "name" : "hey user, SET THIS NAME ",
+                "name" : "",
                 "comments": "",
                 "step_number": "0"
               }

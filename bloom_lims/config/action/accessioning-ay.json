@@ -24,7 +24,7 @@
           "workflow_step/queue/all-purpose/1.0/": {
             "json_addl": {
               "properties": {
-                "name" : "hey user, SET THIS NAME ",
+                "name" : "",
                 "comments": "",
                 "step_number": "0"
               }
