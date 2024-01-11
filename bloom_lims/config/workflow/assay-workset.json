@@ -23,7 +23,13 @@
           "actions": {
             "action/core/*/1.0/": {}
           }
-        }
+        }, 
+        "queue-move": {
+          "group_order": "2",
+          "group_name": "Move Queues",
+          "actions": {
+            "action/move-queues/*/1.0/": {}
+          }}
       },
       "instantiation_layouts": [
         []
@@ -59,6 +65,13 @@
           "group_name": "Core Actions",
           "actions": {
             "action/core/*/1.0/": {}
+          }
+        }, 
+        "queue-move": {
+          "group_order": "3",
+          "group_name": "Move Queues",
+          "actions": {
+            "action/move-queues/*/1.0/": {}
           }
         }
       },

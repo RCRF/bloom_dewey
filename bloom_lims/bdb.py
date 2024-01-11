@@ -1074,18 +1074,45 @@ class BloomObj:
             self.do_action_destroy_specimen_containers(euid, action_ds)
         elif action_method == "do_action_create_package_and_first_workflow_step_assay":
             self.do_action_create_package_and_first_workflow_step_assay(euid, action_ds)
+        elif action_method == "do_action_move_workset_to_another_queue":
+            self.do_action_move_workset_to_another_queue(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
         return self._do_action_base(euid, action, action_group, action_ds, now_dt)
 
 
+    def do_action_move_workset_to_another_queue(self, euid, action_ds):
+
+        wfset = self.get_by_euid(euid)
+        action_ds['captured_data']['q_selection']
+
+        # EXTRAORDINARILY SLOPPY.  I AM IN A REAL RUSH FOR FEATURES THO :-/
+        destination_q = ""
+        (super_type, btype, b_sub_type, version) = action_ds['captured_data']['q_selection'].lstrip('/').rstrip('/').split('/')
+        for q in wfset.child_of_lineages[0].parent_instance.child_of_lineages[0].parent_instance.parent_of_lineages:
+            if q.child_instance.btype == btype and q.child_instance.b_sub_type == b_sub_type:
+                destination_q = q.child_instance
+                break
+            
+        if len(wfset.child_of_lineages) != 1 or destination_q == "":
+            self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
+            self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
+            raise Exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
+
+        lineage_link = wfset.child_of_lineages[0]
+        self.create_generic_instance_lineage_by_euids(destination_q.euid, wfset.euid)
+        self.delete_obj(lineage_link)
+        self.session.flush()
+        self.session.commit()
+                                                  
+
+
+
     # Doing this globally for now
-    def do_action_create_package_and_first_workflow_step_assay(self, euid, action_ds={}):
-       
+    def do_action_create_package_and_first_workflow_step_assay(self, euid, action_ds={}):   
         wf = self.get_by_euid(euid)
-        
-        
+            
         #'workflow_step_to_attach_as_child': {'workflow_step/queue/all-purpose/1.0/': {'json_addl': {'properties': {'name': 'hey user, SET THIS NAME ',
         
         active_workset_q_wfs = ""

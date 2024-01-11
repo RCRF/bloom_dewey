@@ -50,7 +50,7 @@
           "group_order": "3",
           "group_name": "Move Queues",
           "actions": {
-            "action/core/*/1.0/": {}
+            "action/move-queues/*/1.0/": {}
           }
         }
       }

@@ -206,11 +206,11 @@
             "action/core/*/1.0/": {}
           }
         },
-        "assay-queue-accessioning": {
+        "accessioning-ay": {
           "group_order": "2",
-          "group_name": "Assay Queue Actions",
+          "group_name": "Package Receipt",
           "actions": {
-            "action/assay-queue-accessioning/*/1.0/": {}
+            "action/accessioning-ay/*/1.0/": {}
           }
         }
       },
