@@ -91,17 +91,23 @@
   },
   "carrier-screen": {
     "3.9": {
-      "description": "Carrier Screen v3.9",
-
+  
+      "description": "Carrier Screen 3.9",
       "properties": {
-        "name": "Carrier Screen v3.9",
+        "name": "Carrier Screen 3.9",
         "comments": "",
         "lab_code":""
       },
-      "expected_inputs": [],
       "singleton": "1",
+      "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "action_imports": {
         "core": {
           "group_order": "1",
@@ -111,40 +117,244 @@
           }
         }
       },
-      "cogs" : {
-        "state" : "active",
-        "cost" : "0.00",
-        "cost_split_by_children" : [{"*/*/*/*":{}}],
-        "allocation_type" : ""
-      },
       "instantiation_layouts": [
         [
           {
             "workflow_step/queue/plasma-isolation-queue-available/1.0/": {
+              "description" : "Ready For Plasma Isolation Queue",
               "json_addl": {
+                "description": "Ready For Plasma Isolation Queue",
                 "properties": {
+                  "name": "Ready For Plasma Isolation Queue",
                   "comments": "",
-                  "step_number": "1"
+                  "step_number": "1",
+                  "lab_code":""
                 }
               }
             }
           },
           {
-            "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
+            "workflow_step/queue/all-purpose/1.0/": {
+              "description" : "In Progress / Active WorkSets",
               "json_addl": {
+                "description": "In Progress / Active  WorkSets",
                 "properties": {
+                  "name":"In Propgress / Active WorkSets",
                   "comments": "",
-                  "step_number": "2"
+                  "step_number": "2",
+                  "lab_code":""
+                }
+              }
+            }
+          },
+
+          {
+            "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
+              "description" : "Completed WorkSets",
+              "json_addl": {
+                "description": "Completed WorkSets",
+                "properties": {
+                  "name":"Completed WorkSets",
+                  "comments": "",
+                  "step_number": "3",
+                  "lab_code":""
                 }
               }
             }
           },
           {
             "workflow_step/queue/plasma-isolation-queue-exception/1.0/": {
+              "description" : "Exception Queue of WorkSets",
               "json_addl": {
+                "description": "Exception Queue of WorkSets", 
                 "properties": {
+                 "name": "Exception Queue of WorkSets", 
                   "comments": "",
-                  "step_number": "3"
+                  "step_number": "4",
+                  "lab_code":""
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  },
+  "accessioning-clinical": {
+    "1.0": {
+      "description": "Accessioning - Clinical",
+      "properties": {
+        "name": "Accessioning - Clinical",
+        "comments": "",
+        "lab_code":""
+      },
+      "singleton": "1",
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "assay-queue-accessioning": {
+          "group_order": "2",
+          "group_name": "Assay Queue Actions",
+          "actions": {
+            "action/assay-queue-accessioning/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [
+        [
+        
+          {
+            "workflow_step/queue/all-purpose/1.0/": {
+              "description" : "In Progress Prod Accessioning WorkSets",
+              "json_addl": {
+                "description": "In Progress Prod Accessioning  WorkSets",
+                "properties": {
+                  "name":"In Propgress Prod Accessioning WorkSets",
+                  "comments": "",
+                  "step_number": "1",
+                  "lab_code":""
+                }
+              }
+            }
+          },
+
+          {
+            "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
+              "description" : "Completed Prod Accessioning Worksets",
+              "json_addl": {
+                "description": "Completed Prod Accessioning Worksets",
+                "properties": {
+                  "name":"Completed Prod Accessioning Worksets",
+                  "comments": "",
+                  "step_number": "2",
+                  "lab_code":""
+                }
+              }
+            }
+          },
+          {
+            "workflow_step/queue/plasma-isolation-queue-exception/1.0/": {
+              "description" : "Exception Prod Accessioning Queue",
+              "json_addl": {
+                "description": "Exception Prod Accessioning Queue", 
+                "properties": {
+                 "name": "Exception Prod Accessioning Queue", 
+                  "comments": "",
+                  "step_number": "3",
+                  "lab_code":""
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  },
+  "accessioning-RnD": {
+    "1.0": {
+      "description": "Accessioning For R&D",
+      "properties": {
+        "name": "Accessioning For R&D",
+        "comments": "",
+        "lab_code":""
+      },
+      "singleton": "1",
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "accessioning-ay": {
+          "group_order": "2",
+          "group_name": "Package Receipt",
+          "actions": {
+            "action/accessioning-ay/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [
+        [
+    
+          {
+            "workflow_step/queue/all-purpose/1.0/": {
+              "description" : "In Progress RnD Accessioning WorkSets",
+              "action_imports": {
+                "corei": {
+                  "group_order": "1",
+                  "group_name": "Core ActionsIMP",
+                  "actions": {
+                    "action/core/*/1.0/": {}
+                  }
+                }},
+                "assay-queue-accessioning": {
+                  "group_order": "2",
+                  "group_name": "Assay Queue Actions",
+                  "actions": {
+                    "action/assay-queue-accessioning/*/1.0/": {}
+                  }
+                },
+              "json_addl": {
+                "description": "In Progress RnD Accessioning  WorkSets",
+                "properties": {
+                  "name":"In Propgress RnD Accessioning WorkSets",
+                  "comments": "",
+                  "step_number": "1",
+                  "lab_code":""
+                }
+              }
+            }
+          },
+
+          {
+            "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
+              "description" : "Completed RnD Accessioning Worksets",
+              "json_addl": {
+                "description": "Completed RnD Accessioning Worksets",
+                "properties": {
+                  "name":"Completed RnD Accessioning Worksets",
+                  "comments": "",
+                  "step_number": "2",
+                  "lab_code":""
+                }
+              }
+            }
+          },
+          {
+            "workflow_step/queue/plasma-isolation-queue-exception/1.0/": {
+              "description" : "Exception RnD Accessioning Queue",
+              "json_addl": {
+                "description": "Exception RnD Accessioning Queue", 
+                "properties": {
+                 "name": "Exception RnD Accessioning Queue", 
+                  "comments": "",
+                  "step_number": "3",
+                  "lab_code":""
                 }
               }
             }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Workflow Details</title>
+        <title>Bloom Obj Details</title>
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
@@ -13,7 +13,7 @@
                 <button class="accordion"
                         data-state="{{ accordion_states[step.euid] }}"
                         id="{{ step.euid }}">
-                    <small style="color:var(--accordion-prefix);">step</small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a> <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.json_addl['properties'].get('name', 'NONAME') }}  :: ({{ step.bstate }} &  {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                    <small style="color:var(--accordion-prefix);"> {{ step.btype }} </small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a> <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.json_addl['properties'].get('name', 'NONAME') }}  :: ({{ step.bstate }} &  {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
                 </button>
                 <div class="workflow-step"
                      style="display: {{ 'block' if accordion_states[step.euid] == 'open' else 'none' }}">
@@ -24,7 +24,7 @@
                                 class="accordion non-wf-step"
                                 data-state="{{ accordion_states[step.euid] }}"
                                 id="{{ step.euid }}">
-                            <small><a href=plate_visualization?plate_euid={{ step.euid }}> {{ step.btype }}</a> </small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a>  <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} & {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                            <small><a href=plate_visualization?plate_euid={{ step.euid }}> {{ step.b_sub_type }}</a> </small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a>  <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} & {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
                         </button>
                         <div class="workflow-step"
                              style="font-size: 2px;
@@ -152,9 +152,13 @@
                                 </div>
                             </div>
                         {% endmacro %}
+                        <div style="display: -webkit-inline-box;">
                         <h1>
-                            Workflow Details: {{ workflow.name }} <span style="font-size: 18px;">: : :</span><a style="font-size: 18px;" href=euid_details?euid={{ workflow.euid }}>{{ workflow.euid }}</a>  <span style="font-size: 18px;">: : :</span><a style="font-size: 18px;"  href=dindex>( graph view )</a> <span style="font-size: 18px;">: : :</span><a href=/ style="font-size: 18px;">( B )</a>
+                        <a  href=euid_details?euid={{ workflow.euid }}>{{ workflow.euid }}</a> :
+                         {{ workflow.json_addl.get('properties',{}).get('name','hey you, ADD A NAME') }} 
                         </h1>
+                        <h4> <font style="color: darkgray;">: : : : : : </font> <a  href=dindex>( graph view )</a><font style="color: darkgray;">  : : :  </font><a href=/ >( h o m e )</a> </h4>
+                    </div>
                         <ul>
                             {% if workflow.json_addl and 'action_groups' in workflow.json_addl %}
                                 <div class="action-group-group">
@@ -182,7 +186,7 @@
                                         </ul>
                                     </ul>
                                     <ul>
-                                        <h2>Workflow Steps</h2>
+                                        <h2>Nested Children</h2>
                                         <div>
                                             {% for step in workflow.get_sorted_parent_of_lineages(['workflow_instance']) %}
                                                 <h1>

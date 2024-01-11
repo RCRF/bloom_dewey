@@ -1062,7 +1062,7 @@ class BloomObj:
     # Global Object Actions
     #
     def do_action(self,euid, action, action_group, action_ds, now_dt="" ):
-                
+
         action_method = action_ds["method_name"]
         now_dt = get_datetime_string()
         if action_method == "do_action_set_object_status":
@@ -1072,6 +1072,8 @@ class BloomObj:
             
         elif action_method == "do_action_destroy_specimen_containers":
             self.do_action_destroy_specimen_containers(euid, action_ds)
+        elif action_method == "do_action_create_package_and_first_workflow_step_assay":
+            self.do_action_create_package_and_first_workflow_step_assay(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
@@ -1079,8 +1081,81 @@ class BloomObj:
 
 
     # Doing this globally for now
-    def do_action_set_printer_config(self, euid, action_ds={}):
-        pass
+    def do_action_create_package_and_first_workflow_step_assay(self, euid, action_ds={}):
+       
+        wf = self.get_by_euid(euid)
+        
+        
+        #'workflow_step_to_attach_as_child': {'workflow_step/queue/all-purpose/1.0/': {'json_addl': {'properties': {'name': 'hey user, SET THIS NAME ',
+        
+        active_workset_q_wfs = ""
+        (super_type, btype, b_sub_type, version) = list(action_ds["workflow_step_to_attach_as_child"].keys())[0].lstrip('/').rstrip('/').split('/')
+        for pwf_child_lin in wf.parent_of_lineages:
+            if pwf_child_lin.child_instance.btype == btype and pwf_child_lin.child_instance.b_sub_type == b_sub_type:
+                active_workset_q_wfs = pwf_child_lin.child_instance
+                break
+        if active_workset_q_wfs == "":
+            self.logger.exception(f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}")
+            raise Exception(f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}")
+                                                                                                                   
+        # 1001897582860000245100773464327825
+        fx_opsmd = {}
+
+        try:
+            fx_opsmd = self.track_fedex.get_fedex_ops_meta_ds(
+                action_ds["captured_data"]["Tracking Number"]
+            )
+        except Exception as e:
+            self.logger.exception(f"ERROR: {e}")
+
+        action_ds["captured_data"]["Fedex Tracking Data"] = fx_opsmd
+
+        wfs = ""
+        for layout_str in action_ds["child_workflow_step_obj"]:
+            wfs = self.create_instance_by_code(
+                layout_str, action_ds["child_workflow_step_obj"][layout_str]
+            )
+            self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, wfs.euid)
+            self.session.flush()
+            self.session.commit()
+
+        package = ""
+        for layout_str in action_ds["new_container_obj"]:
+            for cv_k in action_ds["captured_data"]:
+                action_ds["new_container_obj"][layout_str]["json_addl"]["properties"][
+                    "fedex_tracking_data"
+                ] = fx_opsmd
+                action_ds["new_container_obj"][layout_str]["json_addl"]["properties"][
+                    cv_k
+                ] = action_ds["captured_data"][cv_k]
+
+            package = self.create_instance_by_code(
+                layout_str, action_ds["new_container_obj"][layout_str]
+            )
+            self.session.flush()
+            self.session.commit()
+
+        self.session.flush()
+        self.session.commit()
+
+        self.create_generic_instance_lineage_by_euids(wfs.euid, package.euid)
+
+        return wfs
+        
+        # There are A LOT of common patterns with these actions, and only a small number of them too. ABSCRACT MOAR
+        
+        # Get the euid obj, which is the AY
+        
+        # Get the AY child workflow queue object defined by the action
+        
+        # Create the new workset object
+        
+        # Create the new package object, wiuth the captured data from the action
+        
+        # link package to workset
+        # link workset to workflow queue object
+        
+        
         
         
     def do_action_print_barcode_label(self, euid, action_ds={}):
@@ -1828,9 +1903,9 @@ class BloomWorkflowStep(BloomObj):
             raise Exception(f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}")
         
         new_wf = ""
-        for wlayout_str in action_ds["workflow_to_attach"]:
+        for wlayout_str in action_ds["workflow_step_to_attach_as_child"]:
             new_wf = self.create_instance_by_code(
-                wlayout_str, action_ds["workflow_to_attach"][wlayout_str]
+                wlayout_str, action_ds["workflow_step_to_attach_as_child"][wlayout_str]
             )
             self.session.commit()
         self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, new_wf.euid)
@@ -1858,6 +1933,7 @@ class BloomWorkflowStep(BloomObj):
             # soft delete the edge w the queue
             for aa in parent_cx.child_of_lineages:
                 if aa.parent_instance.euid == wfs.euid:
+                    self.create_generic_instance_lineage_by_euids(new_wf.euid, aa.child_instance.euid)
                     self.delete_obj(aa)
 
             self.create_generic_instance_lineage_by_euids(

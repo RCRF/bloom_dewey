@@ -18,7 +18,7 @@
         "attach_under_root_workflow_queue": {
           "workflow_step/queue/all-purpose/1.0/": {}
         },
-        "workflow_to_attach": {
+        "workflow_step_to_attach_as_child": {
           "workflow/assay-workset/hla-typing/1.2/": {
             "json_addl": {
               "properties": {
