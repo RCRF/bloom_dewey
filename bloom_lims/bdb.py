@@ -524,7 +524,6 @@ class BLOOMdb3:
             setattr(self.Base.classes, class_name, cls)
 
 
-
     def close(self):
         self.session.close()
         self.engine.dispose()
@@ -668,7 +667,7 @@ class BloomObj:
         return parent_instance
 
     def create_instances_from_uuid(self, uuid):
-        return self.create_instances(self.get_by_uuid(uuid).euid)
+        return self.create_instances(self.get(uuid).euid)
 
     # fix naming, instance_type==table_name_prefix
     def create_instances(self, template_euid):
@@ -840,7 +839,7 @@ class BloomObj:
         if version == "*":
             version = "1.0"
 
-        template = self.get_template_by_components(
+        template = self.query_template_by_component_v2(
             super_type, btype, b_sub_type, version
         )[0]
 
@@ -851,7 +850,6 @@ class BloomObj:
         self.session.commit()
 
         return new_instance
-
 
     def _parse_layout_string(self, layout_str):
         parts = layout_str.split("/")
@@ -900,84 +898,13 @@ class BloomObj:
         return False
 
     """
-    get methods
-        note: assuming you have a UUID or EUID and know its is_deleted status already, so not filtering on that.
+    get methods.  get() assumes a uuid, which is funny as its rarely used. get_by_euid() is the workhorse.
     """
 
+    # It is VERY nice to be able to query all three instance related tables in one go. 
+    # Admitedly, this is a far scaled back remnant of a far more elaborate and hair rasising situation when there were more tables.
+    # There is benefit 
     def get(self, uuid):
-        return self.get_by_uuid(uuid)
-
-    # Also a holdover from the all table query nonsense.  can be removed
-    def get_by_uuid(self, uuid):
-        """Return the euid for a uuid
-
-        Args:
-            uuid str(): the UUID string
-
-        Returns:
-            str() : the euid string
-        """
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)
-
-        no = class_name.replace("generic", super_type)
-        return self.session.get(getattr(self.Base.classes, no), uuid)
-
-    def get_by_euid(self, euid):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)
-        no = class_name.replace("generic", super_type)
-        return self.session.get(getattr(self.Base.classes, no), uuid)
-
-    """
-    Query Methods
-        note: asusming filtering of is_deleted 
-    """
-
-    def query(self, bclass_table, euid):
-        raise Exception("Not implemented")
-
-    def query_by_euid(self, euid):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)
-        self.session.flush()
-        return (
-            self.session.query(getattr(self.Base.classes, class_name))
-            .filter_by(uuid=uuid, is_deleted=self.is_deleted)
-            .all()
-        )
-
-    def query_by_uuid(self, uuid):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)
-        self.session.flush()
-        return (
-            self.session.query(getattr(self.Base.classes, class_name))
-            .filter_by(uuid=uuid, is_deleted=self.is_deleted)
-            .all()
-        )
-
-    def query_all_tables_by_uuid(self, uuid):
         """Global query for uuid across all tables in schema with 'uuid' field
             note does not handle is_deleted!
         Args:
@@ -985,39 +912,32 @@ class BloomObj:
 
         Returns:
             [] : Array of rows
-        """
-        
+        """        
         res = self.session.query(self.Base.classes.generic_instance).filter(
-                self.Base.classes.generic_instance.uuid == uuid,
+                self.Base.classes.generic_instance.uuid == uuid, self.Base.classes.generic_instance.is_deleted==self.is_deleted
             ).all()
         res2 = self.session.query(self.Base.classes.generic_template).filter(
-            self.Base.classes.generic_template.uuid == uuid,
+            self.Base.classes.generic_template.uuid == uuid, self.Base.classes.generic_template.is_deleted==self.is_deleted
         ).all()
         res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
-            self.Base.classes.generic_instance_lineage.uuid == uuid,
+            self.Base.classes.generic_instance_lineage.uuid == uuid, self.Base.classes.generic_instance_lineage.is_deleted==self.is_deleted
         ).all()
         
         combined_result = res + res2 + res3
 
         if len(combined_result) > 1:
-            raise Exception(f"Multiple templates found for {uuid}") 
+            raise Exception(f"Multiple {len(combined_results)} templates found for {uuid}") 
         elif len(combined_result) == 0:
             self.logger.debug(f"No template found with uuid:", uuid)
-            return []
+            self.logger.debug(f"On second thought, if we are using a UUID and there is no match.. exception:", uuid)
+            raise Exception(f"No template found with uuid:", uuid)
         else:
-             return [
-                 combined_result[0].polymorphic_discriminator, 
-                 combined_result[0].euid, 
-                 combined_result[0].uuid, 
-                 combined_result[0].super_type, 
-                 combined_result[0].polymorphic_discriminator
-                 ]  
-
-
-    # This is a holdover from when the schema had many more tables and I wanted a unified euid query... 
-    # Looping through the 3 tables gets me this effect and removes a special database function!
-    # This all might be jettisonable also
-    def query_all_tables_by_euid(self, euid):
+            return combined_result[0]
+            
+    # It is VERY nice to be able to query all three instance related tables in one go. 
+    # Admitedly, this is a far scaled back remnant of a far more elaborate and hair rasising situation when there were more tables.
+    # There is benefit 
+    def get_by_euid(self, euid):
         """Global query for euid across all tables in schema with 'euid' field
            note: does not handle is_deleted!
         Args:
@@ -1027,33 +947,27 @@ class BloomObj:
             [] : Array of rows
         """
         res = self.session.query(self.Base.classes.generic_instance).filter(
-                self.Base.classes.generic_instance.euid == euid,
+                self.Base.classes.generic_instance.euid == euid, self.Base.classes.generic_instance.is_deleted==self.is_deleted
             ).all()
         res2 = self.session.query(self.Base.classes.generic_template).filter(
-            self.Base.classes.generic_template.euid == euid,
+            self.Base.classes.generic_template.euid == euid, self.Base.classes.generic_template.is_deleted==self.is_deleted
         ).all()
         res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
-            self.Base.classes.generic_instance_lineage.euid == euid,
+            self.Base.classes.generic_instance_lineage.euid == euid, self.Base.classes.generic_instance_lineage.is_deleted==self.is_deleted
         ).all()
         
         combined_result = res + res2 + res3
 
-
         if len(combined_result) > 1:
-            raise Exception(f"Multiple templates found for {euid}") 
+            raise Exception(f"Multiple {len(combined_result)} templates found for {euid}") 
         elif len(combined_result) == 0:
             self.logger.debug(f"No template found with euid:", euid)
-            return []
+            raise Exception(f"No template found with euid:", euid)
         else:
-             return [
-                 combined_result[0].polymorphic_discriminator, 
-                 combined_result[0].euid, 
-                 combined_result[0].uuid, 
-                 combined_result[0].super_type, 
-                 combined_result[0].polymorphic_discriminator
-                 ]  
+            return combined_result[0]
 
-
+    # This is the mechanism for finding the database object(s) which math the template reference pattern
+    # V2... why?
     def query_instance_by_component_v2(
         self, super_type=None, btype=None, b_sub_type=None, version=None, bstate=None
     ):
@@ -1075,6 +989,8 @@ class BloomObj:
         if bstate is not None:
             query = query.filter(self.Base.classes.generic_instance.bstate == bstate)
 
+        query = query.filter(self.Base.classes.generic_instance.is_deleted == self.is_deleted)
+        
         # Execute the query
         return query.all()
 
@@ -1099,79 +1015,18 @@ class BloomObj:
         if bstate is not None:
             query = query.filter(self.Base.classes.generic_template.bstate == bstate)
 
+        query = query.filter(self.Base.classes.generic_template.is_deleted == self.is_deleted)
         # Execute the query
         return query.all()
-
-    def get_instance_by_components(
-        self, super_type, btype, b_sub_type, version, bstate="active"
-    ):
-        results = (
-            self.session.query(self.Base.classes.generic_instance)
-            .filter(
-                self.Base.classes.generic_instance.super_type == super_type,
-                self.Base.classes.generic_instance.btype == btype,
-                self.Base.classes.generic_instance.b_sub_type == b_sub_type,
-                self.Base.classes.generic_instance.version == version,
-                self.Base.classes.generic_instance.bstate == bstate,
-            )
-            .all()
-        )
-        return results
 
     def create_instance_by_template_components(
         self, super_type, btype, b_sub_type, version, bstate="active"
     ):
         return self.create_instances(
-            self.get_template_by_components(
+            self.query_template_by_component_v2(
                 super_type, btype, b_sub_type, version, bstate
             )[0].euid
         )
-
-    def get_template_by_components(
-        self, super_type, btype, b_sub_type, version, bstate="active"
-    ):
-        results = (
-            self.session.query(self.Base.classes.generic_template)
-            .filter(
-                self.Base.classes.generic_template.super_type == super_type,
-                self.Base.classes.generic_template.btype == btype,
-                self.Base.classes.generic_template.b_sub_type == b_sub_type,
-                self.Base.classes.generic_template.version == version,
-                self.Base.classes.generic_template.bstate == bstate,
-            )
-            .all()
-        )
-        return results
-
-    # UPDATE Methods
-
-    def update_by_euid(self, euid, update_dict):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)
-        self.session.query(getattr(self.Base.classes, class_name)).filter_by(
-            uuid=uuid, is_deleted=self.is_deleted
-        ).update(update_dict)
-        self.session.flush()
-        self.session.commit()
-
-    def update_by_uuid(self, uuid, update_dict):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)
-        self.session.query(getattr(self.Base.classes, class_name)).filter_by(
-            uuid=uuid, is_deleted=self.is_deleted
-        ).update(update_dict)
-        self.session.flush()
-        self.session.commit()
 
     # Delete Methods
     # Do not cascade delete!
@@ -1185,7 +1040,7 @@ class BloomObj:
         elif euid:
             obj = self.get_by_euid(euid).uuid
         else:
-            obj = self.get_by_uuid(uuid)
+            obj = self.get(uuid)
 
         obj.is_deleted = True
         self.session.flush()
@@ -1583,7 +1438,7 @@ class BloomWorkflow(BloomObj):
 
     # This can be made more widely useful now that i've detangled the wf-wfs special relationship
     def get_sorted_uuid(self, workflow_id):
-        wfobj = self.get_by_uuid(workflow_id)
+        wfobj = self.get(workflow_id)
 
         def sort_key(child_instance):
             # Fetch the step_number if it exists, otherwise return a high value to sort it at the end
@@ -1939,7 +1794,7 @@ class BloomWorkflowStep(BloomObj):
         btype = "sample"
         b_sub_type = "blood-plasma"
         version = "1.0"
-        results = self.get_template_by_components(
+        results = self.query_template_by_component_v2(
             super_type, btype, b_sub_type, version
         )
 
@@ -1949,7 +1804,7 @@ class BloomWorkflowStep(BloomObj):
         cx_btype = "tube"
         cx_b_sub_type = "tube-generic-10ml"
         cx_version = "1.0"
-        cx_results = self.get_template_by_components(
+        cx_results = self.query_template_by_component_v2(
             cx_super_type, cx_btype, cx_b_sub_type, cx_version
         )
 
@@ -2022,7 +1877,7 @@ class BloomWorkflowStep(BloomObj):
         btype = "plate"
         b_sub_type = "fixed-plate-24"
         version = "1.0"
-        results = self.get_template_by_components(
+        results = self.query_template_by_component_v2(
             super_type, btype, b_sub_type, version
         )
 
@@ -2040,7 +1895,7 @@ class BloomWorkflowStep(BloomObj):
             b_sub_type = "gdna"
             version = "1.0"
 
-            results = self.get_template_by_components(
+            results = self.query_template_by_component_v2(
                 super_type, btype, b_sub_type, version
             )
 
@@ -2100,9 +1955,7 @@ class BloomWorkflowStep(BloomObj):
             self.session.rollback()
             raise e
 
-        results = self.get_instance_by_components(
-            super_type, btype, b_sub_type, version, state
-        )
+        results = self.query_instance_by_component_v2( super_type, btype, b_sub_type, version, state)
 
         if len(results) != 1:
             self.logger.exception(

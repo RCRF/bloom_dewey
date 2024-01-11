@@ -76,8 +76,19 @@ CREATE TABLE generic_template (
 );
 
 
+
+CREATE INDEX idx_generic_template_type ON generic_template(btype);
 CREATE INDEX idx_generic_template_euid ON generic_template(euid);
 CREATE INDEX idx_generic_template_is_deleted ON generic_template(is_deleted);
+CREATE INDEX idx_generic_template_super_type ON generic_template(super_type);
+CREATE INDEX idx_generic_template_b_sub_type ON generic_template(b_sub_type);
+CREATE INDEX idx_generic_template_verssion ON generic_template(version);
+CREATE INDEX idx_generic_template_bstate ON generic_template(bstate);
+CREATE INDEX idx_generic_template_mod_df ON generic_template(modified_dt);
+CREATE INDEX idx_generic_template_instance_prefix ON generic_template(instance_prefix);
+CREATE INDEX idx_generic_template_polymorphic_discriminator  ON generic_template(polymorphic_discriminator);
+CREATE INDEX idx_generic_template_json_addl_gin ON generic_template USING GIN (json_addl);
+
 ALTER TABLE generic_template
 ADD CONSTRAINT unique_super_type_btype_b_sub_type_version
 UNIQUE (super_type, btype, b_sub_type, version);
@@ -119,10 +130,17 @@ CREATE TABLE generic_instance (
     modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX idx_generic_instance_polymorphic_discriminator ON generic_instance(polymorphic_discriminator);
 CREATE INDEX idx_generic_instance_type ON generic_instance(btype);
 CREATE INDEX idx_generic_instance_euid ON generic_instance(euid);
 CREATE INDEX idx_generic_instance_is_deleted ON generic_instance(is_deleted);
 CREATE INDEX idx_generic_instance_template_uuid ON generic_instance(template_uuid);
+CREATE INDEX idx_generic_instance_super_type ON generic_instance(super_type);
+CREATE INDEX idx_generic_instance_b_sub_type ON generic_instance(b_sub_type);
+CREATE INDEX idx_generic_instance_verssion ON generic_instance(version);
+CREATE INDEX idx_generic_instance_bstate ON generic_instance(bstate);
+CREATE INDEX idx_generic_instance_mod_df ON generic_instance(modified_dt);
+CREATE INDEX idx_generic_instance_json_addl_gin ON generic_instance USING GIN (json_addl);
 
 CREATE OR REPLACE TRIGGER trigger_generic_instance_soft_delete
 BEFORE DELETE ON generic_instance
@@ -193,6 +211,9 @@ CREATE INDEX idx_generic_instance_lineage_euid ON generic_instance_lineage(euid)
 CREATE INDEX idx_generic_instance_lineage_is_deleted ON generic_instance_lineage(is_deleted);
 CREATE INDEX idx_generic_instance_lineage_parent_uuid ON generic_instance_lineage(parent_instance_uuid);
 CREATE INDEX idx_generic_instance_lineage_child_uuid ON generic_instance_lineage(child_instance_uuid);
+CREATE INDEX idx_generic_instance_lineage_mod_dt ON generic_instance_lineage(modified_dt);
+CREATE INDEX idx_generic_instance_lineage_polymorphic_discriminator ON generic_instance_lineage(polymorphic_discriminator);
+CREATE INDEX idx_generic_instance_lineage_json_addl_gin ON generic_instance_lineage USING GIN (json_addl);
 
 CREATE OR REPLACE TRIGGER generic_instance_lineage_soft_delete
 BEFORE DELETE ON generic_instance_lineage
@@ -222,6 +243,12 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_audit_log_rel_table_name ON audit_log(rel_table_name);
 CREATE INDEX idx_audit_log_rel_table_uuid_fk ON audit_log(rel_table_uuid_fk);
 CREATE INDEX idx_audit_log_rel_table_euid_fk ON audit_log(rel_table_euid_fk);
+CREATE INDEX idx_audit_log_is_deleted ON audit_log(is_deleted);
+CREATE INDEX idx_audit_log_operation_type ON audit_log(operation_type);
+CREATE INDEX idx_audit_log_changed_at ON audit_log(changed_at);
+CREATE INDEX idx_audit_log_changed_by ON audit_log(changed_by);
+CREATE INDEX idx_audit_log_json_addl_gin ON audit_log USING GIN (json_addl);
+
 
 /*
 Audit Trigger Mechanisms
