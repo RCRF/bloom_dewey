@@ -72,11 +72,15 @@ CREATE TABLE generic_template (
     bstate TEXT,
     bstatus TEXT NOT NULL,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    is_singleton BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE UNIQUE INDEX idx_genric_template_unique_singleton_key 
+ON generic_template (super_type, btype, b_sub_type, version) 
+WHERE is_singleton = TRUE;
 
-
+CREATE INDEX idx_generic_template_singleton ON generic_template(is_singleton);
 CREATE INDEX idx_generic_template_type ON generic_template(btype);
 CREATE INDEX idx_generic_template_euid ON generic_template(euid);
 CREATE INDEX idx_generic_template_is_deleted ON generic_template(is_deleted);
@@ -127,8 +131,12 @@ CREATE TABLE generic_instance (
     bstatus TEXT NOT NULL,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     template_uuid UUID NOT NULL REFERENCES generic_template(uuid),
-    modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    is_singleton BOOLEAN NOT NULL DEFAULT FALSE
 );
+CREATE UNIQUE INDEX idx_genric_instance_unique_singleton_key 
+ON generic_instance (super_type, btype, b_sub_type, version) 
+WHERE is_singleton = TRUE;
 
 CREATE INDEX idx_generic_instance_polymorphic_discriminator ON generic_instance(polymorphic_discriminator);
 CREATE INDEX idx_generic_instance_type ON generic_instance(btype);
@@ -141,6 +149,7 @@ CREATE INDEX idx_generic_instance_verssion ON generic_instance(version);
 CREATE INDEX idx_generic_instance_bstate ON generic_instance(bstate);
 CREATE INDEX idx_generic_instance_mod_df ON generic_instance(modified_dt);
 CREATE INDEX idx_generic_instance_json_addl_gin ON generic_instance USING GIN (json_addl);
+CREATE INDEX idx_generic_instance_singleton ON generic_instance(is_singleton);
 
 CREATE OR REPLACE TRIGGER trigger_generic_instance_soft_delete
 BEFORE DELETE ON generic_instance
@@ -204,7 +213,8 @@ CREATE TABLE generic_instance_lineage (
     bstatus TEXT,    
     version TEXT,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    is_singleton BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX idx_generic_instance_lineage_euid ON generic_instance_lineage(euid);
@@ -238,7 +248,8 @@ CREATE TABLE audit_log (
     json_addl JSONB,
     super_type TEXT,
     deleted_record_json JSONB,
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    is_singleton BOOLEAN NOT NULL DEFAULT FALSE
 );
 CREATE INDEX idx_audit_log_rel_table_name ON audit_log(rel_table_name);
 CREATE INDEX idx_audit_log_rel_table_uuid_fk ON audit_log(rel_table_uuid_fk);

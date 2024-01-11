@@ -1,9 +1,11 @@
 {
   "hla-typing": {
     "1.2": {
-      "description": "Generic json def file",
+      "description": "HLA Typing v1.2",
       "properties": {
-        "comments": "","lab_code":""
+        "name": "HLA Typing v1.2",
+        "comments": "",
+        "lab_code":""
       },
       "singleton": "1",
       "expected_inputs": [],
@@ -28,30 +30,42 @@
         [
           {
             "workflow_step/queue/plasma-isolation-queue-available/1.0/": {
+              "description" : "Ready For Plasma Isolation",
               "json_addl": {
+                "description": "Ready For Plasma Isolation",
                 "properties": {
+                  "name": "Ready For Plasma Isolation",
                   "comments": "",
-                  "step_number": "1"
+                  "step_number": "1",
+                  "lab_code":""
                 }
               }
             }
           },
           {
             "workflow_step/queue/plasma-isolation-queue-removed/1.0/": {
+              "description" : "Completed Worflow Sets",
               "json_addl": {
+                "description": "Completed Worflow Sets",
                 "properties": {
+                  "name":"Completed Workflow Sets",
                   "comments": "",
-                  "step_number": "2"
+                  "step_number": "2",
+                  "lab_code":""
                 }
               }
             }
           },
           {
             "workflow_step/queue/plasma-isolation-queue-exception/1.0/": {
+              "description" : "Exception Workflow Sets",
               "json_addl": {
+                "description": "Exception Workflow Sets", 
                 "properties": {
+                 "name": "Exception Workflow Sets", 
                   "comments": "",
-                  "step_number": "3"
+                  "step_number": "3",
+                  "lab_code":""
                 }
               }
             }

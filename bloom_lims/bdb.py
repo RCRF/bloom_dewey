@@ -122,7 +122,10 @@ class bloom_core(Base):
 
     json_addl = Column(JSON, nullable=True)
 
+    is_singleton = Column(BOOLEAN, nullable=False, server_default=FetchedValue())
+
     is_deleted = Column(BOOLEAN, nullable=True, server_default=FetchedValue())
+
 
 
 ## Generic
@@ -970,7 +973,7 @@ class BloomObj:
     # This is the mechanism for finding the database object(s) which math the template reference pattern
     # V2... why?
     def query_instance_by_component_v2(
-        self, super_type=None, btype=None, b_sub_type=None, version=None, bstate=None
+        self, super_type=None, btype=None, b_sub_type=None, version=None
     ):
         query = self.session.query(self.Base.classes.generic_instance)
 
@@ -987,8 +990,8 @@ class BloomObj:
             )
         if version is not None:
             query = query.filter(self.Base.classes.generic_instance.version == version)
-        if bstate is not None:
-            query = query.filter(self.Base.classes.generic_instance.bstate == bstate)
+        #if bstate is not None:
+        #    query = query.filter(self.Base.classes.generic_instance.bstate == bstate)
 
         query = query.filter(self.Base.classes.generic_instance.is_deleted == self.is_deleted)
         
@@ -996,7 +999,7 @@ class BloomObj:
         return query.all()
 
     def query_template_by_component_v2(
-        self, super_type=None, btype=None, b_sub_type=None, version=None, bstate=None
+        self, super_type=None, btype=None, b_sub_type=None, version=None
     ):
         query = self.session.query(self.Base.classes.generic_template)
 
@@ -1013,8 +1016,8 @@ class BloomObj:
             )
         if version is not None:
             query = query.filter(self.Base.classes.generic_template.version == version)
-        if bstate is not None:
-            query = query.filter(self.Base.classes.generic_template.bstate == bstate)
+        #if bstate is not None:
+        #    query = query.filter(self.Base.classes.generic_template.bstate == bstate)
 
         query = query.filter(self.Base.classes.generic_template.is_deleted == self.is_deleted)
         # Execute the query
@@ -1025,7 +1028,7 @@ class BloomObj:
     ):
         return self.create_instances(
             self.query_template_by_component_v2(
-                super_type, btype, b_sub_type, version, bstate
+                super_type, btype, b_sub_type, version
             )[0].euid
         )
 
@@ -1930,15 +1933,10 @@ class BloomWorkflowStep(BloomObj):
     def do_action_add_container_to_assay_q(self, obj_euid, action_ds):
         # This action should be coming to us from a TRI ... kind of breaking my model... how to deal with this?
 
-        # could look for this key dynamically in the future.
-        # ___workflow/assay/ .... this indicates the template to use is 'worflow/assay' and the remaining is the assay_selection value
-        # I made some progress in this direction, now using state to flag locked AYs
-
         super_type = action_ds["captured_data"]["assay_selection"].split("/")[0]
         btype = action_ds["captured_data"]["assay_selection"].split("/")[1]
         b_sub_type = action_ds["captured_data"]["assay_selection"].split("/")[2]
         version = action_ds["captured_data"]["assay_selection"].split("/")[3]
-        state = "locked"
 
         cont_euid = action_ds["captured_data"]["Container EUID"]
 
@@ -1956,11 +1954,11 @@ class BloomWorkflowStep(BloomObj):
             self.session.rollback()
             raise e
 
-        results = self.query_instance_by_component_v2( super_type, btype, b_sub_type, version, state)
+        results = self.query_instance_by_component_v2( super_type, btype, b_sub_type, version)
 
         if len(results) != 1:
             self.logger.exception(
-                f"Could not find SINGLE assay instance for {super_type}/{btype}/{b_sub_type}/{version} .. {state}"
+                f"Could not find SINGLE assay instance for {super_type}/{btype}/{b_sub_type}/{version}"
             )
             self.logger.exception(
                 f"Could not find SINGLE assay instance for {super_type}/{btype}/{b_sub_type}/{version}"

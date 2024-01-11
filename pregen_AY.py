@@ -19,6 +19,6 @@ for tobe_locked_assay in (
 ):
     print(f"WHATISTHIS::: {tobe_locked_assay}")
     gi = bob.create_instances(tobe_locked_assay.euid)[0][0]
-    gi.bstate = "locked"
-    flag_modified(gi, "bstate")
+    gi.is_singleton = True
+    flag_modified(gi, "is_singleton")
     bob.session.commit()
