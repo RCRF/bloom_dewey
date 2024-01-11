@@ -438,7 +438,7 @@ class WorkflowService(object):
     def uuid_details(self, uuid):
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         # Fetch the object using uuid
-        obj = bobdb.get_by_uuid(uuid)
+        obj = bobdb.get(uuid)
         raise cherrypy.HTTPRedirect("/euid_details?euid=" + str(obj.euid))
 
     @cherrypy.expose
@@ -950,13 +950,13 @@ class WorkflowService(object):
 
         for lineage in lineages:
             if (
-                not BO.get_by_uuid(lineage.child_instance_uuid).is_deleted
-                and not BO.get_by_uuid(lineage.parent_instance_uuid).is_deleted
+                not BO.get(lineage.child_instance_uuid).is_deleted
+                and not BO.get(lineage.parent_instance_uuid).is_deleted
             ):
                 edge = {
                     "data": {
-                        "source": BO.get_by_uuid(lineage.parent_instance_uuid).euid,
-                        "target": BO.get_by_uuid(lineage.child_instance_uuid).euid,
+                        "source": BO.get(lineage.parent_instance_uuid).euid,
+                        "target": BO.get(lineage.child_instance_uuid).euid,
                         "id": lineage.euid,
                     },
                     "group": "edges",
