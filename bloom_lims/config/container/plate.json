@@ -403,7 +403,7 @@
       "expected_inputs": [],
       "cogs" : {
         "state" : "active",
-        "cost" : "1.00",
+        "cost" : "2.00",
         "cost_split_by_children" : [{"*/*/*/*":{}}],
         "allocation_type" : ""
       },
@@ -437,7 +437,7 @@
       "instantiable_n": "*",
       "cogs" : {
         "state" : "active",
-        "cost" : "1.00",
+        "cost" : "4.00",
         "cost_split_by_children" : [{"*/*/*/*":{}}],
         "allocation_type" : ""
       },

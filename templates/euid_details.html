@@ -129,13 +129,11 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Name</td>
+                        <td>DB Name<ul>Given Name<br>Lab Code</ul></td>
                         <td>
-                            <form method="post" action="/update_object_name">
-                                <input type="hidden" name="euid" value="{{ object.euid }}">
-                                <input type="text" name="name" value="{{ object.name }}">
-                                <input type="submit" value="rename">
-                            </form>
+                            {{ object.name }}<ul>
+                            {{ object.json_addl['properties']['name'] }}<br>
+                            {{ object.json_addl['properties']['lab_code'] }}</ul>
                         </td>
                     </tr>
                     <tr>

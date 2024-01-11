@@ -80,7 +80,7 @@
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",
-        "cost" : "1.00",
+        "cost" : "1.50",
         "cost_split_by_children" : [{"*/*/*/*":{}}],
         "allocation_type" : ""
       }
@@ -123,7 +123,7 @@
       "instantiation_layouts": [],
       "cogs" : {
         "state" : "active",
-        "cost" : "1.00",
+        "cost" : "1.70",
         "cost_split_by_children" : [{"*/*/*/*":{}}],
         "allocation_type" : ""
       }
