@@ -111,6 +111,46 @@ class WorkflowService(object):
         return template.render( style=self.get_root_style(), user_logged_in=user_logged_in)
 
 
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def assays(self):
+        user_logged_in = True if 'user_data' in cherrypy.session else False
+        template = self.env.get_template("assay.html")
+        bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+        ay_ds = {}
+        for i in (
+            bobdb.session.query(bobdb.Base.classes.workflow_instance)
+            .filter_by(is_deleted=False,is_singleton=True)
+            .all()
+        ):
+            ay_ds[i.euid] = i
+        assays = []
+        ay_dss = {}
+        
+        for i in sorted(ay_ds.keys()):
+            assays.append(ay_ds[i])
+            ay_dss[i] = {"Instantaneous COGS" : round(bobdb.get_cost_of_euid_children(i),2)}
+            ay_dss[i]['tot'] = 0
+            for q in ay_ds[i].parent_of_lineages:
+                wset = ''
+                n = q.child_instance.json_addl['properties']['name']
+                if n.startswith('In'):
+                    wset = 'inprog'
+                elif n.startswith('Comple'):
+                    wset = 'complete'
+                elif n.startswith('Exception'):
+                    wset = 'exception'
+                elif n.startswith('Ready'):
+                    wset = 'avail'
+                ay_dss[i][wset]=len(q.child_instance.parent_of_lineages)
+                ay_dss[i]['tot'] += len(q.child_instance.parent_of_lineages)
+            ay_dss[i]['conv'] = float(ay_dss[i]['complete']) / float( ay_dss[i]['complete'] + ay_dss[i]['exception']) if ay_dss[i]['complete'] + ay_dss[i]['exception'] > 0 else 'na'  
+            ay_dss[i]['wsetp'] = float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']) if ay_dss[i]['tot'] > 0 else 'na'
+    
+    
+            
+        return template.render( style=self.get_root_style(), workflow_instances=assays, ay_stats=ay_dss)
+
 
     @cherrypy.expose
     def logout(self):

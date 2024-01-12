@@ -34,18 +34,10 @@
     </ul>
 
     <br>
-    <div id="template-css-section" >
-
-    <h2> Templates Available & Instantiation </h2>
-    <ul>
-        <li><a href="/object_templates_summary">all object templates available for instantiation (there are currently ~100)</a></li>
-    </ul>
-</div>
-    <br>
     <h2>User Session Configuration </h2>
+    <hr>
 
-    <ul>
-        <hr>
+    <ul><ul>
 
         <div id="zebra-css-section" >
     <h3>Zebra Printer Config</h3>
@@ -69,8 +61,8 @@
         {% endfor %}
     </table></div>
     <br>
-    </ul>
-    <hr>
+    </ul><ul>
+    
     <div id="skin-css-section" >
     <h3 >Change The Bloom Skin CSS</h3>
     <small>Placing a valid css file in static/skins will make the CSS available here.</small>
@@ -92,10 +84,8 @@
         </tr>
         {% endfor %}
     </table></div>
-</ul>
-
     <br>
-    <hr>
+    
     <h3>Bloom Other Session Settings</h3>
     <ul>
 
@@ -111,6 +101,25 @@
         {% endfor %}
     </table>
     </ul>
+</ul></ul>
+    <h2>
+        Raw Workflow View (not intended for operational use)
+       </h2>
+       <hr>
+
+       <ul>
+           <li>   <a href="/workflow_summary">All visible workflows</a></li>
+       </ul>
+    <br>
+    <div id="template-css-section" >
+
+    <h2> Complete Report Detailing All Loaded Template Models (not for operational use)</h2>
+    <hr>
+
+    <ul>
+        <li><a href="/object_templates_summary">all object templates available for instantiation (there are currently ~100)</a></li>
+    </ul>
+</div>
 
 
 </ul></ul>

@@ -106,7 +106,7 @@
             </div>
       
                 <select style="font-size: 10px;" id="layoutSelect" onchange="changeLayout(this.value)">
-                    <option style="font-size: 10px;" value="cose">Alter Layout</option>
+                    <option style="font-size: 10px;" value="dagre">Alter Layout</option>
                     <option style="font-size: 10px;" value="dagre">Hierarchical</option>
                     <option style="font-size: 10px;" value="cose">Cose (default)</option>
                     <option style="font-size: 10px;" value="breadthfirst">Breadthfirst</option>
@@ -183,7 +183,7 @@
         var globalFilterLevel = parseFloat('{{ globalFilterLevel }}') || 0;
         var globalZoom = parseFloat('{{ globalZoom }}') || 4;
         var globalStartNodeEUID = '{{ globalStartNodeEUID }}' || null;
-        var currentLayoutName = 'cose'; // Default layout
+        var currentLayoutName = 'dagre'; // Default layout
 
         function filterNodes(distance) {
             document.getElementById('distanceDisplay').innerText = distance;

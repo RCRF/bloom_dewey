@@ -20,6 +20,7 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-size: var(--font-size-standard);
+    font-weight: inherit; 
 }
 
 .container {
@@ -60,6 +61,8 @@ body {
 /* General Button Style */
 button {
     font-size: var(--font-size-standard);
+    font-weight: inherit; 
+    font-family: var(--font-family);
     background-color: var(--primary-color);
     color: var(--text-color);
     border: none;
