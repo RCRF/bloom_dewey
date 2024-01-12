@@ -1406,7 +1406,7 @@ class BloomObj:
             active_children = len([child for child in orm_instance.parent_of_lineages if 'cogs' in child.json_addl and child.json_addl['cogs'].get('state') == 'active'])
             if active_children == 0:
                 active_children = 1.0
-            return cost * float(fractional_cost) / float(active_children)
+            return cost #* float(fractional_cost) / float(active_children)
 
         # Recursive function to traverse the graph and accumulate COGS
         def traverse_and_calculate_children_cogs(orm_instance):
@@ -1596,7 +1596,7 @@ class BloomWorkflow(BloomObj):
         def sort_key(child_instance):
             # Fetch the step_number if it exists, otherwise return a high value to sort it at the end
             return int(
-                child_instance.json_addl["properties"].get("step_number", float("inf"))
+                child_instance.json_addl["properties"].get("step_number", float("0")) if child_instance.json_addl["properties"].get("step_number", float("inf")) not in ["", None] else float("0")
             )
 
         # Assuming wfobj is your top-level object

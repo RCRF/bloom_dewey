@@ -28,9 +28,10 @@
 </head>
 <body>
     <a href=/> Bloom </a> <small> <a href=dindex>( graph view )</a></small> <a href=https://github.com/Daylily-Informatics/bloom><font style="font-size: 10px;">github</font></a>
-
+<h1>ASSAYS</h1>
     {% for assay in workflow_instances %}
-    <button class="accordion">{{ assay.euid }} - {{ assay.json_addl['properties'].get('name',assay.euid) }} <a href=/euid_details?euid={{ assay.euid }}>object</a> & <a href=/workflow_details?workflow_euid={{ assay.euid }}>process</a> perspectives also avail.
+    <button class="accordion">{{ assay.euid }} - {{ assay.json_addl['properties'].get('name',assay.euid) }} 
+        <a href=/euid_details?euid={{ assay.euid }}>object</a> 
         <hr>
         <ul>
          /// QUEUES ( <b>{{ ay_stats.get(assay.euid,{}).get('avail','na') }}</b> : avail )  ( <b>{{ ay_stats.get(assay.euid,{}).get('inprog','na') }}</b> : underway )       ( <b>{{ ay_stats.get(assay.euid,{}).get('complete','na') }}</b> : completed )   ( <b>{{ ay_stats.get(assay.euid,{}).get('exception','na') }}</b> : exception )
@@ -42,15 +43,32 @@
         /// WORKSET OCCUPANCY ( <b>{{ ay_stats.get(assay.euid,{}).get('workset_occupancy','%unused capacity') }}</b> ) </ul>
             </button>
     <div class="panel">
-    <ul>Further AY & queue detail can still be added.<br>
-        For more addl details <a href=/euid_details?euid={{ assay.euid }}>THIS VIEW</a> is helpful & object interactions details <a href=/workflow_details?workflow_euid={{ assay.euid }}> THIS IS HELPFUL</a>.
+        <ul>
+    Assay Queues<ul>
         {% for queue in assay.parent_of_lineages %}
+        <button class="accordion">   
+            <p> <a href=/euid_details?euid={{ queue.child_instance.euid }}>{{ queue.child_instance.euid }}</a> {{ queue.child_instance.json_addl.get('properties',{}).get('name','na') }} - Items: {{ queue.child_instance.items_count }} - More stats...</p>
+
+        </button>
+        <div class="panel">
+
             {% if queue.child_instance.btype == 'queue' %}
-                <p> <a href=/euid_details?euid={{ queue.child_instance.euid }}>{{ queue.child_instance.euid }}</a> {{ queue.child_instance.json_addl.get('properties',{}).get('name','na') }} - Items: {{ queue.child_instance.items_count }} - More stats...</p>
-            {% endif %}
+                <ul>Worksets
+                    <ul>
+                        {% if queue.child_instance.parent_of_lineages|length == 0 %}
+                        no worksets in queue.
+                        {% endif %}
+                    {% for wset in queue.child_instance.parent_of_lineages %}
+                        <p> <a href=/workflow_details?workflow_euid={{ wset.child_instance.euid }}>{{ wset.child_instance.euid }}</a> {{ wset.child_instance.json_addl.get('properties',{}).get('name','na') }} - Items: {{ wset.child_instance.items_count }} - More stats...</p>
+                    
+                {% endfor %}
+                    </ul></ul>
+                {% endif %}
+        </div>
         {% endfor %}
     </ul>
     </div>
+</ul>
     {% endfor %}
 
     <script>
