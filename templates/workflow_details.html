@@ -5,8 +5,20 @@
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
+        
+        <style>
+            .floating-buttonf {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                /* Add more styling as needed */
+            }
+
+        </style>
     </head>
     <body>
+        <button id="toggleFilterButton" class="floating-buttonf">minimal recursion:{{ udat.get('wf_filter','XXX') }}</button>
+
         {% macro render_step(step, accordion_states) %}
             {% if step.polymorphic_discriminator == 'workflow_step_instance' or step.polymorphic_discriminator == 'workflow_instance' %}
                 <hr>
@@ -132,16 +144,24 @@
                                 </ul>
                                 <div>
                                     <ul>
-                                        <!-- Recursive call for child steps -->
+                                        <!-- Recursive call for child steps -->     
+                                                                                      
+
                                         {% if step.parent_of_lineages %}
                                             <div>
                                                 {% for child_step in step.get_sorted_parent_of_lineages(['container_instance']) %}
-                                                    {% if child_step.child_instance.super_type != 'workflow_step' %}
+                                                {% if child_step.child_instance.super_type != 'workflow_step' and udat.get('wf_filter','off') == 'off' %}
                                                         <ul>
                                                         {% else %}
                                                         {% endif %}
+                                                        {% if child_step.child_instance.super_type == 'workflow_step' %}
+
                                                         {{ render_step(child_step.child_instance, accordion_states) }}
-                                                        {% if child_step.child_instance.super_type != 'workflow_step' %}
+
+                                                        {% elif  child_step.child_instance.super_type != 'workflow_step' and udat.get('wf_filter','off') == 'off' %}
+                                                        {{ render_step(child_step.child_instance, accordion_states) }}
+                                                        {% endif %}
+                                                        {% if child_step.child_instance.super_type != 'workflow_step' and udat.get('wf_filter','off') == 'off' %}
                                                         </ul>
                                                     {% else %}
                                                     {% endif %}
@@ -185,13 +205,17 @@
                                             <strong>Created at:</strong> {{ workflow.created_dt }}
                                         </ul>
                                     </ul>
-                                    <ul>
-                                        <h2>Nested Children</h2>
-                                        <div>
-                                            {% for step in workflow.get_sorted_parent_of_lineages(['workflow_instance']) %}
-                                                <h1>
-                                                    {{ render_step(step.child_instance, accordion_states) }}
-                                                {% endfor %}
+                                    <div>
+                                        {% for step in workflow.get_sorted_parent_of_lineages(['workflow_instance']) %}
+                                        {% if loop.first %}
+                                        <hr>
+
+                                            {{ render_step(step.child_instance, accordion_states) }}
+                                            <ul>
+                                        {% else %}
+                                            {{ render_step(step.child_instance, accordion_states) }}
+                                        {% endif %}
+                                    {% endfor %}
                                             </div>
                                         </ul>
                                         <a href="/workflow_summary">Back to WF Summary</a>
@@ -225,6 +249,30 @@
         
         document.getElementById('expandAll').addEventListener('click', expandAllAccordions);
         document.getElementById('collapseAll').addEventListener('click', collapseAllAccordions);
+                                        </script>
+                                        <script>
+                                            document.getElementById('toggleFilterButton').addEventListener('click', function() {
+                                                var currentVal = '{{ udat.get("wf_filter","na") }}'; // or innerHTML, depending on how you've set up your button
+                                        
+                                                // Prepare the URL for the AJAX request
+                                                var url = '/set_filter?curr_val=' + currentVal;
+                                        
+                                                // Perform the AJAX request
+                                                fetch(url)
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        // Update the button text with the new filter value
+                                                        document.getElementById('toggleFilterButton').textContent = data.new_filter_value;
+                                              
+                                                    
+                                              
+                                                    })
+                                                    .catch(error => console.error('Error:', error));
+                                            
+                                            
+                                                // Reload the page
+                                                window.location.reload();
+                                                });
                                         </script>
                                     </body>
                                 </html>

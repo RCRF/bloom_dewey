@@ -186,7 +186,8 @@
       "properties": {
         "name": "Accessioning - Clinical",
         "comments": "",
-        "lab_code":""
+        "lab_code":"",
+        "ay_addl":"fedex"
       },
       "singleton": "1",
       "expected_inputs": [],
@@ -199,13 +200,6 @@
         "allocation_type" : ""
       },
       "action_imports": {
-        "core": {
-          "group_order": "1",
-          "group_name": "Core Actions",
-          "actions": {
-            "action/core/*/1.0/": {}
-          }
-        },
         "accessioning-ay": {
           "group_order": "2",
           "group_name": "Package Receipt",
@@ -270,7 +264,8 @@
       "properties": {
         "name": "Accessioning For R&D",
         "comments": "",
-        "lab_code":""
+        "lab_code":"",
+        "ay_addl":"fedex"
       },
       "singleton": "1",
       "expected_inputs": [],
@@ -283,13 +278,6 @@
         "allocation_type" : ""
       },
       "action_imports": {
-        "core": {
-          "group_order": "1",
-          "group_name": "Core Actions",
-          "actions": {
-            "action/core/*/1.0/": {}
-          }
-        },
         "accessioning-ay": {
           "group_order": "2",
           "group_name": "Package Receipt",

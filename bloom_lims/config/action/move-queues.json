@@ -14,11 +14,11 @@
         "description": "Move Workset To Another Queue",
         "action_name": "Move Workset To Another Queue",
         "action_executed": "0",
-        "max_executions": "1",
+        "max_executions": "-1",
         "action_enabled": "1",
         "capture_data": "yes",
         "captured_data": {
-          "_move_to_q": "<select name=&quot;q_selection&quot;><option value=&quot;workflow_step/queue/plasma-isolation-queue-exception/1.0&quot;>Move To Exception Q</option><option value=&quot;workflow_step/queue/plasma-isolation-queue-removed/1.0&quot;>Move To Completed Q</option></select>"
+          "_move_to_q": "<select name=&quot;q_selection&quot;><option value=&quot;workflow_step/queue/plasma-isolation-queue-removed/1.0&quot;>Move To Completed Q</option>  <option value=&quot;workflow_step/queue/plasma-isolation-queue-exception/1.0&quot;>Move To Exception Q</option></select>"
         },
         "deactivate_actions_when_executed": [],
         "executed_datetime": [],

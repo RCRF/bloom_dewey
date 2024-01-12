@@ -195,6 +195,7 @@ class WorkflowService(object):
 
         # Set user session
         cherrypy.session['user_data'] = user_data.get(email, {})
+        cherrypy.session['user_data']['wf_filter'] = 'off'
         cherrypy.session['user'] = email
         # Redirect to a different page or render a success message
         raise cherrypy.HTTPRedirect('/')
@@ -223,6 +224,17 @@ class WorkflowService(object):
         except Exception as e:
             cherrypy.log("Error in calculate_cogs_parents: ", traceback=True)
             return json.dumps({"success": False, "message": str(e)})
+    
+    
+    
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def set_filter(self, curr_val='off'):
+        if curr_val == 'off':
+            cherrypy.session['user_data']['wf_filter'] = 'on'
+        else:
+            cherrypy.session['user_data']['wf_filter'] = 'off'
+
     
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -719,7 +731,7 @@ class WorkflowService(object):
         template = self.env.get_template("workflow_details.html")
         workflow = bwfdb.get_sorted_euid(workflow_euid)
         accordion_states = dict(cherrypy.session)
-        return template.render(style=self.get_root_style(),workflow=workflow, accordion_states=accordion_states)
+        return template.render(style=self.get_root_style(),workflow=workflow, accordion_states=accordion_states, udat=cherrypy.session['user_data'])
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

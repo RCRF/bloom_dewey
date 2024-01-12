@@ -96,7 +96,7 @@
             <h1>
                 Object Details : {{ object.euid }} : : <a href=/plate_visualization?plate_euid={{ object.euid }}>plate view</a>
             </h1>
-        {% elif  object.super_type  == 'workflow' %}
+        {% elif  object.super_type  == 'workflow' and object.btype != 'assay' %}
             <h1>
                 Object Details : {{ object.euid }} : : <a href=workflow_details?workflow_euid={{ object.euid }}>workflow view</a>
             </h1>

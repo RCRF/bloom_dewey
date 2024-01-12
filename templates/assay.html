@@ -4,6 +4,8 @@
     <title>Assay Overview</title>
     <link rel="stylesheet" href="{{ style.skin_css }}">
     <link rel="stylesheet" href="static/style.css">
+    <script src="static/action_buttons.js"></script>
+
     <style>
         .accordion {
             cursor: pointer;
@@ -24,14 +26,19 @@
         b {
             color: gold;        
         }
+        button .accordion {  
+            background-color: var(--secondary-color);
+        }
     </style>
 </head>
 <body>
     <a href=/> Bloom </a> <small> <a href=dindex>( graph view )</a></small> <a href=https://github.com/Daylily-Informatics/bloom><font style="font-size: 10px;">github</font></a>
 <h1>ASSAYS</h1>
+
     {% for assay in workflow_instances %}
-    <button class="accordion">{{ assay.euid }} - {{ assay.json_addl['properties'].get('name',assay.euid) }} 
-        <a href=/euid_details?euid={{ assay.euid }}>object</a> 
+   
+    <button class="accordion"><a target=a href=/euid_details?euid={{ assay.euid }}>{{ assay.euid }}</a> - {{ assay.json_addl['properties'].get('name',assay.euid) }} 
+        
         <hr>
         <ul>
          /// QUEUES ( <b>{{ ay_stats.get(assay.euid,{}).get('avail','na') }}</b> : avail )  ( <b>{{ ay_stats.get(assay.euid,{}).get('inprog','na') }}</b> : underway )       ( <b>{{ ay_stats.get(assay.euid,{}).get('complete','na') }}</b> : completed )   ( <b>{{ ay_stats.get(assay.euid,{}).get('exception','na') }}</b> : exception )
@@ -43,23 +50,64 @@
         /// WORKSET OCCUPANCY ( <b>{{ ay_stats.get(assay.euid,{}).get('workset_occupancy','%unused capacity') }}</b> ) </ul>
             </button>
     <div class="panel">
+        <div>
+            {% if  assay.json_addl['action_groups'].items()|length > 1 %}
+            Actions
+        
+            <div>
+                <div id="actionGroupsContent" class="content" style="display:block;">
+
+            {% if assay.json_addl and 'action_groups' in assay.json_addl %}
+            <div class="action-group-group">
+                {% for group_key, group_value in assay.json_addl['action_groups'].items() %}
+                    <div class="action-group">
+                        {{ group_value.group_name }}
+                        {% for action_key, action_value in group_value.actions.items() %}
+                            <button class="action_button"
+                                    onclick="showCapturedDataForm(this, {{ action_value }}, '{{ assay.euid }}', '{{ action_key }}', '{{ group_key }}')"
+                                    {% if action_value.action_enabled == "0" %}disabled style="color: gray;"{% endif %}>
+                                {{ action_value.action_name }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        </div>
+        <div>
         <ul>
     Assay Queues<ul>
         {% for queue in assay.parent_of_lineages %}
         <button class="accordion">   
-            <p> <a href=/euid_details?euid={{ queue.child_instance.euid }}>{{ queue.child_instance.euid }}</a> {{ queue.child_instance.json_addl.get('properties',{}).get('name','na') }} - Items: {{ queue.child_instance.items_count }} - More stats...</p>
-
+            {% if queue.child_instance.b_sub_type == 'plasma-isolation-queue-available' %}
+            
+            <p> <a href=/euid_details?euid={{ queue.child_instance.euid }}>{{ queue.child_instance.euid }}</a> {{ queue.child_instance.json_addl.get('properties',{}).get('name','na') }} ( available:  {{ ay_stats.get(assay.euid,{}).get('avail','na') }} ) </p>
+           
+            
+            {% else %}
+            
+            <p> <a href=/euid_details?euid={{ queue.child_instance.euid }}>{{ queue.child_instance.euid }}</a> {{ queue.child_instance.json_addl.get('properties',{}).get('name','na') }} </p>
+            
+            {% endif %}
         </button>
         <div class="panel">
+            {% if queue.child_instance.b_sub_type == 'plasma-isolation-queue-available' %}
 
-            {% if queue.child_instance.btype == 'queue' %}
+                <ul>
+                    <h3>
+                <a target=pq href=workflow_details?workflow_euid={{ queue.child_instance.euid }}>Process Queue</a>
+                    </h3></ul>
+
+            {% elif queue.child_instance.btype == 'queue' %}
                 <ul>Worksets
                     <ul>
                         {% if queue.child_instance.parent_of_lineages|length == 0 %}
                         no worksets in queue.
                         {% endif %}
                     {% for wset in queue.child_instance.parent_of_lineages %}
-                        <p> <a href=/workflow_details?workflow_euid={{ wset.child_instance.euid }}>{{ wset.child_instance.euid }}</a> {{ wset.child_instance.json_addl.get('properties',{}).get('name','na') }} - Items: {{ wset.child_instance.items_count }} - More stats...</p>
+                        <p> <a target=pq2 href=/workflow_details?workflow_euid={{ wset.child_instance.euid }}>{{ wset.child_instance.euid }}</a> {{ wset.child_instance.json_addl.get('properties',{}).get('name','na') }} - Items: {{ wset.child_instance.items_count }} - More stats...</p>
                     
                 {% endfor %}
                     </ul></ul>
@@ -68,11 +116,12 @@
         {% endfor %}
     </ul>
     </div>
-</ul>
+</ul></div>
+</div>
     {% endfor %}
 
     <script>
-        var acc = document.getElementsByClassName("accordion");
+        var acc = document.getElementsByClassName("accordionx");
         var i;
 
         for (i = 0; i < acc.length; i++) {
@@ -86,6 +135,20 @@
                 }
             });
         }
+
+
+document.querySelectorAll('.collapsiblex').forEach(button => {
+    button.addEventListener('click', function() {
+        var contentId = this.getAttribute('data-target');
+        var contentDiv = document.getElementById(contentId);
+        
+        if (contentDiv.style.display === "block") {
+            contentDiv.style.display = "none";
+        } else {
+            contentDiv.style.display = "block";
+        }
+    });
+});
     </script>
 </body>
 </html>
