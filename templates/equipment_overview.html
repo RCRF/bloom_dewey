@@ -9,6 +9,20 @@
     </head>
     <body>
         <small><a href=dindex>( graph )</a></small> <small><a href= />( B )</a></small>
+
+        <h1>Create New Equipment</h1>
+        {% if template_list %}
+            <form action="/create_from_template" method="post">
+                <label for="template">Choose a Template:</label>
+                <select name="euid" id="euid">
+                    {% for template in template_list %}<option value="{{ template.euid }}">{{ template.name }}</option>{% endfor %}
+                </select>
+                <input type="submit" value="Create">
+            </form>
+        {% else %}
+            <p>No templates available for creating new equipment.</p>
+        {% endif %}
+
         <h1>Equipment List</h1>
         {% if equipment_list %}
             <ul>
@@ -22,17 +36,6 @@
         {% else %}
             <p>No equipment found.</p>
         {% endif %}
-        <h2>Create New Equipment</h2>
-        {% if template_list %}
-            <form action="/create_from_template" method="post">
-                <label for="template">Choose a Template:</label>
-                <select name="euid" id="euid">
-                    {% for template in template_list %}<option value="{{ template.euid }}">{{ template.name }}</option>{% endfor %}
-                </select>
-                <input type="submit" value="Create">
-            </form>
-        {% else %}
-            <p>No templates available for creating new equipment.</p>
-        {% endif %}
+       
     </body>
 </html>
