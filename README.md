@@ -98,7 +98,7 @@ This approach facilitates easier modifications and extensions to the schema. If 
 <img width="1200" alt="bloom-lims-instantiated-abstracts" src="bloom_lims/docs/imgs/bloom_nested.png">
 
 ## Object Detail
-<img width="1202" alt="bloom-lims-obj-view" src="bloom_lims/docs/imgs/obj.png">
+<img width="1202" alt="bloom-lims-obj-view" src="bloom_lims/docs/imgs/bloom-lims-obj-view.png">
 
 ### Specialized Object Detail Views 
 
@@ -109,7 +109,7 @@ _bloom natively will support arbitrarily defined labware, a 96w plate is just on
 
 
 ### Exhaustive & Comprehensive Audit Trails (+soft deletes only)
-<img width="1192" alt="bloom-lims-audit" src="bloom_lims/docs/imgs/audit_trails.png" >
+<img width="1192" alt="bloom-lims-audit" src="bloom_lims/docs/imgs/bloom-lims-audit.png" >
 
 ## Bells And Whistles
 
@@ -118,7 +118,7 @@ _bloom natively will support arbitrarily defined labware, a 96w plate is just on
 ### Integrated Barcode Label Printing For All Objects
 * [See detailed docs here](bloom_lims/docs/printer_config.md).
  
-  > ![bcimg](bloom_lims/docs/imgs/bc_example.png)
+  > ![bcimg](bloom_lims/docs/imgs/bc_scan.png)
 
   * [Leverages the zebra_day library](https://github.com/Daylily-Informatics/zebra_day).
 
