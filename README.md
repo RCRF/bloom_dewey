@@ -81,27 +81,32 @@ In the context of schema design, this concept allows for the creation of a more 
 This approach facilitates easier modifications and extensions to the schema. If a new payment method is introduced, you only need to add a new derived class without altering the existing code that operates on the "PaymentMethod" level. This makes the system more maintainable and scalable.
 
 ## Graph Object View (add, remove, edit, take actions, explore)
-<img width="1071" alt="bloom-lims-graph" src="https://github.com/Daylily-Informatics/bloom_lims/assets/4713659/595b5fbf-82de-4b22-aa88-655a075e263b">
+<img width="1071" alt="bloom-lims-graph" src="bloom_lims/docs/imgs/acc.png" >
 
 
-## Nested Workflow View
-<img width="1165" alt="bloom-lims-trad-view" src="https://github.com/Daylily-Informatics/bloom_lims/assets/4713659/34d012b6-af55-4c3a-9d99-6e4966f36217">
+## Accessioning Modalities
+<img width="1165" src="bloom_lims/docs/imgs/acc.png" >
+
+## Nested Assay / Queue / Workset
+<img width="1165" alt="bloom-lims-trad-view" src="bloom_lims/docs/imgs/nested_view.png" 
+
 
 ## Intantiate Objects From Available Templates
-<img width="1200" alt="bloom-lims-instantiated-abstracts" src="https://github.com/Daylily-Informatics/bloom_lims/assets/4713659/d68a16b0-2bed-4381-a229-80308377bd0b">
+<img width="1200" alt="bloom-lims-instantiated-abstracts" src="bloom_lims/docs/imgs/obj_templates.png">
 
 ## Object Detail
-<img width="1202" alt="bloom-lims-obj-view" src="https://github.com/Daylily-Informatics/bloom_lims/assets/4713659/f6d064d5-c0b7-4abf-831e-e32ffe06917c">
+<img width="1202" alt="bloom-lims-obj-view" src="bloom_lims/docs/imgs/objview.png">
 
 ### Specialized Object Detail Views 
 
 #### Labware (ie: a 96w plate) 
 _bloom natively will support arbitrarily defined labware, a 96w plate is just one example. Anything that nested arrays of arrays can describe can be configured as a type of labware with next to no effort!_
+<img width="1202" alt="bloom-lims-obj-view" src="bloom_lims/docs/imgs/plateview.png">
 
 IMG HERE
 
 ### Exhaustive & Comprehensive Audit Trails (+soft deletes only)
-<img width="1192" alt="bloom-lims-audit" src="https://github.com/Daylily-Informatics/bloom_lims/assets/4713659/b533b4e4-63b3-42d9-a038-b4ce09e14919">
+<img width="1192" alt="bloom-lims-audit" src="bloom_lims/docs/imgs/audit_trails.png" >
 
 ## Bells And Whistles
 
