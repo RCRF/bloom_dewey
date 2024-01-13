@@ -9,12 +9,13 @@
       ],
       "description": "plate well - fixed",
       "properties": {
-        "name": "plate well - fixed",
+        "name": "",
         "diameter": "",
         "height": "",
         "volume": "",
         "comments": "",
-        "bottom_type": "","lab_code":""
+        "bottom_type": "",
+        "lab_code":""
       },
       "cont_address": {
         "row_name": "",
