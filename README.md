@@ -156,7 +156,9 @@ So many nodes and edges.
 * Mac (14+) or Linux OS (ubuntu 22+) - _both tested and run_. Other flavors on linux likely fine. Windows, all bets are off.
 
 * Conda (you may swap in mamba if you prefer). [Installing conda](https://docs.conda.io/en/latest/miniconda.html):
-      
+
+  * be sure `wget` is available to you.
+    
   *linux*
 
   >  x86_64: `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh`
@@ -169,6 +171,14 @@ So many nodes and edges.
 
   >   ARM: `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh`
 
+  * Then execute the Miniconda.sh script, follow the prompts, when installation completed, follow these last 2 steps:
+ 
+```bash
+
+~/miniconda3/bin/conda init
+bash  # newly created shells should not auto load the conda (base) env.
+
+```
 
 
 ### Very Quickest Start
