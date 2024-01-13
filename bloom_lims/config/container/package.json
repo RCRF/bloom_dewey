@@ -1,14 +1,15 @@
 {
   "generic": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Package",
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "Package",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -19,7 +20,13 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "30.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

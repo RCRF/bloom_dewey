@@ -8,11 +8,13 @@
         }
       ],
       "properties": {
-        "comments": ""
+        "name":"Workset for hla-typing 1.2",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -21,24 +23,38 @@
           "actions": {
             "action/core/*/1.0/": {}
           }
-        }
+        }, 
+        "queue-move": {
+          "group_order": "2",
+          "group_name": "Move Queues",
+          "actions": {
+            "action/move-queues/*/1.0/": {}
+          }}
       },
       "instantiation_layouts": [
         []
-      ]
+      ],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "carrier-screen": {
     "3.9": {
       "description": "Workset for carrier-screen 3.9",
-      "instantiable_n": "*",
+      "singleton": "0",
       "valid_parents": [
         {
           "workflow/assay/carrier-screen/3.9/": {}
         }
       ],
       "properties": {
-        "comments": ""
+        "name":"Workset for carrier-screen 3.9",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -50,7 +66,20 @@
           "actions": {
             "action/core/*/1.0/": {}
           }
+        }, 
+        "queue-move": {
+          "group_order": "3",
+          "group_name": "Move Queues",
+          "actions": {
+            "action/move-queues/*/1.0/": {}
+          }
         }
+      },
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
       },
       "instantiation_layouts": [
         [

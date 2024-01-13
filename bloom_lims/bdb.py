@@ -53,6 +53,8 @@ try:
 except Exception as e:
     pass  # not running in github action for some reason
 
+# Universal printer behavior on
+PGLOBAL = False if os.environ.get("PGLOBAL", False) else True
 
 def get_datetime_string():
     # Choose your desired timezone, e.g., 'US/Eastern', 'Europe/London', etc.
@@ -120,7 +122,10 @@ class bloom_core(Base):
 
     json_addl = Column(JSON, nullable=True)
 
+    is_singleton = Column(BOOLEAN, nullable=False, server_default=FetchedValue())
+
     is_deleted = Column(BOOLEAN, nullable=True, server_default=FetchedValue())
+
 
 
 ## Generic
@@ -461,7 +466,7 @@ class BLOOMdb3:
     def __init__(
         self,
         db_url_prefix="postgresql://",
-        db_hostname="localhost",
+        db_hostname="localhost:"+os.environ.get("PGPORT", "5445"), # 5432
         db_pass=None if 'PGPASSWORD' not in os.environ else os.environ.get("PGPASSWORD"),
         db_user=os.environ.get("USER", "bloom"),
         db_name="bloom",
@@ -522,7 +527,6 @@ class BLOOMdb3:
             setattr(self.Base.classes, class_name, cls)
 
 
-
     def close(self):
         self.session.close()
         self.engine.dispose()
@@ -574,7 +578,14 @@ class BloomObj:
         
     def get_lab_printers(self, lab):
         self.selected_lab = lab
-        self.site_printers = self.zpld.printers['labs'][self.selected_lab].keys()
+        try:
+            self.site_printers = self.zpld.printers['labs'][self.selected_lab].keys()
+        except Exception as e:
+            self.logger.error(f'Error getting printers for lab {lab}')
+            self.logger.error(e)
+            self.logger.error('\n\n\nAttempting to rebuild printer json !!! THIS WILL TAKE TIME !!!\n\n\n')
+            self._rebuild_printer_json()
+            
 
     def print_label(self, lab=None, printer_name=None, label_zpl_style="tube_2inX1in", euid="", alt_a="", alt_b="", alt_c="", alt_d="", alt_e="", alt_f="", print_n=1):
 
@@ -617,25 +628,12 @@ class BloomObj:
 
         template = self.get_by_euid(template_euid)
 
-        # Special case for objects, like assays, which should only be instantiable 1x <-- I'm not sure I love this special case complexity...
-        # Specifically for assay instances, which should only have one active instance of it at a time.
-        instantiation_n_allowed = template.json_addl.get("instantiable_n", "*")
-        if instantiation_n_allowed in [1, "1"]:
-            obj_check = self.query_instance_by_component_v2(
-                super_type=template.super_type,
-                btype=template.btype,
-                b_sub_type=template.b_sub_type,
-                version=template.version,
-            )
-            if len(obj_check) > 1:
-                raise Exception(
-                    f"Template {template_euid} is only allowed to be instantiated once, but already has {len(obj_check)} instances"
-                )
-
         if not template:
             self.logger.debug(f"No template found with euid:", template_euid)
             return
-
+                
+        is_singleton = False if template.json_addl.get("singleton", "0") in [0,"0"] else True
+        
         cname = template.polymorphic_discriminator.replace("_template", "_instance")
         parent_instance = getattr(self.Base.classes, f"{cname}")(
             name=template.name,
@@ -647,6 +645,7 @@ class BloomObj:
             bstate=template.bstate,
             bstatus=template.bstatus,
             super_type=template.super_type,
+            is_singleton=is_singleton,
             polymorphic_discriminator=template.polymorphic_discriminator.replace(
                 "_template", "_instance"
             ),
@@ -657,16 +656,23 @@ class BloomObj:
             if "action_imports" in parent_instance.json_addl
             else {}
         )
-        json_addl_overrides["action_groups"] = ai
-        _update_recursive(parent_instance.json_addl, json_addl_overrides)
-        self.session.add(parent_instance)
-        self.session.flush()
-        self.session.commit()
+        try:
+            json_addl_overrides["action_groups"] = ai
+            _update_recursive(parent_instance.json_addl, json_addl_overrides)
+            self.session.add(parent_instance)
+            self.session.flush()
+            self.session.commit()
+        except Exception as e:
+            self.logger.error(f"Error creating instance from template {template_euid}")
+            self.logger.error(e)
+            self.session.rollback()
+            raise Exception(f"Error creating instance from template {template_euid} ... {e} .. Likely Singleton Violation")
+
 
         return parent_instance
 
     def create_instances_from_uuid(self, uuid):
-        return self.create_instances(self.get_by_uuid(uuid).euid)
+        return self.create_instances(self.get(uuid).euid)
 
     # fix naming, instance_type==table_name_prefix
     def create_instances(self, template_euid):
@@ -764,8 +770,6 @@ class BloomObj:
                     layout_str = i
                     layout_ds = ds[i]
                     child_instance = self._create_child_instance(layout_str, layout_ds)
-                    ## self.session.add(child_instance)
-                    ## self.session.flush()
                     lineage_record = self.Base.classes.generic_instance_lineage(
                         parent_instance_uuid=parent_instance.uuid,
                         child_instance_uuid=child_instance.uuid,
@@ -838,7 +842,7 @@ class BloomObj:
         if version == "*":
             version = "1.0"
 
-        template = self.get_template_by_components(
+        template = self.query_template_by_component_v2(
             super_type, btype, b_sub_type, version
         )[0]
 
@@ -849,7 +853,6 @@ class BloomObj:
         self.session.commit()
 
         return new_instance
-
 
     def _parse_layout_string(self, layout_str):
         parts = layout_str.split("/")
@@ -898,84 +901,13 @@ class BloomObj:
         return False
 
     """
-    get methods
-        note: assuming you have a UUID or EUID and know its is_deleted status already, so not filtering on that.
+    get methods.  get() assumes a uuid, which is funny as its rarely used. get_by_euid() is the workhorse.
     """
 
+    # It is VERY nice to be able to query all three instance related tables in one go. 
+    # Admitedly, this is a far scaled back remnant of a far more elaborate and hair rasising situation when there were more tables.
+    # There is benefit 
     def get(self, uuid):
-        return self.get_by_uuid(uuid)
-
-    # Also a holdover from the all table query nonsense.  can be removed
-    def get_by_uuid(self, uuid):
-        """Return the euid for a uuid
-
-        Args:
-            uuid str(): the UUID string
-
-        Returns:
-            str() : the euid string
-        """
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)
-
-        no = class_name.replace("generic", super_type)
-        return self.session.get(getattr(self.Base.classes, no), uuid)
-
-    def get_by_euid(self, euid):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)
-        no = class_name.replace("generic", super_type)
-        return self.session.get(getattr(self.Base.classes, no), uuid)
-
-    """
-    Query Methods
-        note: asusming filtering of is_deleted 
-    """
-
-    def query(self, bclass_table, euid):
-        raise Exception("Not implemented")
-
-    def query_by_euid(self, euid):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)
-        self.session.flush()
-        return (
-            self.session.query(getattr(self.Base.classes, class_name))
-            .filter_by(uuid=uuid, is_deleted=self.is_deleted)
-            .all()
-        )
-
-    def query_by_uuid(self, uuid):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)
-        self.session.flush()
-        return (
-            self.session.query(getattr(self.Base.classes, class_name))
-            .filter_by(uuid=uuid, is_deleted=self.is_deleted)
-            .all()
-        )
-
-    def query_all_tables_by_uuid(self, uuid):
         """Global query for uuid across all tables in schema with 'uuid' field
             note does not handle is_deleted!
         Args:
@@ -983,39 +915,32 @@ class BloomObj:
 
         Returns:
             [] : Array of rows
-        """
-        
+        """        
         res = self.session.query(self.Base.classes.generic_instance).filter(
-                self.Base.classes.generic_instance.uuid == uuid,
+                self.Base.classes.generic_instance.uuid == uuid, self.Base.classes.generic_instance.is_deleted==self.is_deleted
             ).all()
         res2 = self.session.query(self.Base.classes.generic_template).filter(
-            self.Base.classes.generic_template.uuid == uuid,
+            self.Base.classes.generic_template.uuid == uuid, self.Base.classes.generic_template.is_deleted==self.is_deleted
         ).all()
         res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
-            self.Base.classes.generic_instance_lineage.uuid == uuid,
+            self.Base.classes.generic_instance_lineage.uuid == uuid, self.Base.classes.generic_instance_lineage.is_deleted==self.is_deleted
         ).all()
         
         combined_result = res + res2 + res3
 
         if len(combined_result) > 1:
-            raise Exception(f"Multiple templates found for {uuid}") 
+            raise Exception(f"Multiple {len(combined_results)} templates found for {uuid}") 
         elif len(combined_result) == 0:
             self.logger.debug(f"No template found with uuid:", uuid)
-            return []
+            self.logger.debug(f"On second thought, if we are using a UUID and there is no match.. exception:", uuid)
+            raise Exception(f"No template found with uuid:", uuid)
         else:
-             return [
-                 combined_result[0].polymorphic_discriminator, 
-                 combined_result[0].euid, 
-                 combined_result[0].uuid, 
-                 combined_result[0].super_type, 
-                 combined_result[0].polymorphic_discriminator
-                 ]  
-
-
-    # This is a holdover from when the schema had many more tables and I wanted a unified euid query... 
-    # Looping through the 3 tables gets me this effect and removes a special database function!
-    # This all might be jettisonable also
-    def query_all_tables_by_euid(self, euid):
+            return combined_result[0]
+            
+    # It is VERY nice to be able to query all three instance related tables in one go. 
+    # Admitedly, this is a far scaled back remnant of a far more elaborate and hair rasising situation when there were more tables.
+    # There is benefit 
+    def get_by_euid(self, euid):
         """Global query for euid across all tables in schema with 'euid' field
            note: does not handle is_deleted!
         Args:
@@ -1025,35 +950,29 @@ class BloomObj:
             [] : Array of rows
         """
         res = self.session.query(self.Base.classes.generic_instance).filter(
-                self.Base.classes.generic_instance.euid == euid,
+                self.Base.classes.generic_instance.euid == euid, self.Base.classes.generic_instance.is_deleted==self.is_deleted
             ).all()
         res2 = self.session.query(self.Base.classes.generic_template).filter(
-            self.Base.classes.generic_template.euid == euid,
+            self.Base.classes.generic_template.euid == euid, self.Base.classes.generic_template.is_deleted==self.is_deleted
         ).all()
         res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
-            self.Base.classes.generic_instance_lineage.euid == euid,
+            self.Base.classes.generic_instance_lineage.euid == euid, self.Base.classes.generic_instance_lineage.is_deleted==self.is_deleted
         ).all()
         
         combined_result = res + res2 + res3
 
-
         if len(combined_result) > 1:
-            raise Exception(f"Multiple templates found for {euid}") 
+            raise Exception(f"Multiple {len(combined_result)} templates found for {euid}") 
         elif len(combined_result) == 0:
             self.logger.debug(f"No template found with euid:", euid)
-            return []
+            raise Exception(f"No template found with euid:", euid)
         else:
-             return [
-                 combined_result[0].polymorphic_discriminator, 
-                 combined_result[0].euid, 
-                 combined_result[0].uuid, 
-                 combined_result[0].super_type, 
-                 combined_result[0].polymorphic_discriminator
-                 ]  
+            return combined_result[0]
 
-
+    # This is the mechanism for finding the database object(s) which math the template reference pattern
+    # V2... why?
     def query_instance_by_component_v2(
-        self, super_type=None, btype=None, b_sub_type=None, version=None, bstate=None
+        self, super_type=None, btype=None, b_sub_type=None, version=None
     ):
         query = self.session.query(self.Base.classes.generic_instance)
 
@@ -1070,14 +989,16 @@ class BloomObj:
             )
         if version is not None:
             query = query.filter(self.Base.classes.generic_instance.version == version)
-        if bstate is not None:
-            query = query.filter(self.Base.classes.generic_instance.bstate == bstate)
+        #if bstate is not None:
+        #    query = query.filter(self.Base.classes.generic_instance.bstate == bstate)
 
+        query = query.filter(self.Base.classes.generic_instance.is_deleted == self.is_deleted)
+        
         # Execute the query
         return query.all()
 
     def query_template_by_component_v2(
-        self, super_type=None, btype=None, b_sub_type=None, version=None, bstate=None
+        self, super_type=None, btype=None, b_sub_type=None, version=None
     ):
         query = self.session.query(self.Base.classes.generic_template)
 
@@ -1094,82 +1015,46 @@ class BloomObj:
             )
         if version is not None:
             query = query.filter(self.Base.classes.generic_template.version == version)
-        if bstate is not None:
-            query = query.filter(self.Base.classes.generic_template.bstate == bstate)
+        #if bstate is not None:
+        #    query = query.filter(self.Base.classes.generic_template.bstate == bstate)
 
+        query = query.filter(self.Base.classes.generic_template.is_deleted == self.is_deleted)
         # Execute the query
         return query.all()
-
-    def get_instance_by_components(
-        self, super_type, btype, b_sub_type, version, bstate="active"
-    ):
-        results = (
-            self.session.query(self.Base.classes.generic_instance)
-            .filter(
-                self.Base.classes.generic_instance.super_type == super_type,
-                self.Base.classes.generic_instance.btype == btype,
-                self.Base.classes.generic_instance.b_sub_type == b_sub_type,
-                self.Base.classes.generic_instance.version == version,
-                self.Base.classes.generic_instance.bstate == bstate,
-            )
-            .all()
-        )
-        return results
 
     def create_instance_by_template_components(
         self, super_type, btype, b_sub_type, version, bstate="active"
     ):
         return self.create_instances(
-            self.get_template_by_components(
-                super_type, btype, b_sub_type, version, bstate
+            self.query_template_by_component_v2(
+                super_type, btype, b_sub_type, version
+            )[0].euid
+        )
+        
+    # Is this too special casey? Belong lower?
+    def create_container_with_content(self,cx_quad_tup, mx_quad_tup):
+        """ie CX=container, MX=content (material)
+        ("content", "control", "giab-HG002", "1.0"),
+        ("container", "tube", "tube-generic-10ml", "1.0")
+        """
+        container = self.create_instance(
+            self.query_template_by_component_v2(
+                cx_quad_tup[0], cx_quad_tup[1], cx_quad_tup[2], cx_quad_tup[3]
+            )[0].euid
+        )
+        content = self.create_instance(
+            self.query_template_by_component_v2(
+                mx_quad_tup[0], mx_quad_tup[1], mx_quad_tup[2], mx_quad_tup[3]
             )[0].euid
         )
 
-    def get_template_by_components(
-        self, super_type, btype, b_sub_type, version, bstate="active"
-    ):
-        results = (
-            self.session.query(self.Base.classes.generic_template)
-            .filter(
-                self.Base.classes.generic_template.super_type == super_type,
-                self.Base.classes.generic_template.btype == btype,
-                self.Base.classes.generic_template.b_sub_type == b_sub_type,
-                self.Base.classes.generic_template.version == version,
-                self.Base.classes.generic_template.bstate == bstate,
-            )
-            .all()
-        )
-        return results
-
-    # UPDATE Methods
-
-    def update_by_euid(self, euid, update_dict):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_euid(euid)
-        self.session.query(getattr(self.Base.classes, class_name)).filter_by(
-            uuid=uuid, is_deleted=self.is_deleted
-        ).update(update_dict)
+        container.json_addl['properties']['name'] = content.json_addl['properties']["name"]
+        flag_modified(container, "json_addl")
         self.session.flush()
-        self.session.commit()
+        self.session.commit() 
+        self.create_generic_instance_lineage_by_euids(container.euid, content.euid)
 
-    def update_by_uuid(self, uuid, update_dict):
-        (
-            class_name,
-            euid,
-            uuid,
-            super_type,
-            polymorphic_discriminator,
-        ) = self.query_all_tables_by_uuid(uuid)
-        self.session.query(getattr(self.Base.classes, class_name)).filter_by(
-            uuid=uuid, is_deleted=self.is_deleted
-        ).update(update_dict)
-        self.session.flush()
-        self.session.commit()
+        return container, content
 
     # Delete Methods
     # Do not cascade delete!
@@ -1183,7 +1068,7 @@ class BloomObj:
         elif euid:
             obj = self.get_by_euid(euid).uuid
         else:
-            obj = self.get_by_uuid(uuid)
+            obj = self.get(uuid)
 
         obj.is_deleted = True
         self.session.flush()
@@ -1202,24 +1087,128 @@ class BloomObj:
     # Global Object Actions
     #
     def do_action(self,euid, action, action_group, action_ds, now_dt="" ):
-                
+
+        r=None
         action_method = action_ds["method_name"]
         now_dt = get_datetime_string()
         if action_method == "do_action_set_object_status":
-            self.do_action_set_object_status(euid, action_ds, action_group, action)
+            r=self.do_action_set_object_status(euid, action_ds, action_group, action)
         elif action_method == "do_action_print_barcode_label":
-            self.do_action_print_barcode_label(euid, action_ds)
+            r=self.do_action_print_barcode_label(euid, action_ds)
+            
         elif action_method == "do_action_destroy_specimen_containers":
-            self.do_action_destroy_specimen_containers(euid, action_ds)
+            r= self.do_action_destroy_specimen_containers(euid, action_ds)
+        elif action_method == "do_action_create_package_and_first_workflow_step_assay":
+            r = self.do_action_create_package_and_first_workflow_step_assay(euid, action_ds)
+        elif action_method == "do_action_move_workset_to_another_queue":
+            r= self.do_action_move_workset_to_another_queue(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
-        return self._do_action_base(euid, action, action_group, action_ds, now_dt)
+        self._do_action_base(euid, action, action_group, action_ds, now_dt)
+        return r
+
+    def do_action_move_workset_to_another_queue(self, euid, action_ds):
+
+        wfset = self.get_by_euid(euid)
+        action_ds['captured_data']['q_selection']
+
+        # EXTRAORDINARILY SLOPPY.  I AM IN A REAL RUSH FOR FEATURES THO :-/
+        destination_q = ""
+        (super_type, btype, b_sub_type, version) = action_ds['captured_data']['q_selection'].lstrip('/').rstrip('/').split('/')
+        for q in wfset.child_of_lineages[0].parent_instance.child_of_lineages[0].parent_instance.parent_of_lineages:
+            if q.child_instance.btype == btype and q.child_instance.b_sub_type == b_sub_type:
+                destination_q = q.child_instance
+                break
+            
+        if len(wfset.child_of_lineages) != 1 or destination_q == "":
+            self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
+            self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
+            raise Exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
+
+        lineage_link = wfset.child_of_lineages[0]
+        self.create_generic_instance_lineage_by_euids(destination_q.euid, wfset.euid)
+        self.delete_obj(lineage_link)
+        self.session.flush()
+        self.session.commit()
+                                                  
+
 
 
     # Doing this globally for now
-    def do_action_set_printer_config(self, euid, action_ds={}):
-        pass
+    def do_action_create_package_and_first_workflow_step_assay(self, euid, action_ds={}):   
+        wf = self.get_by_euid(euid)
+            
+        #'workflow_step_to_attach_as_child': {'workflow_step/queue/all-purpose/1.0/': {'json_addl': {'properties': {'name': 'hey user, SET THIS NAME ',
+        
+        active_workset_q_wfs = ""
+        (super_type, btype, b_sub_type, version) = list(action_ds["workflow_step_to_attach_as_child"].keys())[0].lstrip('/').rstrip('/').split('/')
+        for pwf_child_lin in wf.parent_of_lineages:
+            if pwf_child_lin.child_instance.btype == btype and pwf_child_lin.child_instance.b_sub_type == b_sub_type:
+                active_workset_q_wfs = pwf_child_lin.child_instance
+                break
+        if active_workset_q_wfs == "":
+            self.logger.exception(f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}")
+            raise Exception(f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}")
+                                                                                                                   
+        # 1001897582860000245100773464327825
+        fx_opsmd = {}
+
+        try:
+            fx_opsmd = self.track_fedex.get_fedex_ops_meta_ds(
+                action_ds["captured_data"]["Tracking Number"]
+            )
+        except Exception as e:
+            self.logger.exception(f"ERROR: {e}")
+
+        action_ds["captured_data"]["Fedex Tracking Data"] = fx_opsmd
+
+        wfs = ""
+        for layout_str in action_ds["child_workflow_step_obj"]:
+            wfs = self.create_instance_by_code(
+                layout_str, action_ds["child_workflow_step_obj"][layout_str]
+            )
+            self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, wfs.euid)
+            self.session.flush()
+            self.session.commit()
+    
+        package = ""
+        for layout_str in action_ds["new_container_obj"]:
+            for cv_k in action_ds["captured_data"]:
+                action_ds["new_container_obj"][layout_str]["json_addl"]["properties"][
+                    "fedex_tracking_data"
+                ] = fx_opsmd
+                action_ds["new_container_obj"][layout_str]["json_addl"]["properties"][
+                    cv_k
+                ] = action_ds["captured_data"][cv_k]
+
+            package = self.create_instance_by_code(
+                layout_str, action_ds["new_container_obj"][layout_str]
+            )
+            self.session.flush()
+            self.session.commit()
+
+        self.session.flush()
+        self.session.commit()
+
+        self.create_generic_instance_lineage_by_euids(wfs.euid, package.euid)
+
+        return wfs
+        
+        # There are A LOT of common patterns with these actions, and only a small number of them too. ABSCRACT MOAR
+        
+        # Get the euid obj, which is the AY
+        
+        # Get the AY child workflow queue object defined by the action
+        
+        # Create the new workset object
+        
+        # Create the new package object, wiuth the captured data from the action
+        
+        # link package to workset
+        # link workset to workflow queue object
+        
+        
         
         
     def do_action_print_barcode_label(self, euid, action_ds={}):
@@ -1230,16 +1219,16 @@ class BloomObj:
             action (str()): action name from object json_addl['actions']
             action_ds (dict): the dictionary keyed by the object json_addl['action'][action]
         """
-        
+        bobj = self.get_by_euid(euid)
 
         lab = action_ds.get("lab","")
         printer_name = action_ds.get("printer_name","")
         label_zpl_style = action_ds.get("label_style","")
-        alt_a = action_ds.get("alt_a","")
-        alt_b = action_ds.get("alt_b","")
-        alt_c = action_ds.get("alt_c","")
-        alt_d = action_ds.get("alt_d","")
-        alt_e = action_ds.get("alt_e","")
+        alt_a = action_ds.get("alt_a","") if not PGLOBAL else f"{bobj.b_sub_type}-{bobj.version}" 
+        alt_b = action_ds.get("alt_b","") if not PGLOBAL else bobj.json_addl.get("properties",{}).get("name","__namehere__")
+        alt_c = action_ds.get("alt_c","") if not PGLOBAL else bobj.json_addl.get("properties",{}).get("lab_code","N/A")
+        alt_d = action_ds.get("alt_d","") 
+        alt_e = action_ds.get("alt_e","")  if not PGLOBAL else str(bobj.created_dt).split(' ')[0]  
         alt_f = action_ds.get("alt_f","")
         
         self.logger.info(            
@@ -1331,7 +1320,7 @@ class BloomObj:
         #                 #bobj.json_addl["actions"][action]["action_executed"]
 
         if "action_groups" in bobj.json_addl:
-            # from IPython import embed;  embed()
+            
             curr_action_count = int(
                 bobj.json_addl["action_groups"][action_group]["actions"][action][
                     "action_executed"
@@ -1402,6 +1391,81 @@ class BloomObj:
 
         return False
 
+    def get_cost_of_euid_children(self, euid):
+        # Function to fetch and calculate the COGS for a given object
+        def calculate_cogs(orm_instance):
+            if 'cogs' not in orm_instance.json_addl or 'state' not in orm_instance.json_addl['cogs']:
+                raise ValueError(f"COGS or state information missing for EUID: {orm_instance.euid}")
+            
+            if orm_instance.json_addl['cogs']['state'] != 'active':
+                return 0
+
+            cost = float(orm_instance.json_addl['cogs']['cost'])
+            fractional_cost = float(orm_instance.json_addl['cogs'].get('fractional_cost', 1))
+            allocation_type = orm_instance.json_addl['cogs'].get('allocation_type', 'single')
+
+            active_children = len([child for child in orm_instance.parent_of_lineages if 'cogs' in child.json_addl and child.json_addl['cogs'].get('state') == 'active'])
+            if active_children == 0:
+                active_children = 1.0
+            return cost #* float(fractional_cost) / float(active_children)
+
+        # Recursive function to traverse the graph and accumulate COGS
+        def traverse_and_calculate_children_cogs(orm_instance):
+            total_cogs = 0  # No need to calculate COGS for the initial instance
+
+            # Traverse parent_of_lineages to find child instances and accumulate their COGS
+            for lineage in orm_instance.parent_of_lineages:
+                child_instance = lineage.child_instance
+                if child_instance:
+                    total_cogs += calculate_cogs(child_instance) + traverse_and_calculate_children_cogs(child_instance)
+
+            return total_cogs
+
+        # Start with the provided EUID
+        initial_instance = self.session.query(self.Base.classes.generic_instance).filter_by(euid=euid).first()
+        if initial_instance:
+            return traverse_and_calculate_children_cogs(initial_instance)
+        else:
+            return 0
+
+    def get_cogs_to_produce_euid(self, euid):
+
+        # Function to fetch and calculate the COGS for a given object
+        def calculate_cogs(orm_instance):
+            if 'cogs' not in orm_instance.json_addl or 'state' not in orm_instance.json_addl['cogs']:
+                raise ValueError(f"COGS or state information missing for EUID: {orm_instance.euid}")
+            
+            if orm_instance.json_addl['cogs']['state'] != 'active':
+                return 0
+
+            cost = float(orm_instance.json_addl['cogs']['cost'])
+            fractional_cost = float(orm_instance.json_addl['cogs'].get('fractional_cost', 1))
+            allocation_type = orm_instance.json_addl['cogs'].get('allocation_type', 'single')
+
+
+            active_children = len([child for child in orm_instance.child_of_lineages if 'cogs' in child.json_addl and child.json_addl['cogs'].get('state') == 'active'])
+            if active_children == 0:
+                active_children = 1.0
+            return cost * float(fractional_cost) / float(active_children)
+    
+        # Recursive function to traverse the graph and accumulate COGS
+        def traverse_history_and_calculate_cogs(orm_instance):
+            total_cogs = calculate_cogs(orm_instance)
+            
+            # Traverse child_of_lineages to find parent instances and accumulate their COGS
+            for lineage in orm_instance.child_of_lineages:
+                parent_instance = lineage.parent_instance
+                if parent_instance:
+                    total_cogs += traverse_history_and_calculate_cogs(parent_instance)
+
+            return total_cogs
+
+        # Start with the provided EUID
+        initial_instance = self.session.query(self.Base.classes.generic_instance).filter_by(euid=euid).first()
+        if initial_instance:
+            return traverse_history_and_calculate_cogs(initial_instance)
+        else:
+            return 0
 
 class BloomContainer(BloomObj):
     def __init__(self, bdb):
@@ -1506,7 +1570,7 @@ class BloomWorkflow(BloomObj):
 
     # This can be made more widely useful now that i've detangled the wf-wfs special relationship
     def get_sorted_uuid(self, workflow_id):
-        wfobj = self.get_by_uuid(workflow_id)
+        wfobj = self.get(workflow_id)
 
         def sort_key(child_instance):
             # Fetch the step_number if it exists, otherwise return a high value to sort it at the end
@@ -1533,7 +1597,7 @@ class BloomWorkflow(BloomObj):
         def sort_key(child_instance):
             # Fetch the step_number if it exists, otherwise return a high value to sort it at the end
             return int(
-                child_instance.json_addl["properties"].get("step_number", float("inf"))
+                child_instance.json_addl["properties"].get("step_number", float("0")) if child_instance.json_addl["properties"].get("step_number", float("inf")) not in ["", None] else float("0")
             )
 
         # Assuming wfobj is your top-level object
@@ -1862,7 +1926,7 @@ class BloomWorkflowStep(BloomObj):
         btype = "sample"
         b_sub_type = "blood-plasma"
         version = "1.0"
-        results = self.get_template_by_components(
+        results = self.query_template_by_component_v2(
             super_type, btype, b_sub_type, version
         )
 
@@ -1872,20 +1936,32 @@ class BloomWorkflowStep(BloomObj):
         cx_btype = "tube"
         cx_b_sub_type = "tube-generic-10ml"
         cx_version = "1.0"
-        cx_results = self.get_template_by_components(
+        cx_results = self.query_template_by_component_v2(
             cx_super_type, cx_btype, cx_b_sub_type, cx_version
         )
 
         cx_tube_template = cx_results[0]
 
         parent_wf = wfs.child_of_lineages[0].parent_instance
+
+
+        active_workset_q_wfs = ""
+        (super_type, btype, b_sub_type, version) = list(action_ds["attach_under_root_workflow_queue"].keys())[0].lstrip('/').rstrip('/').split('/')
+        for pwf_child_lin in parent_wf.parent_of_lineages:
+            if pwf_child_lin.child_instance.btype == btype and pwf_child_lin.child_instance.b_sub_type == b_sub_type:
+                active_workset_q_wfs = pwf_child_lin.child_instance
+                break
+        if active_workset_q_wfs == "":
+            self.logger.exception(f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}")
+            raise Exception(f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}")
+        
         new_wf = ""
-        for wlayout_str in action_ds["workflow_to_attach"]:
+        for wlayout_str in action_ds["workflow_step_to_attach_as_child"]:
             new_wf = self.create_instance_by_code(
-                wlayout_str, action_ds["workflow_to_attach"][wlayout_str]
+                wlayout_str, action_ds["workflow_step_to_attach_as_child"][wlayout_str]
             )
             self.session.commit()
-        self.create_generic_instance_lineage_by_euids(parent_wf.euid, new_wf.euid)
+        self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, new_wf.euid)
 
         child_wfs = ""
         for layout_strc in action_ds["child_workflow_step_obj"]:
@@ -1910,6 +1986,7 @@ class BloomWorkflowStep(BloomObj):
             # soft delete the edge w the queue
             for aa in parent_cx.child_of_lineages:
                 if aa.parent_instance.euid == wfs.euid:
+                    self.create_generic_instance_lineage_by_euids(new_wf.euid, aa.child_instance.euid)
                     self.delete_obj(aa)
 
             self.create_generic_instance_lineage_by_euids(
@@ -1945,7 +2022,7 @@ class BloomWorkflowStep(BloomObj):
         btype = "plate"
         b_sub_type = "fixed-plate-24"
         version = "1.0"
-        results = self.get_template_by_components(
+        results = self.query_template_by_component_v2(
             super_type, btype, b_sub_type, version
         )
 
@@ -1963,7 +2040,7 @@ class BloomWorkflowStep(BloomObj):
             b_sub_type = "gdna"
             version = "1.0"
 
-            results = self.get_template_by_components(
+            results = self.query_template_by_component_v2(
                 super_type, btype, b_sub_type, version
             )
 
@@ -1997,14 +2074,10 @@ class BloomWorkflowStep(BloomObj):
     def do_action_add_container_to_assay_q(self, obj_euid, action_ds):
         # This action should be coming to us from a TRI ... kind of breaking my model... how to deal with this?
 
-        # could look for this key dynamically in the future.
-        # ___workflow/assay/ .... this indicates the template to use is 'worflow/assay' and the remaining is the assay_selection value
-        # I made some progress in this direction, now using state to flag locked AYs
-        super_type = "workflow"
-        btype = "assay"
-        b_sub_type = action_ds["captured_data"]["assay_selection"].split("/")[0]
-        version = action_ds["captured_data"]["assay_selection"].split("/")[1]
-        state = "locked"
+        super_type = action_ds["captured_data"]["assay_selection"].split("/")[0]
+        btype = action_ds["captured_data"]["assay_selection"].split("/")[1]
+        b_sub_type = action_ds["captured_data"]["assay_selection"].split("/")[2]
+        version = action_ds["captured_data"]["assay_selection"].split("/")[3]
 
         cont_euid = action_ds["captured_data"]["Container EUID"]
 
@@ -2022,13 +2095,11 @@ class BloomWorkflowStep(BloomObj):
             self.session.rollback()
             raise e
 
-        results = self.get_instance_by_components(
-            super_type, btype, b_sub_type, version, state
-        )
+        results = self.query_instance_by_component_v2( super_type, btype, b_sub_type, version)
 
         if len(results) != 1:
             self.logger.exception(
-                f"Could not find SINGLE assay instance for {super_type}/{btype}/{b_sub_type}/{version} .. {state}"
+                f"Could not find SINGLE assay instance for {super_type}/{btype}/{b_sub_type}/{version}"
             )
             self.logger.exception(
                 f"Could not find SINGLE assay instance for {super_type}/{btype}/{b_sub_type}/{version}"

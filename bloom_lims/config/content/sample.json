@@ -1,50 +1,69 @@
 {
   "gdna": {
     "1.0": {
-      "description": "genomic DNA sample",
+      "description": "genomic DNA",
       "properties": {
-        "name": "",
+        "name": "genomic DNA",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "cfdna": {
     "1.0": {
-      "description": "cell free DNA sample",
-      "instantiable_n": "*",
+      "description": "cell free DNA ",
+      "singleton": "0",
       "properties": {
-        "name": "",
+        "name": "cfDNA",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "blood-plasma": {
     "1.0": {
-      "description": "Generic blood plasma sample",
-      "instantiable_n": "*",
+      "description": "plasma (whole blood)",
+      "singleton": "0",
       "properties": {
-        "name": "",
+        "name": "plasma (whole blood)",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

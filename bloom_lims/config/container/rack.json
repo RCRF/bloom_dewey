@@ -5,8 +5,8 @@
       "valid_content": [
         "none"
       ],
-      "description": "Generic tube rack with 4 positions (for demonstration, this takes 3 strek and 1 eppi.",
-      "instantiable_n": "*",
+      "description": "4 position Rack",
+      "singleton": "0",
       "instantiation_layouts": [
         [
           {
@@ -64,8 +64,9 @@
         ]
       ],
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "4 position Rack",
+        "comments": "",
+        "lab_code":""
       },
       "cont_address": {
         "name": "",
@@ -77,6 +78,54 @@
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      }
+    }
+  },
+  "tube-rack-4-empty": {
+    "1.0": {
+      "valid_parents": [],
+      "valid_content": [
+        "none"
+      ],
+      "description": "4 position Rack",
+      "singleton": "0",
+      "instantiation_layouts": [
+        ],
+      "properties": {
+        "name": "4 position Rack",
+        "comments": "",
+        "lab_code":""
+      },
+      "cont_address": {
+        "name": "",
+        "row_name": "",
+        "col_name": "",
+        "row_idx": "0",
+        "col_idx": "0"
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "action_imports": {
         "core": {
           "group_order": "1",

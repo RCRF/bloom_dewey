@@ -3,7 +3,7 @@
     "1.0": {
       "description": "NaOH",
       "properties": {
-        "name": "",
+        "name": "NaOH",
         "volume": "",
         "volume_units": "",
         "comments": "",
@@ -12,20 +12,26 @@
         "expiration_date": "",
         "received_date": "",
         "storage_conditions": "",
-        "qualification_status": ""
+        "qualification_status": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "idt-probes-rare-mendelian": {
     "1.0": {
       "description": "idt probes for rare mendelian disease, v1.0",
       "properties": {
-        "name": "",
+        "name": "idt probes for rare mendelian disease, v1.0",
         "volume": "",
         "volume_units": "",
         "comments": "",
@@ -38,17 +44,23 @@
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "ILMN-nova-seq-kit": {
     "1.0": {
       "description": "Novaseq sequencing kit",
-      "instantiable_n": "*",
+      "singleton": "0",
       "properties": {
-        "name": "",
+        "name": "Novaseq sequencing kit",
         "volume": "",
         "volume_units": "",
         "comments": "",
@@ -62,7 +74,13 @@
       "expected_inputs": [],
       "expected_outputs": [],
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

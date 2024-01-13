@@ -1,19 +1,31 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Workflow Details</title>
+        <title>Bloom Obj Details</title>
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
+        
+        <style>
+            .floating-buttonf {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                /* Add more styling as needed */
+            }
+
+        </style>
     </head>
     <body>
+        <button id="toggleFilterButton" class="floating-buttonf">minimal recursion:{{ udat.get('wf_filter','XXX') }}</button>
+
         {% macro render_step(step, accordion_states) %}
             {% if step.polymorphic_discriminator == 'workflow_step_instance' or step.polymorphic_discriminator == 'workflow_instance' %}
                 <hr>
                 <button class="accordion"
                         data-state="{{ accordion_states[step.euid] }}"
                         id="{{ step.euid }}">
-                    <small style="color:var(--accordion-prefix);">step</small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a> <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} &  {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                    <small style="color:var(--accordion-prefix);"> {{ step.btype }} </small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a> <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.json_addl['properties'].get('name', 'NONAME') }}  :: ({{ step.bstate }} &  {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
                 </button>
                 <div class="workflow-step"
                      style="display: {{ 'block' if accordion_states[step.euid] == 'open' else 'none' }}">
@@ -24,7 +36,7 @@
                                 class="accordion non-wf-step"
                                 data-state="{{ accordion_states[step.euid] }}"
                                 id="{{ step.euid }}">
-                            <small><a href=plate_visualization?plate_euid={{ step.euid }}> {{ step.btype }}</a> </small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a>  <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} & {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
+                            <small><a href=plate_visualization?plate_euid={{ step.euid }}> {{ step.b_sub_type }}</a> </small>  <a href=euid_details?euid={{ step.euid }}>{{ step.euid }}</a>  <a href=dindex?globalStartNodeEUID="{{ step.euid }}" target="bloom_dag">🕸️</a>  {{ step.b_sub_type }} {{ step.version }}  :: ({{ step.bstate }} & {{ step.bstatus }})  ({{ step.created_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }})
                         </button>
                         <div class="workflow-step"
                              style="font-size: 2px;
@@ -132,16 +144,24 @@
                                 </ul>
                                 <div>
                                     <ul>
-                                        <!-- Recursive call for child steps -->
+                                        <!-- Recursive call for child steps -->     
+                                                                                      
+
                                         {% if step.parent_of_lineages %}
                                             <div>
                                                 {% for child_step in step.get_sorted_parent_of_lineages(['container_instance']) %}
-                                                    {% if child_step.child_instance.super_type != 'workflow_step' %}
+                                                {% if child_step.child_instance.super_type != 'workflow_step' and udat.get('wf_filter','off') == 'off' %}
                                                         <ul>
                                                         {% else %}
                                                         {% endif %}
+                                                        {% if child_step.child_instance.super_type == 'workflow_step' %}
+
                                                         {{ render_step(child_step.child_instance, accordion_states) }}
-                                                        {% if child_step.child_instance.super_type != 'workflow_step' %}
+
+                                                        {% elif  child_step.child_instance.super_type != 'workflow_step' and udat.get('wf_filter','off') == 'off' %}
+                                                        {{ render_step(child_step.child_instance, accordion_states) }}
+                                                        {% endif %}
+                                                        {% if child_step.child_instance.super_type != 'workflow_step' and udat.get('wf_filter','off') == 'off' %}
                                                         </ul>
                                                     {% else %}
                                                     {% endif %}
@@ -152,9 +172,13 @@
                                 </div>
                             </div>
                         {% endmacro %}
+                        <div style="display: -webkit-inline-box;">
                         <h1>
-                            Workflow Details: {{ workflow.name }} <span style="font-size: 18px;">: : :</span><a style="font-size: 18px;" href=euid_details?euid={{ workflow.euid }}>{{ workflow.euid }}</a>  <span style="font-size: 18px;">: : :</span><a style="font-size: 18px;"  href=dindex>( graph view )</a> <span style="font-size: 18px;">: : :</span><a href=/ style="font-size: 18px;">( B )</a>
+                        <a  href=euid_details?euid={{ workflow.euid }}>{{ workflow.euid }}</a> :
+                         {{ workflow.json_addl.get('properties',{}).get('name','hey you, ADD A NAME') }} 
                         </h1>
+                        <h4> <font style="color: darkgray;">: : : : : : </font> <a  href=dindex>( graph view )</a><font style="color: darkgray;">  : : :  </font><a href=/ >( h o m e )</a> </h4>
+                    </div>
                         <ul>
                             {% if workflow.json_addl and 'action_groups' in workflow.json_addl %}
                                 <div class="action-group-group">
@@ -181,13 +205,17 @@
                                             <strong>Created at:</strong> {{ workflow.created_dt }}
                                         </ul>
                                     </ul>
-                                    <ul>
-                                        <h2>Workflow Steps</h2>
-                                        <div>
-                                            {% for step in workflow.get_sorted_parent_of_lineages(['workflow_instance']) %}
-                                                <h1>
-                                                    {{ render_step(step.child_instance, accordion_states) }}
-                                                {% endfor %}
+                                    <div>
+                                        {% for step in workflow.get_sorted_parent_of_lineages(['workflow_instance']) %}
+                                        {% if loop.first %}
+                                        <hr>
+
+                                            {{ render_step(step.child_instance, accordion_states) }}
+                                            <ul>
+                                        {% else %}
+                                            {{ render_step(step.child_instance, accordion_states) }}
+                                        {% endif %}
+                                    {% endfor %}
                                             </div>
                                         </ul>
                                         <a href="/workflow_summary">Back to WF Summary</a>
@@ -221,6 +249,30 @@
         
         document.getElementById('expandAll').addEventListener('click', expandAllAccordions);
         document.getElementById('collapseAll').addEventListener('click', collapseAllAccordions);
+                                        </script>
+                                        <script>
+                                            document.getElementById('toggleFilterButton').addEventListener('click', function() {
+                                                var currentVal = '{{ udat.get("wf_filter","na") }}'; // or innerHTML, depending on how you've set up your button
+                                        
+                                                // Prepare the URL for the AJAX request
+                                                var url = '/set_filter?curr_val=' + currentVal;
+                                        
+                                                // Perform the AJAX request
+                                                fetch(url)
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        // Update the button text with the new filter value
+                                                        document.getElementById('toggleFilterButton').textContent = data.new_filter_value;
+                                              
+                                                    
+                                              
+                                                    })
+                                                    .catch(error => console.error('Error:', error));
+                                            
+                                            
+                                                // Reload the page
+                                                window.location.reload();
+                                                });
                                         </script>
                                     </body>
                                 </html>

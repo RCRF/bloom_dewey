@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Dosis&display=swap');
+
+
 /* CSS Variables for Easy Theme Management */
 :root {
     --primary-color: #e74c3c;
     --primary-hover-color: #7e2916;
-    --actionsubmit-bg-color: pink;
+    --actionsubmit-bg-color: rgb(204,11,139);
     --actionsubmit-color: #ffffff;
     --secondary-color: #3d6db2;
     --secondary-hover-color: #02607e;
@@ -13,7 +16,9 @@
     --container-bg-color: #0b131a;
     --panel-bg-color: #011220;
     --text-color: #ffffff;
-    --font-family: 'Dosis', sans-serif;
+    --font-family: 'Dosis', sans-serif; /* Replace 'Your Font Family' with your desired font */
+    --font-size: 16px; /* Example size */
+    --font-weight: inherit; 
     --border-radius: 4px;
     --font-size-standard: 16px;
     --font-size-medium: 20px;

@@ -10,6 +10,44 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
         <script src="https://unpkg.com/cytoscape-dagre"></script>
         <style>
+                .modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 1;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: auto;
+                    background-color: rgb(0,0,0);
+                    background-color: rgba(0,0,0,0.4);
+                    padding-top: 60px;
+                }
+            
+                .modal-content {
+                    background-color: #fefefe;
+                    margin: 5% auto;
+                    padding: 20px;
+                    border: 1px solid #888;
+                    width: 80%;
+                }
+            
+                .closeBtn {
+                    color: #aaa;
+                    float: right;
+                    font-size: 28px;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+            
+                .closeBtn:hover,
+                .closeBtn:focus {
+                    color: black;
+                    text-decoration: none;
+                    cursor: pointer;
+                }
+
+
       #cy {
 	  height: 650px;
 	  width: 100%;
@@ -33,7 +71,6 @@
             display: none !important;
         }
         </style>
-        <script></script>
     </head>
     <body>
         <div id="nodeDialog" class="node-dialog" style="display: none;">
@@ -43,93 +80,103 @@
             <p id="nodeName">
                 Name: <span></span>
             </p>
-            <a id="actionALink" href="">Action A</a>
+            <a id="actionALink" href="">Calculate COGS To Produce</a>
+            ... $ <span id="actionAOutput"></span>            
+            <br>
+            <a id="actionBLink" href="">Calculate COGS Of Children</a>
+            ... $ <span id="actionBOutput"></span>
             <br>
             <a id="euidInfoLink" href="">EUID Info</a>
             <button id="closeDialogButton" class="close-dialog-btn">Close</button>
         </div>
-        <div class="container">
-            <h1>
-                <a href= />Bloom</a> Workflow DAG Explorer (<small><a href=https://github.com/Daylily-Informatics/bloom_lims>github</a>)</small>
-            </h1>
+        <div class="container" style="margin-top: 0px; padding: 0px;" >
+            <h1><a href= />Bloom</a> Workflow DAG Explorer (<small><a href=https://github.com/Daylily-Informatics/bloom_lims>github</a>)</small></h1>
             <hr>
-            <table>
-                <tr>
-                    <td>
-                        <div id="cy"></div>
-                    </td>
-                    <td style="vertical-align: top; width: 10%;">
-                        <select id="layoutSelect" onchange="changeLayout(this.value)">
-                            <option value="dagre">-Choose Graph Layout-</option>
-                            <option value="dagre">Hierarchical DAG</option>
-                            <option value="cose">Cose (default)</option>
-                            <option value="breadthfirst">Breadthfirst Hierarchical</option>
-                            <option value="grid">Grid</option>
-                            <option value="circle">Circle</option>
-                            <option value="random">Random</option>
-                            <option value="concentric">Concentric</option>
-                            <!-- Add other layout options as needed -->
-                        </select>
-                        <hr>
-                        <label for="distanceSlider">Filters:</label>
-                        <table>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        </table>
-                        Dimmed if #edges lt :
-                        <input type="range"
-                               id="transparencySlider"
+            <div style="display: flex;" >
+
+            <div style="width: 92%;">
+            <div  id="cy"></div>
+        <hr>
+            <div  style="display: -webkit-inline-box;">
+                <div  style="display: -webkit-inline-box;">
+                    <label for="btypeCheckboxes"  >Filter Class:</label><br>
+                <div style="display: -webkit-inline-box;" id="btypeCheckboxes">
+                    <!-- Checkboxes will be added here -->
+                </div>
+            </div>
+      
+                <select style="font-size: 10px;" id="layoutSelect" onchange="changeLayout(this.value)">
+                    <option style="font-size: 10px;" value="dagre">Alter Layout</option>
+                    <option style="font-size: 10px;" value="dagre">Hierarchical</option>
+                    <option style="font-size: 10px;" value="cose">Cose (default)</option>
+                    <option style="font-size: 10px;" value="breadthfirst">Breadthfirst</option>
+                    <option style="font-size: 10px;" value="grid">Grid</option>
+                    <option style="font-size: 10px;" value="circle">Circle</option>
+                    <option style="font-size: 10px;" value="random">Random</option>
+                    <option style="font-size: 10px;" value="concentric">Concentric</option>
+                    <!-- Add other layout options as needed -->
+                </select>
+                <font color=darkgrey>‒‒</font>
+
+                <div  style="display: -webkit-inline-box;">
+                Filter #edges ≤  <span style="font-size: 10px;" id="transparencyDisplay" >1</span>
+                <br>
+                <input type="range"
+                id="transparencySlider"
+                min="0"
+                max="15"
+                style="width: 100px;"
+                value="1"
+                oninput="updateNodeTransparency()" />
+                </div>
+                <font color=darkgrey>‒‒</font>
+                <div  style="display: -webkit-inline-box;">
+                        <input type="text" style="width:70px; font-size: 10px; margin:0px;"  id="euidInput" placeholder="EUID"/>
+                        <br>
+                        <button style="font-size: 10px;width:70px;" onclick="centerOnEuid()">find</button>
+                </div>
+                <font color=darkgrey>‒‒</font>
+                           <div  style="display: -webkit-inline-box;">
+
+                           <label style="font-size: 10px;" for="distanceSlider"  >RELATIVE DISANCE, (0=all) ::  <span id="distanceDisplay" style="font-size: 10px;" >0</span>  </label>
+                            <br>
+                           <input type="range"
+                               id="distanceSlider"
                                min="0"
-                               max="20"
-                               style="width: 50%"
-                               value="1"
-                               oninput="updateNodeTransparency()" />
-                        <span id="transparencyDisplay" style="font-size: 9px;">1</span>
-                        <br>
-                        ...by obj super-type:
-                        <div id="btypeCheckboxes">
-                            <!-- Checkboxes will be added here -->
-                        </div>
-                        <br>
-                        ...by obj sub-type:
+                               max="15"
+                               value="0"
+                               style="width: 100px; font-size: 10px;"
+                               oninput="filterNodes(this.value)" />
+                           </div>
+                               <button id="helpBtn">?</button>
+
+                               <div id="helpModal" class="modal">
+                                   <div class="modal-content">
+                                       <span class="closeBtn">&times;</span>
+                                       <div>
+                                           <small style="color: gray;">
+                                            <br>
+                                            NODE INFO: click node 1x for info box at bottom of page, click node 3x for popup dialog<br>
+                                            DELETE (this is reflected in the database!): -edges- right click 2x on an edge to delete it -nodes- right click 3x on a node to delete it <br>
+                                            CREATE EDGES: hold 'l', select a node, cont. holding 'l', click a new node to create an edge <br>
+                                            CREATE NODES: not available <br>
+                                            VISUALIZATION: hold 'n and click a node to highlight its neighbors, with each add'l click the neighborhood expands.</small>
+                                       </div>
+                                   </div>
+                               </div>
+            </div>
+            <div style="align: top; padding-top:0px;" class=info-box id="node-info"></div>
+
+            </div>
+            <div style="width: 8%;">
+                        <label for="distanceSlider">Filter:</label>
+
                         <div id="bsubtypeButtons">
                             <!-- Buttons/Checkboxes for b_sub_type will be added here -->
                         </div>
-                    </td>
-                </tr>
-                <tr style="vertical-align: top;">
-                    <td>
-                        <div>
-                            <small style="color: gray;">[[ NODE INFO: click node 1x for info box @ bottom of page, click node 3x for popup dialog // DELETE (this is reflected in the database!): -edges- right click 2x on an edge to delete it  -nodes- right click 3x on a node to delete it // CREATE EDGES: hold 'l', select a node, cont. holding 'l', click a new node to create an edge // CREATE NODES: not available / VISUALIZATION: hold 'n and click a node to highlight its neighbors, with each add'l click the neighborhod expands. ]]</small>
-                        </div>
-                        <div style="align: top;" class=info-box id="node-info">
-                        </td>
-                        <td>
-                            <label for="euidInput">EUID:</label>
-                            <br>
-                            <input type="text" id="euidInput" placeholder="Enter EUID">
-                            <button onclick="centerOnEuid()">Click To Find</button>
-                            <br>
-                            Relatives distance (click node, then slide to filter)
-                            <input type="range"
-                                   id="distanceSlider"
-                                   min="0"
-                                   max="20"
-                                   style="width: 50%"
-                                   value="0"
-                                   oninput="filterNodes(this.value)" />
-                            <span style="text-align: -webkit-center;
-                                         font-size: 9px"
-                                  id="distanceDisplay">0</span>
-                            <br>
-                            <br>
-                            <br>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+        </div>
+            </div>     
+         </div>
             <button align=right id="saveButton" class="button">Save Changes</button>
         </div>
         <script>
@@ -345,9 +392,9 @@
 
                 // Create checkboxes for each btype
                 btypes.forEach(function(btype) {
-                    var br = $('<br />');
+                    var br = $('<span/>');
                     var checkbox = $('<input />', { type: 'checkbox', id: 'chk_' + btype, checked: 'checked' });
-                    var label = $('<label />', { 'for': 'chk_' + btype }).text(btype);
+                    var label = $('<label style="font-size: 10px;" />', {  'for': 'chk_' + btype }).text(btype);
                     $('#btypeCheckboxes').append(checkbox).append(label).append(br);
 
                     // Attach event listener
@@ -382,6 +429,17 @@
                 var keyHeld = null;
 
                 $(document).keydown(function(e) {
+                    if (e.key === 'p' || e.key === 'c') {
+                        keyHeld = e.key;
+                    }
+                });
+            
+                $(document).keyup(function(e) {
+                    if (e.key === 'p' || e.key === 'c') {
+                        keyHeld = null;
+                    }
+                });
+                $(document).keydown(function(e) {
                     if (e.key === 'n') {
                         keyHeld = e.key;
                     }
@@ -397,6 +455,9 @@
                 var neighborhoodDepth = 1;
 
                 cy.on('tap', 'node', function(evt) { 
+                        // Stop propagation to prevent the global click handler from firing
+                        evt.originalEvent.stopPropagation();
+
                         var node = evt.target;
                         var euid = node.data('euid');
                         var clickCount = node.data('clickCount') || 0;
@@ -410,9 +471,15 @@
                             // Handle triple click
                             var nodeData = node.data();
                             var dialog = $('#nodeDialog');
+
+                            // Clear previous COGS values
+                            $('#actionAOutput').text('');
+                            $('#actionBOutput').text('');
+
                             dialog.find('#nodeEuid span').text(nodeData.euid);
                             dialog.find('#nodeName span').text(nodeData.name);
-                            dialog.find('#actionALink').attr('href', '/do_action_1?euid=' + nodeData.euid);
+                            dialog.find('#actionALink').attr('href', '/calculate_cogs_parents?euid=' + nodeData.euid);
+                            dialog.find('#actionBLink').attr('href', '/calculate_cogs_children?euid=' + nodeData.euid);
                             dialog.find('#euidInfoLink').attr('href', '/euid_details?euid=' + nodeData.euid);
                     
                             // Position and show dialog
@@ -445,6 +512,22 @@
                                 neighborhood.removeClass('highlighted');
                             }, 1700); // Highlight duration
                         }
+
+                                
+                    if (clickCount >= 1 && keyHeld) {
+                        var url = keyHeld === 'p' ? '/calculate_cogs_parents?euid=' + euid : '/calculate_cogs_children?euid=' + euid;
+                        var position = keyHeld === 'p' ? 'above' : 'below';
+
+                        // AJAX request to get COGS value
+                        $.ajax({
+                            url: url,
+                            success: function(response) {
+                                var cogsValue = JSON.parse(response).cogs_value;
+                                displayCogsValue(node, position, cogsValue);
+                            }
+                        });
+                    }
+
                     if (keyHeld === 'l') {
 
                         if (!selectedChildNode) {
@@ -516,7 +599,12 @@
                         lastClickTime = currentTime;
                     }
                 });    
-                            
+                
+                $(document).on('click', function(event) {
+                    // Remove all COGS labels
+                    $('.cogs-value-label').remove();
+                });
+
 // Call this function after initializing the graph and whenever the graph is updated
 updateNodeTransparency();
 
@@ -540,6 +628,9 @@ updateNodeTransparency();
                  // Close dialog button functionality
                 $('#closeDialogButton').on('click', function() {
                     $('#nodeDialog').hide();
+                    // Clear the content of the COGS value elements
+                    $('#actionAOutput').text('');
+                    $('#actionBOutput').text('');
                 });
 
                 $('#addNodeButton').click(function() {
@@ -759,5 +850,95 @@ updateNodeTransparency();
                 
         
         </script>
+
+        <script>
+
+    // Function to display COGS value
+    function displayCogsValue(node, position, cogsValue) {
+        // Create a label element with the COGS value
+        var label = $('<div/>', {
+            class: 'cogs-label',
+            text: '$' + cogsValue,
+            css: {
+                position: 'absolute',
+                top: position === 'above' ? (node.renderedPosition().y - 30) + 'px' : (node.renderedPosition().y + 30) + 'px',
+                left: node.renderedPosition().x + 'px',
+                color: 'black',
+                backgroundColor: position === 'below' ? 'magenta' : 'pink',
+                padding: '5px',
+                borderRadius: '5px',
+                textAlign: 'center'
+            }
+        });
+        label.addClass('cogs-value-label');
+
+        // Append the label to the body
+        $('body').append(label);
+    }
+        </script>
+        <script>
+            $(document).ready(function() {
+                // Handle click event for actionALink
+                $('#actionALink').click(function(event) {
+                    event.preventDefault();
+                    var euid = $('#nodeEuid span').text(); // Get the EUID from the dialog
+                    $.ajax({
+                        url: '/calculate_cogs_parents?euid=' + euid,
+                        success: function(response) {
+                            // Display response in the dialog
+                            $('#actionAOutput').text( JSON.parse(response).cogs_value );
+                        }
+                    });
+                });
+            
+           
+            });
+
+
+            $(document).ready(function() {
+                // Handle click event for actionALink
+                $('#actionBLink').click(function(event) {
+                    event.preventDefault();
+                    var euid = $('#nodeEuid span').text(); // Get the EUID from the dialog
+                    $.ajax({
+                        url: '/calculate_cogs_children?euid=' + euid,
+                        success: function(response) {
+                            // Display response in the dialog
+                            $('#actionBOutput').text( JSON.parse(response).cogs_value );
+                        }
+                    });
+                });
+            
+            });
+        </script>
+
+        <script>
+            // Get the modal
+            var modal = document.getElementById("helpModal");
+        
+            // Get the button that opens the modal
+            var btn = document.getElementById("helpBtn");
+        
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("closeBtn")[0];
+        
+            // When the user clicks the button, open the modal 
+            btn.onclick = function() {
+                modal.style.display = "block";
+            }
+        
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+        
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        
+                </script>
     </body>
 </html>

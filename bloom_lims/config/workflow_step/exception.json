@@ -1,7 +1,7 @@
 {
   "specimen-containers-destroyed": {
     "1.0": {
-      "description": "Workflow Exceptions",
+      "description": "Destroyed Containers Exceptions",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -11,12 +11,19 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Desctroyed Containers Exceptions", 
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},

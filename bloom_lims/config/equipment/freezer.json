@@ -1,14 +1,14 @@
 {
   "freezer-m80c": {
     "1.0": {
-      "description": "Generic freezer.",
+      "description": "-80C Freezer.",
       "properties": {
-        "name": "",
+        "name": "-80C Freezer",
         "serial": "",
         "manufacturer": "",
         "model": "",
         "operataional_status": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -72,8 +72,14 @@
           }
         ]
       ],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "action_imports": {
         "core": {
           "group_order": "1",
@@ -94,14 +100,14 @@
   },
   "freezer-m20c": {
     "1.0": {
-      "description": "Generic freezer.",
+      "description": "-20C Freezer",
       "properties": {
-        "name": "",
+        "name": "-20C Freezer",
         "serial": "",
         "manufacturer": "",
         "model": "",
         "operataional_status": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
@@ -137,7 +143,13 @@
           }
         ]
       ],
-      "instantiable_n": "*",
+      "singleton": "0",
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "action_groups": {},
       "action_imports": {
         "core": {

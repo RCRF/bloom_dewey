@@ -1,5 +1,6 @@
 # Bloom : Templated Abstract Polymorphic (and opinionated) LIMS 
-_a conceptual gambit in collaboration with chatGPT4_  /// _POC v0.8.2_
+
+_a conceptual gambit in collaboration with chatGPT4_  /// _POC v0.8.10_
 
 [![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml) [![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml) [![BLOOM CENTOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml) 
 
@@ -8,13 +9,17 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 
 
 # Feature List
+* [x] You can have Bloom in operational use in just a few days, including having an integrated universal barcode printing solution as well as integrations with fedex shipmnet tracking. 
+* [x] It can be yours for free, forever.
 * [x] Hackable!
-* [x] Free & Open Source (implementation and development consulting services available!)
+* [x] Bloom can simultaneously support work in diverse lab facilities, running in parallel, with zero to significant operational overlap.
+* [x] Exquisite COGs Visibility. Integrate cost as a real time metric with utility beyond accounting, but also as an in real time process decision making tool.
 * [x] Compliant w/CLIA, CAP, HIPAA, GDPR, etc ( as compliant as you wish make the deployment environment )
 * [x] You fully control your data.
 * [x] Lowers business continuity risk profile.
 * [x] Air-gapable (no internet connection required, some _a small number of js libs would need to be served locally_)
-* [x] Runs on a laptop, desktop box, terrestial cluster, cloud. (MacOS, Ubuntu & Centos)
+* [x] Runs on a diversity of hardware: laptop, desktop box, terrestial cluster, cloud instances.
+* [x] Suported OSes: MacOS, Ubuntu & Centos.
 * [x] Tech stack comprised of well adopted technologies so dev/maintainence work can be done by a wide range of folks.
 * [x] Backup and recovery covered by well adopted postgres management practices.
 * [x] Conceptually Rigorous Implementation (models strive to be as atomic as possible)
@@ -35,6 +40,7 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 * [x] A font selected to minimize common reading and transcription errors (some of the worst character offenders: 1, l, I, 0, O, g, j, p, q ... etc).
 
 # Roadmap
+* Push loading and running the database to failure on well provisioned EC2 instances. Create detailed preformance profile reports to answer questions re: this aspect of Bloom (which, is top of the list).
 * Evaluate the action model, and re-implement with lessons learned.  The ideal end point being a system where users can define some degree of actions w/out requiring mucs/or any core code changes...
 * Add json schema validation to the template files.
   * Build UI to allow creating new versions of existing templates... eventually new tempates completely.
@@ -52,6 +58,8 @@ Built from first principles and drawing upon 30 years experience scaling laborat
 * Expanded reporting tools (if even needed... better to focus on external tools for this ?).
 * Move to more robust UI stack (away from cherrypy)
 * Expose formal REST API ( technically, sqlalchemy can expose this, just no attention has been given to it yet )
+* chatGPT4 believes Bloom could be ported to Windows w/out too much trouble.  the core code is pretty OS agnostic, the work would be in the helper scripts which assume dir structures and whatnot.  This is not a priority for me.
+* 
 
 
 # Spoilers
@@ -410,4 +418,4 @@ pytest
 * Requirements should not be created assuming what is/is not possible.  This is one of the most insidious drivers of LIMS failures.
 * Is the tech stack approachable?
 * Is the tech stack sustainable?  
- 
+

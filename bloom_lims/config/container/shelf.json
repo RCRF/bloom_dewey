@@ -7,10 +7,11 @@
       "valid_content": [
         ""
       ],
-      "description": "A shelf",
+      "description": "Shelf",
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "Shelf",
+        "comments": "",
+        "lab_code":""
       },
       "cont_address": {
         "row_name": "",
@@ -19,8 +20,14 @@
         "col_idx": "0",
         "capacity": ""
       },
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {

@@ -1,14 +1,15 @@
 {
   "generic": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Generic Object Description",
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "Generic Object Name (displayed in UI, can be easily overidded in child template references)",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -29,7 +30,13 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

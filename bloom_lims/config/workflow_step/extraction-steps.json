@@ -11,12 +11,19 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Loading blood-whole in tube-strek-10ml tubes.",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "expected_inputs": [
         {
           "container/tube/tube-strek-10ml/*/": {
@@ -64,12 +71,19 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Extracting gdna from blood-whole in tubes to wells in a fixed-plate-96.",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "expected_inputs": [
         {
           "container/tube/tube-strek-10ml/*/": {
@@ -154,7 +168,7 @@
   },
   "cfdna-extracted": {
     "1.0": {
-      "description": "Extracting cfDNA from blood-plasma in tubes to wells in a fixed-plate-96.",
+      "description": "cfDNA Extraction Plate ",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -164,12 +178,19 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "cfDNA Extraction Plate",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "expected_inputs": [
         [
           {
@@ -273,12 +294,18 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "plasma isolation",
         "comments": "",
-        "step_number": ""
+        "step_number": "","lab_code":""
       },
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "expected_inputs": [
         {
           "container/tube/tube-strek-10ml/*/": {

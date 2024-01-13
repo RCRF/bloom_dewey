@@ -2,18 +2,19 @@
   "tube-strek-10ml": {
     "1.0": {
       "valid_parents": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "valid_content": [
         "content/.*"
       ],
-      "description": "strek 10ml tube",
+      "description": "strek 10ml",
       "properties": {
-        "name": "",
+        "name": "strek 10ml",
         "manufacturer": "",
         "manufacturer_other": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": ""
+        "comments": "",
+        "lab_code":""
       },
       "cont_address": {
         "name": "",
@@ -34,7 +35,13 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "tube-generic-10ml": {
@@ -45,12 +52,12 @@
       ],
       "description": "Generic 10ml tube",
       "properties": {
-        "name": "",
+        "name": "10ml tube generic",
         "manufacturer": "",
         "manufacturer_other": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "cont_address": {
         "name": "",
@@ -71,7 +78,13 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.50",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   },
   "tube-eppi-1.5ml": {
@@ -80,14 +93,14 @@
       "valid_content": [
         "content/.*"
       ],
-      "description": "Generic 1.5ml tube",
+      "description": "1.5ml eppi tube",
       "properties": {
-        "name": "",
+        "name": "1.5ml eppi tube",
         "manufacturer": "",
         "manufacturer_other": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "cont_address": {
         "name": "",
@@ -108,7 +121,58 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "1.70",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
+    }
+  },
+  "tube-10ml-glass": {
+    "1.0": {
+      "valid_parents": [],
+      "valid_content": [
+        "content/.*"
+      ],
+      "description": "10ml glass tube",
+      "properties": {
+        "name": "10ml glass tube",
+        "manufacturer": "",
+        "manufacturer_other": "",
+        "lot_number": "",
+        "lot_expiration_date": "",
+        "comments": "","lab_code":""
+      },
+      "cont_address": {
+        "name": "",
+        "row_name": "",
+        "col_name": "",
+        "row_idx": "0",
+        "col_idx": "0"
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "4.70",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }
+
+

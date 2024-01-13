@@ -207,6 +207,7 @@ bloom_lims/config
 ```
 
 #### Second level types
+* Assay is an exception to all of this, they can be instantiated 1x only, and their state is locked so no other DB entries may be made. 
 ```bash
 tree -L 2 bloom_lims/config
 bloom_lims/config
@@ -296,3 +297,4 @@ There are currently almost 100 instantiable object types. You can view them in t
 # Other Crap
 ## PGadmin Dashboard
 ![PGadmin Dashboard](../imgs/pgadmin_dashboard.png)
+* I will not entertain messaging based event driven architectures.  I think they are a mistake for this application. And unecessary AFAICT.  

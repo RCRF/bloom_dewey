@@ -3,13 +3,20 @@
     "1.0": {
       "valid_parents": [],
       "layouts": [],
-      "description": "Generic worflow",
+      "description": "noamp-wgs 3x",
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "noamp-wgs 3x",
+        "comments": "",
+        "lab_code":"R&D"
       },
       "action_groups": {},
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "action_imports": {
         "core": {
           "group_order": "1",

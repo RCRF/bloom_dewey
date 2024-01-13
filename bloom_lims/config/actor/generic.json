@@ -1,19 +1,20 @@
 {
-  "generic": {
+  "patient": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Patient",
       "properties": {
-        "name": "",
+        "name": "Patient",
         "state": "",
         "status": "",
         "comments": "",
         "NPI": "",
         "Phone": "",
         "Fax": "",
-        "Address": ""
+        "Address": "",
+        "lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {
@@ -30,19 +31,19 @@
   },
   "physician": {
     "1.0": {
-      "description": "Generic json def file",
+      "description": "Clinician",
       "properties": {
-        "name": "",
+        "name": "Clinician",
         "state": "",
         "status": "",
         "comments": "",
         "NPI": "",
         "Phone": "",
         "Fax": "",
-        "Address": ""
+        "Address": "","lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {
@@ -54,7 +55,13 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

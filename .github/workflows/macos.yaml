@@ -1,4 +1,4 @@
-name: BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS
+name: BLOOM MacOS
 
 on:
   push:

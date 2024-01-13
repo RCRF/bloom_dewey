@@ -14,7 +14,7 @@ function showCapturedDataForm(button, actionDataJson, stepEuid, actionName, acti
             var actionData = actionDataJson;
             if (actionData['capture_data'] === 'no') {
                 // Directly submit the form without capturing user input
-                performWorkflowStepAction(stepEuid, actionDataJson, actionName);
+                performWorkflowStepAction(stepEuid, actionDataJson, actionName, actionGroup);
             } else {
                 // Create the form for user input
                 var formContainer = document.createElement('div');
@@ -72,7 +72,7 @@ function submitCapturedDataForm(formId, actionName, stepEuid, actionDataJson, ac
 }
 
 function performWorkflowStepAction(stepEuid, ds, action, actionGroup) {
-    console.log('Performing workflow step action:', stepEuid, ds, action); // Debugging log
+    console.log('Performing workflow step action:', stepEuid, ds, action, actionGroup); // Debugging log
 
     fetch('/workflow_step_action', {
         method: 'POST',

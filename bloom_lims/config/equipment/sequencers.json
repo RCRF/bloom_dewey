@@ -1,19 +1,19 @@
 {
-  "generic": {
+  "novaseq-6000": {
     "1.0": {
-      "description": "Generic Sequencer",
+      "description": "Illumnina Novaseq 6000",
       "properties": {
-        "name": "",
+        "name": "Illumnina Novaseq 6000",
         "serial": "",
-        "manufacturer": "",
+        "manufacturer": "Illumina",
         "model": "",
         "operataional_status": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_imports": {
         "core": {
           "group_order": "1",
@@ -23,7 +23,82 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
+    }
+  },
+  "miseq-y": {
+    "1.0": {
+      "description": "Illumnina MiSeq y",
+      "properties": {
+        "name": "Illumnina MiSeq y",
+        "serial": "",
+        "manufacturer": "Illumina",
+        "model": "",
+        "operataional_status": "",
+        "comments": "",
+        "lab_code":""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "singleton": "0",
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
+    }
+  },
+
+  "ont-minion": {
+    "1.0": {
+      "description": "ONT MinION",
+      "properties": {
+        "name": "ONT MinION",
+        "serial": "",
+        "manufacturer": "Oxford Nanopore Technologies",
+        "model": "",
+        "operataional_status": "",
+        "comments": "",
+        "lab_code":""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "singleton": "0",
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

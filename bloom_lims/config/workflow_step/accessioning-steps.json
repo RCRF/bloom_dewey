@@ -1,7 +1,7 @@
 {
   "package-generated": {
     "1.0": {
-      "description": "Package has been created..",
+      "description": "Register Kits To Package",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -11,14 +11,21 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Register Kits To Package",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -38,13 +45,20 @@
               ]
             }
           }
+        }, 
+        "acc-queue-move": {
+          "group_order": "3",
+          "group_name": "Move Queues",
+          "actions": {
+            "action/move-queues/*/1.0/": {}
+          }
         }
       }
     }
   },
   "kit-generated": {
     "1.0": {
-      "description": "Register a package and begin accessioning.",
+      "description": "Register Specimen Containers To Kit",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -54,16 +68,22 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Register Specimen Containers To Kit",
         "comments": "",
         "step_number": "",
         "equipment_euid": [],
         "carrier_name": "",
-        "carrier_tracking_number": ""
+        "carrier_tracking_number": "","lab_code":""
       },
       "instantiation_layouts": [],
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "expected_outputs": [
         {
           "container/package/generic/*/": {
@@ -97,8 +117,8 @@
   },
   "container-generated": {
     "1.0": {
-      "description": "Link Specimen Containers.",
-      "instantiable_n": "*",
+      "description": "Register Specimen Container To Test Req // Assay",
+      "singleton": "0",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -108,11 +128,18 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Register Specimen Containers To Test Req // Assay",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "expected_inputs": [
         {
           "container/kit/generic/*/": {}
@@ -150,9 +177,10 @@
   },
   "test-requisition-generated2": {
     "1.0": {
-      "description": "Link a test requisition to a specimen container.",
-      "instantiable_n": "*",
+      "description": "Associate Other Specimen Containers To Test Requisition",
+      "singleton": "0",
       "step_properties": {
+        "name": "",
         "start_timestamp": "",
         "end_timestamp": "",
         "start_operator": "",
@@ -161,11 +189,18 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Associate Other Specimen Containers To Test Requisition",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "expected_inputs": [
         {
           "container/kit/generic/*/": {}

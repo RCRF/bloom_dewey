@@ -11,14 +11,21 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Specimens Destroyed",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {

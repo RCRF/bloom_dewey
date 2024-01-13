@@ -1,16 +1,23 @@
 {
   "generic": {
     "1.0": {
-      "description": "Generic objects to represent pools of content.",
+      "description": "Pool of Contents",
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "Pool of Contents",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "actions": {},
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

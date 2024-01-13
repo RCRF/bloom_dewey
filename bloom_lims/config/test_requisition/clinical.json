@@ -10,13 +10,20 @@
         }
       ],
       "layouts": [],
-      "description": "Generic worflow",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "description": "pan-cancer 239 Gene Panel Requisition",
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "pan-cancer 239 Gene Panel Requisition",
+        "comments": "",
+        "lab_code":""
       },
       "action_groups": {},
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_imports": {
         "core": {
           "group_order": "1",

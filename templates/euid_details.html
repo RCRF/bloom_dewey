@@ -72,7 +72,7 @@
         </script>
     </head>
     <body id="content2">
-        <small><a href=dindex?globalStartNodeEUID={{ object.euid }}>( graph )</a></small> <small><a href= />( B )</a></small>
+        <small> <a href=dindex?globalStartNodeEUID={{ object.euid }}>( graph )</a> </small> <small> <a href= />( h o m e )</a> </small>
         {% macro render_json_value(value, key) %}
             {% if value is mapping %}
                 <div class="nested-json">
@@ -96,7 +96,7 @@
             <h1>
                 Object Details : {{ object.euid }} : : <a href=/plate_visualization?plate_euid={{ object.euid }}>plate view</a>
             </h1>
-        {% elif  object.super_type  == 'workflow' %}
+        {% elif  object.super_type  == 'workflow' and object.btype != 'assay' %}
             <h1>
                 Object Details : {{ object.euid }} : : <a href=workflow_details?workflow_euid={{ object.euid }}>workflow view</a>
             </h1>
@@ -129,13 +129,11 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Name</td>
+                        <td>DB Name<ul>Given Name<br>Lab Code</ul></td>
                         <td>
-                            <form method="post" action="/update_object_name">
-                                <input type="hidden" name="euid" value="{{ object.euid }}">
-                                <input type="text" name="name" value="{{ object.name }}">
-                                <input type="submit" value="rename">
-                            </form>
+                            {{ object.name }}<ul>
+                            {{ object.json_addl['properties']['name'] }}<br>
+                            {{ object.json_addl['properties']['lab_code'] }}</ul>
                         </td>
                     </tr>
                     <tr>

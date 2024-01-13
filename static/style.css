@@ -20,6 +20,7 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-size: var(--font-size-standard);
+    font-weight: inherit; 
 }
 
 .container {
@@ -49,7 +50,7 @@ body {
     position: flex;
     top: 10px;
     right: 10px;
-    border: 1px solid var(--info-box-border-color);
+    border: 2px solid var(--info-box-border-color);
     background: inherit;
     padding: 10px;
     border-radius: var(--border-radius);
@@ -60,6 +61,8 @@ body {
 /* General Button Style */
 button {
     font-size: var(--font-size-standard);
+    font-weight: inherit; 
+    font-family: var(--font-family);
     background-color: var(--primary-color);
     color: var(--text-color);
     border: none;
@@ -89,7 +92,6 @@ button:hover {
 }
     
 form {
-    background-color: var(--panel-bg-color);
     padding: 0px;
     margin: 2px;
 }
@@ -252,10 +254,36 @@ p {
     width: 50px; /* Fixed width */
     height: 50px; /* Fixed height */
     border-radius: 50%; /* Optional: makes the button circular */
-    background-color: #75dbf8; /* Optional: background color */
+    background-color: var(--primary-color);
     border: none; /* Optional: removes border */
     cursor: pointer;
     z-index: 1000;
+}
+ 
+.floating-button2 {   
+    position: fixed;
+    right: 20px;
+    margin: 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color:  var(--primary-color);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.floating-button2:hover {
+    background-color: var(--secondary-color);
+
+}
+
+.floating-button-logout2 {
+    bottom: 80px;  /* Adjusted for spacing */
+}
+
+.floating-button-skin2 {
+    bottom: 20px;
 }
 
 #collapseAll {
@@ -386,4 +414,26 @@ th {
     padding: 1px;
     margin: 2px;
     transition: background-color var(--transition-speed);
+}
+
+@keyframes flash {
+    0%, 100% { 
+        opacity: 0.681; 
+        background-color: var(--actionsubmit-bg-color); /* Normal background color */
+        transform: scale(1); /* Normal scale */
+        border-radius: var(--border-radius);
+        color:var(--property-button-color);
+
+    }
+    80% { 
+        opacity: 0.961; 
+        background-color: var(--close-dialog-btn-hover-color); /* Striking background color */
+        transform: scale(1.01); /* Slightly larger scale */
+        border-radius: var(--border-radius);
+        color:var(--property-button-color);
+    }
+}
+
+.flash-effect {
+    animation: flash 1s linear 1; /* Change '3' to the number of flashes */
 }

@@ -5,8 +5,8 @@
       "valid_content": [
         "none"
       ],
-      "description": "For testing purposes, 24 well plate.",
-      "instantiable_n": "*",
+      "description": "24 fixed well plate",
+      "singleton": "0",
       "instantiation_layouts": [
         [
           {
@@ -398,9 +398,15 @@
         "manufacturer": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "2.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {
@@ -427,8 +433,14 @@
       "valid_content": [
         "none"
       ],
-      "description": "Generic 96 well plate.",
-      "instantiable_n": "*",
+      "description": "96 well fixed plate",
+      "singleton": "0",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "4.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "instantiation_layouts": [
         [
           {
@@ -1696,11 +1708,11 @@
         ]
       ],
       "properties": {
-        "name": "",
+        "name": "96 well plate fixed",
         "manufacturer": "",
         "lot_number": "",
         "lot_expiration_date": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "cont_address": {
         "row_name": "",

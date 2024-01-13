@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Dosis&display=swap');
+
 /* CSS Variables for Easy Theme Management - Color Blind Friendly */
 :root {
     --primary-color: #0099cc; /* Blue, clear for most color vision deficiencies */

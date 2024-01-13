@@ -3,13 +3,20 @@
     "1.0": {
       "description": "DNA Quant Data",
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "DNA Quant Data",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -32,14 +39,21 @@
   "temperature-log": {
     "1.0": {
       "description": "Temperature Log Data",
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "properties": {
-        "name": "",
-        "comments": ""
+        "name": "Temperate Log Data",
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {}
     }

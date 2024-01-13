@@ -15,7 +15,7 @@ from bloom_lims.bdb import BloomObj, BloomWorkflow, BloomWorkflowStep
 
 from collections import defaultdict
 
-SKIP_AUTH = False if len(sys.argv) < 2 else True
+SKIP_AUTH = False if len(sys.argv) < 3 else True
 
 
 def is_instance(value, type_name):
@@ -106,8 +106,72 @@ class WorkflowService(object):
 
     @cherrypy.expose
     def index(self):
+        user_logged_in = True if 'user_data' in cherrypy.session else False
         template = self.env.get_template("index.html")
-        return template.render( style=self.get_root_style())
+        return template.render( style=self.get_root_style(), user_logged_in=user_logged_in)
+
+
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def assays(self, show_type='all'):
+        user_logged_in = True if 'user_data' in cherrypy.session else False
+        template = self.env.get_template("assay.html")
+        bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+        ay_ds = {}
+        for i in (
+            bobdb.session.query(bobdb.Base.classes.workflow_instance)
+            .filter_by(is_deleted=False,is_singleton=True)
+            .all()
+        ):
+            if show_type == 'all' or i.json_addl.get('assay_type','all') == show_type:
+                ay_ds[i.euid] = i
+
+        assays = []
+        ay_dss = {}
+        atype={}
+
+        if show_type == 'assay':
+            atype['type'] = 'Assays'
+        elif show_type == 'accessioning':
+            atype['type'] = 'Accessioning'
+        else:
+            atype['type'] = 'All Assays, etc'
+
+        for i in sorted(ay_ds.keys()):
+            assays.append(ay_ds[i])
+            ay_dss[i] = {"Instantaneous COGS" : round(bobdb.get_cost_of_euid_children(i),2)}
+            ay_dss[i]['tot'] = 0
+            for q in ay_ds[i].parent_of_lineages:
+                wset = ''
+                n = q.child_instance.json_addl['properties']['name']
+                if n.startswith('In'):
+                    wset = 'inprog'
+                elif n.startswith('Comple'):
+                    wset = 'complete'
+                elif n.startswith('Exception'):
+                    wset = 'exception'
+                elif n.startswith('Ready'):
+                    wset = 'avail'
+                ay_dss[i][wset]=len(q.child_instance.parent_of_lineages)
+                ay_dss[i]['tot'] += len(q.child_instance.parent_of_lineages)
+            ay_dss[i]['conv'] = float(ay_dss[i]['complete']) / float( ay_dss[i]['complete'] + ay_dss[i]['exception']) if ay_dss[i]['complete'] + ay_dss[i]['exception'] > 0 else 'na'  
+            ay_dss[i]['wsetp'] = float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']) if ay_dss[i]['tot'] > 0 else 'na'
+                
+        return template.render( style=self.get_root_style(), workflow_instances=assays, ay_stats=ay_dss, atype=atype)
+
+
+    @cherrypy.expose
+    def logout(self):
+        # Check if a user is currently logged in
+        if 'user' in cherrypy.session:
+            # Clear the session data to log out the user
+            cherrypy.session.pop('user_data', None)
+            cherrypy.session.pop('user', None)
+            cherrypy.lib.sessions.expire()  # Optionally, expire the session cookie
+
+        # Redirect the user to the login page or another appropriate page after logging out
+        raise cherrypy.HTTPRedirect('/')
+
 
     @cherrypy.expose
     def login(self, email=None, password=None):
@@ -133,12 +197,13 @@ class WorkflowService(object):
         
         if email and email not in user_data:
             # New user, create entry
-            user_data[email] = {'style_css': 'static/skins/root.css'}
+            user_data[email] = {'style_css': 'static/skins/bloom.css'}
             with open(user_data_file, 'w') as f:
                 json.dump(user_data, f)
 
         # Set user session
         cherrypy.session['user_data'] = user_data.get(email, {})
+        cherrypy.session['user_data']['wf_filter'] = 'off'
         cherrypy.session['user'] = email
         # Redirect to a different page or render a success message
         raise cherrypy.HTTPRedirect('/')
@@ -146,7 +211,43 @@ class WorkflowService(object):
     
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def admin(self):
+    def calculate_cogs_children(self, euid):
+        try:
+            bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+            cogs_value =round(bobdb.get_cost_of_euid_children(euid),2)
+            return json.dumps({"success": True, "cogs_value": cogs_value})
+        except Exception as e:
+            cherrypy.log("Error in calculate_cogs_children: ", traceback=True)
+            return json.dumps({"success": False, "message": str(e)})
+    
+    
+    
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def calculate_cogs_parents(self, euid):
+        try:
+            bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+            cogs_value = round(bobdb.get_cogs_to_produce_euid(euid),2)
+            return json.dumps({"success": True, "cogs_value": cogs_value})
+        except Exception as e:
+            cherrypy.log("Error in calculate_cogs_parents: ", traceback=True)
+            return json.dumps({"success": False, "message": str(e)})
+    
+    
+    
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def set_filter(self, curr_val='off'):
+        if curr_val == 'off':
+            cherrypy.session['user_data']['wf_filter'] = 'on'
+        else:
+            cherrypy.session['user_data']['wf_filter'] = 'off'
+
+    
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def admin(self,dest='na'):
+        dest_section = {'section':dest}
         template = self.env.get_template("admin.html")
 
         # Assuming user_data is stored in the CherryPy session
@@ -172,13 +273,17 @@ class WorkflowService(object):
         }
 
         # Render the template with user data and printer info
-        return template.render(style=self.get_root_style(),user_data=user_data, printer_info=printer_info)
+        return template.render(style=self.get_root_style(),user_data=user_data, printer_info=printer_info, dest_section=dest_section)
 
     @cherrypy.expose
-    def get_root_style(self):        
-        user_data = cherrypy.session.get('user_data', {})
+    def get_root_style(self):   
+        rs_obj = {"skin_css": 'static/skins/bloom.css'}
+        try:
+            user_data = cherrypy.session.get('user_data', {})
+            rs_obj = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        except Exception as e:
+            pass
 
-        rs_obj = {"skin_css": user_data.get('style_css', 'static/skins/root.css')}
         return rs_obj
         
     @cherrypy.expose
@@ -393,7 +498,7 @@ class WorkflowService(object):
     def uuid_details(self, uuid):
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         # Fetch the object using uuid
-        obj = bobdb.get_by_uuid(uuid)
+        obj = bobdb.get(uuid)
         raise cherrypy.HTTPRedirect("/euid_details?euid=" + str(obj.euid))
 
     @cherrypy.expose
@@ -634,7 +739,7 @@ class WorkflowService(object):
         template = self.env.get_template("workflow_details.html")
         workflow = bwfdb.get_sorted_euid(workflow_euid)
         accordion_states = dict(cherrypy.session)
-        return template.render(style=self.get_root_style(),workflow=workflow, accordion_states=accordion_states)
+        return template.render(style=self.get_root_style(),workflow=workflow, accordion_states=accordion_states, udat=cherrypy.session['user_data'])
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -660,6 +765,7 @@ class WorkflowService(object):
         bobdb = BloomWorkflow(BLOOMdb3(app_username=cherrypy.session['user']))
         bo = bobdb.get_by_euid(euid)
 
+
         ds["curr_user"] = cherrypy.session.get("user", "bloomui-user")
         udat = cherrypy.session.get("user_data",{}  )
         ds['lab'] = udat.get("print_lab", "BLOOM")
@@ -670,7 +776,6 @@ class WorkflowService(object):
         ds['alt_c'] = udat.get("alt_c",)
         ds['alt_d'] = udat.get("alt_d","")   
         ds['alt_e'] = udat.get("alt_e","")                                     
-                                     
                                      
         if bo.__class__.__name__ == "workflow_instance":
             bwfdb = BloomWorkflow(BLOOMdb3(app_username=cherrypy.session['user']))
@@ -905,13 +1010,13 @@ class WorkflowService(object):
 
         for lineage in lineages:
             if (
-                not BO.get_by_uuid(lineage.child_instance_uuid).is_deleted
-                and not BO.get_by_uuid(lineage.parent_instance_uuid).is_deleted
+                not BO.get(lineage.child_instance_uuid).is_deleted
+                and not BO.get(lineage.parent_instance_uuid).is_deleted
             ):
                 edge = {
                     "data": {
-                        "source": BO.get_by_uuid(lineage.parent_instance_uuid).euid,
-                        "target": BO.get_by_uuid(lineage.child_instance_uuid).euid,
+                        "source": BO.get(lineage.parent_instance_uuid).euid,
+                        "target": BO.get(lineage.child_instance_uuid).euid,
                         "id": lineage.euid,
                     },
                     "group": "edges",

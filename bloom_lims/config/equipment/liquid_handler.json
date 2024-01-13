@@ -1,18 +1,19 @@
 {
   "bravo": {
     "1.0": {
-      "description": "Bravo Generic Liquid Handler",
+      "description": "Bravo Liquid Handler",
       "properties": {
-        "name": "",
+        "name": "Bravo Liquid Handler",
         "serial": "",
         "manufacturer": "",
         "model": "",
         "operataional_status": "",
-        "comments": ""
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "action_groups": {},
       "action_imports": {
         "core": {
@@ -23,7 +24,13 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "inactive",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

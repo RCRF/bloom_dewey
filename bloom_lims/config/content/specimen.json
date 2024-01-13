@@ -1,48 +1,69 @@
 {
   "blood-whole": {
     "1.0": {
-      "description": "Generic whole blood sample",
+      "description": "Whole Blood",
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "properties": {
-        "name": "",
+        "name": "Whole Blood",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "actions": {}
     }
   },
   "ffpe-block": {
     "1.0": {
-      "description": "Generic FFPE block",
+      "description": "FFPE Block",
       "properties": {
-        "name": "",
+        "name": "FFPE Block",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "",
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "actions": {}
     }
   },
   "ffpe-slice": {
     "1.0": {
+      "description": "FFPE Slides",
       "properties": {
-        "name": "",
+        "name": "FFPE Slides",
         "volume": "",
         "volume_units": "",
-        "comments": ""
+        "comments": "","lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "actions": {}
     }
   }

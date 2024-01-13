@@ -7,14 +7,14 @@
       "valid_content": [
         "content/.*"
       ],
-      "description": "A well model for use in a fixed plate",
+      "description": "plate well - fixed",
       "properties": {
-        "name": "",
+        "name": "plate well - fixed",
         "diameter": "",
         "height": "",
         "volume": "",
         "comments": "",
-        "bottom_type": ""
+        "bottom_type": "","lab_code":""
       },
       "cont_address": {
         "row_name": "",
@@ -23,7 +23,7 @@
         "col_idx": "0"
       },
       "expected_inputs": [],
-      "instantiable_n": "*",
+      "singleton": "0",
       "expected_outputs": [],
       "action_groups": {},
       "action_imports": {
@@ -35,7 +35,13 @@
           }
         }
       },
-      "instantiation_layouts": []
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      }
     }
   }
 }

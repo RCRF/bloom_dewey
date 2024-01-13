@@ -1,7 +1,7 @@
 {
   "heat-seal": {
     "1.0": {
-      "description": "Heatseal a plate",
+      "description": "Heatseal Plate",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -11,12 +11,19 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Heatseal Plate",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
-      "instantiable_n": "*",
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "singleton": "0",
       "expected_inputs": [
         {
           "container/plate/*/*/": {}
@@ -41,7 +48,7 @@
   },
   "extraction-plate-filled": {
     "1.0": {
-      "description": "Extraction Plate",
+      "description": "Filled Extraction Plate",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -51,11 +58,18 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Filled Extraction Plate",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "expected_inputs": [
         {
           "container/plate/*/*/": {}
@@ -88,8 +102,8 @@
   },
   "stamp-copy-plate": {
     "1.0": {
-      "description": "Copy Plate With No Well Address Changes",
-      "instantiable_n": "*",
+      "description": "Stamp Copy Plate",
+      "singleton": "0",
       "step_properties": {
         "start_timestamp": "",
         "end_timestamp": "",
@@ -99,11 +113,18 @@
         "step_number": ""
       },
       "properties": {
-        "name": "",
+        "name": "Stamp Copy Plate",
         "comments": "",
-        "step_number": ""
+        "step_number": "",
+        "lab_code":""
       },
       "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
