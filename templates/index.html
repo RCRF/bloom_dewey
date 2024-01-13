@@ -4,6 +4,32 @@
         <title>Bloom </title>
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
+        <script src="static/action_buttons.js"></script>
+
+        <style>
+            .accordion {
+                cursor: pointer;
+                padding: 18px;
+                width: 100%;
+                border: none;
+                text-align: left;
+                outline: none;
+                font-size: 15px;
+                transition: 0.4s;
+            }
+         
+            .panel {
+                padding: 0 18px;
+                display: none;
+                overflow: hidden;
+            }
+            b {
+                color: gold;        
+            }
+            button .accordion {  
+                background-color: var(--secondary-color);
+            }
+        </style>
     </head>
     <body>
         <h1>
@@ -15,6 +41,9 @@
             <h2>Core</h2>
             Bloom takes a non-traditional approach to meeting the needs LIMS are designed for (and rately satisfy well). 
             <b><small>Exhausive archtecture docs will follow, but for now, the following points are worth noting. user IDs also tracked when data is changed.</small></b> 
+         <ul>
+            <button   class="accordion">...more</button>
+            <div class="panel">
             <ul>
             - Bloom provides a model of the core LIMS objects and concepts. Provided UIs are funtional, and should be useful in guiding more complex UI development w/external systems. 
             <br>
@@ -48,11 +77,16 @@
             <br>
             - Bloom UI is easily skinnable for those needing different color schemes for usability. These can be switched between in the admin view.
             </ul>
-
+        </div>
+    </ul>
             <h2>
             <a href="/assays?show_type=accessioning ">ACCESSIONING</a></h2>
             UI design is functionally complete, and could serve in production. However, it is demonstrating the finest level of control Bloom offers, and a highthroughput scenario would be well advised to aggregate many operations when skinning a lower touch experience.
             <u>the following works out of the box</u>
+            <ul>
+            <button   class="accordion">...more</button>
+            
+            <div class="panel">
             <ul>
             - receive a package, capture desired info (ie: fedex trk#, used to calculate transit time for package). try this fedex test#<small> 1001897582860000245100773464327825 </small>.
             <br>
@@ -73,7 +107,9 @@
             <br>
             - quite rich monitoring, reporting, observability capabilities ( in real time COGS tracking, in real time FEDEX tracking stats).
             </ul>
-            <br>
+        </div>
+    </ul>
+                    <br>
             <h2>
              <a href="/assays?show_type=assay "> ASSAYS / Queues /  worksets </a>
             </h2>
@@ -81,30 +117,36 @@
             ... the two (example assay/queue/workset)'s are not inteded for production use. They demonstrate how the Bloom objects can be combined to define types of work, manage this work, and monitor/report.
             <u>the following works out of the box</u>
             <ul>
+            <button   class="accordion">...more</button>
+            <div class="panel">
+            <ul>
             - monitoring overall assay state (ie: failure rates, COGS, queue sizes, etc)
             - processing assay 'available' objects (in this case tubes) into 'worksets', worksets being groups of work in service of completing an assay request.
             - queue management for 4 types : available, in progress, completed, exception.
 
-
+            </div>
+        </ul>
             </ul>
             <ul>
-                <li>
-                    functionally feature complete,  user interactions production ready (for generalized use cases)
-                </li>
-            </ul>
             <br>
             <h2><a href="/equipment_overview">Equipment Management</a></h2>
             <ul>
-                <li>
-                    functionally feature complete, user interactions still elementary
-                </li>
+
+                    functionally feature complete, user interactions still elementary.
+                    <br>
+                    - creating equipment from templates (notably, freezers) works.
+                    <br>
+                    - system for logging temperature for freezers is in place, can be access from freezer group_value.actions.items
+
             </ul>
             <br>
             <h2><a href="/reagent_overview">Reagent Management</a></h2>
             <ul>
-                <li>
+
                     functionally feature complete, user interactions still elementary
-                </li>
+                    <br>
+                    - creating reagents from templates works.
+
             </ul>
             
 
