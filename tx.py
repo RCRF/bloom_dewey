@@ -98,10 +98,13 @@ def create_tubes(n=1):
         #wf = bob_wfs.create_instances(records[0].euid)[0][0]
 
         # Clinical ACC Queue
-        
+        #    accessioning-RnD
+         
         #from IPython import embed; embed()
         #raise
-        wf = bob_wf.query_instance_by_component_v2("workflow", "assay", "accessioning-clinical", "1.0")[0]
+        # 
+        # 
+        wf = bob_wf.query_instance_by_component_v2("workflow", "assay", "accessioning-RnD", "1.0")[0]
 
         action_group = "accessioning"
         action = "action/accessioning-ay/create_package_and_first_workflow_step_assay_root/1.0"
