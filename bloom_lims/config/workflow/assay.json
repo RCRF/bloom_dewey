@@ -10,6 +10,7 @@
       "singleton": "1",
       "expected_inputs": [],
       "expected_outputs": [],
+      "assay_type": "assay",
       "action_groups": {},
       "cogs" : {
         "state" : "active",
@@ -101,6 +102,7 @@
       "singleton": "1",
       "expected_inputs": [],
       "expected_outputs": [],
+      "assay_type": "assay",
       "action_groups": {},
       "cogs" : {
         "state" : "active",
@@ -190,6 +192,7 @@
         "ay_addl":"fedex"
       },
       "singleton": "1",
+      "assay_type": "accessioning",
       "expected_inputs": [],
       "expected_outputs": [],
       "action_groups": {},
@@ -200,11 +203,17 @@
         "allocation_type" : ""
       },
       "action_imports": {
-        "accessioning-ay": {
+        "accessioning": {
           "group_order": "2",
           "group_name": "Package Receipt",
           "actions": {
             "action/accessioning-ay/*/1.0/": {}
+          }
+        },"core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
           }
         }
       },
@@ -267,6 +276,7 @@
         "lab_code":"",
         "ay_addl":"fedex"
       },
+      "assay_type": "accessioning",
       "singleton": "1",
       "expected_inputs": [],
       "expected_outputs": [],
@@ -278,7 +288,14 @@
         "allocation_type" : ""
       },
       "action_imports": {
-        "accessioning-ay": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "accessioning": {
           "group_order": "2",
           "group_name": "Package Receipt",
           "actions": {

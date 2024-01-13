@@ -1088,24 +1088,25 @@ class BloomObj:
     #
     def do_action(self,euid, action, action_group, action_ds, now_dt="" ):
 
+        r=None
         action_method = action_ds["method_name"]
         now_dt = get_datetime_string()
         if action_method == "do_action_set_object_status":
-            self.do_action_set_object_status(euid, action_ds, action_group, action)
+            r=self.do_action_set_object_status(euid, action_ds, action_group, action)
         elif action_method == "do_action_print_barcode_label":
-            self.do_action_print_barcode_label(euid, action_ds)
+            r=self.do_action_print_barcode_label(euid, action_ds)
             
         elif action_method == "do_action_destroy_specimen_containers":
-            self.do_action_destroy_specimen_containers(euid, action_ds)
+            r= self.do_action_destroy_specimen_containers(euid, action_ds)
         elif action_method == "do_action_create_package_and_first_workflow_step_assay":
-            self.do_action_create_package_and_first_workflow_step_assay(euid, action_ds)
+            r = self.do_action_create_package_and_first_workflow_step_assay(euid, action_ds)
         elif action_method == "do_action_move_workset_to_another_queue":
-            self.do_action_move_workset_to_another_queue(euid, action_ds)
+            r= self.do_action_move_workset_to_another_queue(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
-        return self._do_action_base(euid, action, action_group, action_ds, now_dt)
-
+        self._do_action_base(euid, action, action_group, action_ds, now_dt)
+        return r
 
     def do_action_move_workset_to_another_queue(self, euid, action_ds):
 
@@ -1170,7 +1171,7 @@ class BloomObj:
             self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, wfs.euid)
             self.session.flush()
             self.session.commit()
-
+    
         package = ""
         for layout_str in action_ds["new_container_obj"]:
             for cv_k in action_ds["captured_data"]:

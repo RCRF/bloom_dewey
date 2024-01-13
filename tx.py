@@ -76,9 +76,9 @@ def set_status(b, obj, status):
     action = "action/core/set_object_status/1.0"
     action_group = "core"
 
-    action_ds = obj.json_addl["action_groups"][action_group]["actions"][action]
-    action_ds["captured_data"]["object_status"] = status
-    b.do_action(obj.euid, action, action_group, action_ds)
+    #action_ds = obj.json_addl["action_groups"][action_group]["actions"][action]
+    #action_ds["captured_data"]["object_status"] = status
+    #b.do_action(obj.euid, action, action_group, action_ds)
 
 TUBES=[]
 
@@ -86,39 +86,43 @@ def create_tubes(n=1):
     ctr = 0
     while ctr < n:
 
-        records = (
-            bob_wfs.session.query(bob_wfs.Base.classes.workflow_template)
-            .filter(
-                bob_wfs.Base.classes.workflow_template.b_sub_type
-                == "accession-package-kit-tubes-testreq"
-            )
-            .all()
-        )
+        #records = (
+        #    bob_wfs.session.query(bob_wfs.Base.classes.workflow_template)
+        #    .filter(
+        #        bob_wfs.Base.classes.workflow_template.b_sub_type
+        #        == "accession-package-kit-tubes-testreq"
+        #    )
+        #    .all()
+        #)
 
-        wf = bob_wfs.create_instances(records[0].euid)[0][0]
+        #wf = bob_wfs.create_instances(records[0].euid)[0][0]
+
+        # Clinical ACC Queue
+        
+        #from IPython import embed; embed()
+        #raise
+        wf = bob_wf.query_instance_by_component_v2("workflow", "assay", "accessioning-clinical", "1.0")[0]
 
         action_group = "accessioning"
-        action = "action/workflow/create_package_and_first_workflow_step/1.0"
+        action = "action/accessioning-ay/create_package_and_first_workflow_step_assay_root/1.0"
         action_data = wf.json_addl["action_groups"][action_group]["actions"][action]
         # action_data = wf.json_addl["actions"]["create_package_and_first_workflow_step"]
         action_data["captured_data"]["Tracking Number"] = "1001897582860000245100773464327825"
         action_data["captured_data"]["Fedex Tracking Data"] = {}
+        wfs=bob_wf.do_action(wf.euid, action, action_group, action_data)
 
-
-        bob_wf.do_action(wf.euid, action, action_group, action_data)
-
-
-        # wfs = bob_wf.do_action_create_package_and_first_workflow_step(wf.euid, action_data)
-        wfs = wf.parent_of_lineages[0].child_instance
+        #wfs = bob_wf.do_action_create_package_and_first_workflow_step_assay(wf.euid, action_data)
+    
         assert hasattr(wfs, "euid") == True
 
         b_action_group = "create_child"  # change to child
-        b_action = "action/workflow_step_accessioning/create_child_container_and_link_child_workflow_step/1.0"
+        #create_package_and_first_workflow_step_assay
+        b_action = "action/workflow_step_accessioning/create_child_container_and_link_child_workflow_step/1.0" # "action/workflow_step_accessioning/create_child_container_and_link_child_workflow_step/1.0"
         wfs_action_data = wfs.json_addl["action_groups"][b_action_group]["actions"][b_action]
 
-        set_status(bob_wf, wf, "complete")
+        wfs_action_data["captured_data"]["Tracking Number"] = "1001897582860000245100773464327825"
+        wfs_action_data["captured_data"]["Fedex Tracking Data"] = {}
         bob_wfs.do_action(wfs.euid, b_action, b_action_group, wfs_action_data)
-        set_status(bob_wfs, wfs, "in_progress")
 
 
         child_wfs = ""
@@ -133,8 +137,6 @@ def create_tubes(n=1):
             c_action
         ]
 
-
-        set_status(bob_wfs, wfs, "complete")
         bob_wfs.do_action(child_wfs.euid, c_action, c_action_group, c_wfs_action_data)
         set_status(bob_wfs, child_wfs, "in_progress")
 
@@ -145,7 +147,7 @@ def create_tubes(n=1):
         assert hasattr(new_child_wfs, "euid") == True
 
 
-        set_status(bob_wfs, child_wfs, "complete")
+        #    set_status(bob_wfs, child_wfs, "complete")
 
         trf_wfs = bob_wfs.do_action(
             new_child_wfs.euid,
@@ -181,7 +183,7 @@ def create_tubes(n=1):
         trf_assay_data["captured_data"]["assay_selection"] = ASSAY
         trf_assay_data["captured_data"]["Container EUID"] = trf_child_cont.euid
 
-        set_status(bob_wfs, new_child_wfs, "complete")
+        #set_status(bob_wfs, new_child_wfs, "complete")
         wfs_queue = bob_wfs.do_action(
             trf.euid,
             action_group="test_requisitions",
@@ -276,7 +278,7 @@ def fill_plates(tubes=[]):
         ]["action/workflow_step_plate_operations/cfdna_quant/1.0"]
         # action_data_dat = wfs_plt.json_addl["actions"]["cfdna_quant"]
         action_data_dat["captured_data"]["gdna_quant"] = ""
-        set_status(bob_wfs, pi_wfs, "complete")
+        #set_status(bob_wfs, pi_wfs, "complete")
         bob_wfs.do_action(
             plt_fill_wfs.euid,
             action_group="plate_operations",
@@ -307,7 +309,7 @@ def fill_plates(tubes=[]):
             action_ds=stamp_action_data,
         )
 
-        set_status(bob_wfs, plt_fill_wfs, "complete")
+        #set_status(bob_wfs, plt_fill_wfs, "complete")
         ## Third copy of a plate
 
         for i in plt_fill_wfs.parent_of_lineages:
@@ -330,7 +332,7 @@ def fill_plates(tubes=[]):
         )
         set_status(bob_wfs, sec_stamp_wfs, "in_progress")
 
-        set_status(bob_wfs, sec_stamp_wfs, "complete")
+        #set_status(bob_wfs, sec_stamp_wfs, "complete")
 
 
         # make a control

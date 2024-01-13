@@ -113,7 +113,7 @@ class WorkflowService(object):
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def assays(self):
+    def assays(self, show_type='all'):
         user_logged_in = True if 'user_data' in cherrypy.session else False
         template = self.env.get_template("assay.html")
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
@@ -123,10 +123,20 @@ class WorkflowService(object):
             .filter_by(is_deleted=False,is_singleton=True)
             .all()
         ):
-            ay_ds[i.euid] = i
+            if show_type == 'all' or i.json_addl.get('assay_type','all') == show_type:
+                ay_ds[i.euid] = i
+
         assays = []
         ay_dss = {}
-        
+        atype={}
+
+        if show_type == 'assay':
+            atype['type'] = 'Assays'
+        elif show_type == 'accessioning':
+            atype['type'] = 'Accessioning'
+        else:
+            atype['type'] = 'All Assays, etc'
+
         for i in sorted(ay_ds.keys()):
             assays.append(ay_ds[i])
             ay_dss[i] = {"Instantaneous COGS" : round(bobdb.get_cost_of_euid_children(i),2)}
@@ -146,10 +156,8 @@ class WorkflowService(object):
                 ay_dss[i]['tot'] += len(q.child_instance.parent_of_lineages)
             ay_dss[i]['conv'] = float(ay_dss[i]['complete']) / float( ay_dss[i]['complete'] + ay_dss[i]['exception']) if ay_dss[i]['complete'] + ay_dss[i]['exception'] > 0 else 'na'  
             ay_dss[i]['wsetp'] = float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']) if ay_dss[i]['tot'] > 0 else 'na'
-    
-    
-            
-        return template.render( style=self.get_root_style(), workflow_instances=assays, ay_stats=ay_dss)
+                
+        return template.render( style=self.get_root_style(), workflow_instances=assays, ay_stats=ay_dss, atype=atype)
 
 
     @cherrypy.expose
