@@ -10,7 +10,7 @@ bob_wfs = BloomWorkflowStep(BLOOMdb3())
 
 from random import randint
 
-ASSAY = "workflow/assay/hla-typing/1.2" if randint(0,9) < 4 else "workflow/assay/carrier-screen/3.9"
+ASSAY = "workflow/assay/hla-typing/1.2" if randint(0,9) > 99 else "workflow/assay/carrier-screen/3.9"
 
 giab_cx, giab_mx = bob_wf.create_container_with_content(
         ("container", "tube", "tube-generic-10ml", "1.0"),
