@@ -8,81 +8,10 @@ def set_status(b, obj, status):
     action = "action/core/set_object_status/1.0"
     action_group = "core"
 
-    #action_ds = obj.json_addl["action_groups"][action_group]["actions"][action]
-    #action_ds["captured_data"]["object_status"] = status
-    #b.do_action(obj.euid, action, action_group, action_ds)
-        
-def test_create_accessioning_wf():
-    bob_wf = BloomWorkflow(BLOOMdb3())
-
-    bob_wfs = BloomWorkflowStep(BLOOMdb3())
-    from random import randint
-
-    ASSAY = "workflow/assay/hla-typing/1.2" if randint(0,9) < 4 else "workflow/assay/carrier-screen/3.9"
-
-    giab_cx, giab_mx = bob_wf.create_container_with_content(
-            ("container", "tube", "tube-generic-10ml", "1.0"),
-            ("content", "control", "giab-HG002", "1.0")
-        )   
-    
-    cfsynctl_cx, cfsynctl_mx = bob_wf.create_container_with_content(
-            ("container", "tube", "tube-10ml-glass", "1.0"),
-            ("content", "control", "synthetic-cfdna", "1.0")
-        )  
-
-    ntc_cx, ntc_mx = bob_wf.create_container_with_content( 
-            ("container", "tube", "tube-eppi-1.5ml", "1.0"),
-            ("content", "control", "water-ntc", "1.0")
-        )
-
-    ## This needs to be done better
-    CA = [{"cont_address": {
-                    "name": "A1",
-                    "row_name": "A",
-                    "col_name": "1",
-                    "row_idx": "0",
-                    "col_idx": "0"
-                    }},{"cont_address": {
-                    "name": "A2",
-                    "row_name": "A",
-                    "col_name": "2",
-                    "row_idx": "1",
-                    "col_idx": "0"
-                    }},{"cont_address": {
-                    "name": "A3",
-                    "row_name": "A",
-                    "col_name": "3",
-                    "row_idx": "0",
-                    "col_idx": "2"
-                    }}]
-                    
-    rgnt_plate_glob = bob_wf.create_instance_by_template_components(
-        "container", "plate", "fixed-plate-24", "1.0"
-    )
-    rgnt_plate = rgnt_plate_glob[0][0]
-    rgnt_plate_wells = rgnt_plate_glob[1]
-    for i in rgnt_plate_wells:
-        bob_wf.create_generic_instance_lineage_by_euids(i.euid, bob_wf.create_instance_by_template_components("content","reagent","naoh","1.0")[0][0].euid)
-
-
-        
-    new_rack = bob_wf.create_instance_by_template_components(
-        "container", "rack", "tube-rack-4-empty", "1.0"
-    )[0][0]
-
-    bob_wf.create_generic_instance_lineage_by_euids(new_rack.euid, ntc_cx.euid)
-    ntc_cx.json_addl['cont_address']=CA[0]['cont_address']
-
-    bob_wf.create_generic_instance_lineage_by_euids(new_rack.euid, cfsynctl_cx.euid)
-    cfsynctl_cx.json_addl['cont_address']=CA[1]['cont_address']
-
-    bob_wf.create_generic_instance_lineage_by_euids(new_rack.euid, giab_cx.euid)
-    giab_cx.json_addl['cont_address']=CA[2]['cont_address']
-
-
-
-    TUBES=[]
-
+    action_ds = obj.json_addl["action_groups"][action_group]["actions"][action]
+    action_ds["captured_data"]["object_status"] = status
+    b.do_action(obj.euid, action, action_group, action_ds)
+            
     def create_tubes(n=1):
         ctr = 0
         while ctr < n:
@@ -99,10 +28,13 @@ def test_create_accessioning_wf():
             #wf = bob_wfs.create_instances(records[0].euid)[0][0]
 
             # Clinical ACC Queue
+            #    accessioning-RnD
             
             #from IPython import embed; embed()
             #raise
-            wf = bob_wf.query_instance_by_component_v2("workflow", "assay", "accessioning-clinical", "1.0")[0]
+            # 
+            # 
+            wf = bob_wf.query_instance_by_component_v2("workflow", "assay", "accessioning-RnD", "1.0")[0]
 
             action_group = "accessioning"
             action = "action/accessioning-ay/create_package_and_first_workflow_step_assay_root/1.0"
@@ -110,7 +42,10 @@ def test_create_accessioning_wf():
             # action_data = wf.json_addl["actions"]["create_package_and_first_workflow_step"]
             action_data["captured_data"]["Tracking Number"] = "1001897582860000245100773464327825"
             action_data["captured_data"]["Fedex Tracking Data"] = {}
+
+
             wfs=bob_wf.do_action(wf.euid, action, action_group, action_data)
+            set_status(bob_wfs, wfs, "in_progress")
 
             #wfs = bob_wf.do_action_create_package_and_first_workflow_step_assay(wf.euid, action_data)
         
@@ -125,7 +60,7 @@ def test_create_accessioning_wf():
             wfs_action_data["captured_data"]["Fedex Tracking Data"] = {}
             bob_wfs.do_action(wfs.euid, b_action, b_action_group, wfs_action_data)
 
-
+            
             child_wfs = ""
             for i in wfs.parent_of_lineages:
                 if i.child_instance.btype == "accessioning-steps":
@@ -139,7 +74,9 @@ def test_create_accessioning_wf():
             ]
 
             bob_wfs.do_action(child_wfs.euid, c_action, c_action_group, c_wfs_action_data)
-            set_status(bob_wfs, child_wfs, "in_progress")
+            set_status(bob_wfs, wfs, "complete")
+
+            set_status(bob_wfs, child_wfs, "in_progress")        
 
             new_child_wfs = ""
             for i in child_wfs.parent_of_lineages:
@@ -148,7 +85,7 @@ def test_create_accessioning_wf():
             assert hasattr(new_child_wfs, "euid") == True
 
 
-            #    set_status(bob_wfs, child_wfs, "complete")
+
 
             trf_wfs = bob_wfs.do_action(
                 new_child_wfs.euid,
@@ -159,6 +96,9 @@ def test_create_accessioning_wf():
                 ],
             )
             set_status(bob_wfs, new_child_wfs, "in_progress")
+            set_status(bob_wfs, child_wfs, "complete")
+
+
             assert hasattr(trf_wfs, "euid") == True
 
 
@@ -184,7 +124,6 @@ def test_create_accessioning_wf():
             trf_assay_data["captured_data"]["assay_selection"] = ASSAY
             trf_assay_data["captured_data"]["Container EUID"] = trf_child_cont.euid
 
-            #set_status(bob_wfs, new_child_wfs, "complete")
             wfs_queue = bob_wfs.do_action(
                 trf.euid,
                 action_group="test_requisitions",
@@ -192,15 +131,29 @@ def test_create_accessioning_wf():
                 action_ds=trf_assay_data,
             )
             assert hasattr(wfs_queue, "euid") == True
+            set_status(bob_wfs, wfs_queue, "in_progress")
 
-            set_status(bob_wfs, trf, "in_progress")
 
             scanned_bcs = trf_child_cont.euid
 
             ctr = ctr + 1
             print('CCCCCCCCCCC',ctr)
-            
             TUBES.append(trf_child_cont.euid)
+
+
+
+            wset_q = wfs
+            wset_q_axn = "action/move-queues/move-among-ay-top-queues/1.0"
+            wset_q_axn_grp = "acc-queue-move"
+            wset_q_ad = wset_q.json_addl["action_groups"][wset_q_axn_grp][
+                "actions"][wset_q_axn]  
+            wset_q_ad["captured_data"]["q_selection"] = "workflow_step/queue/plasma-isolation-queue-exception/1.0" if randint(0,13) > 10 else "workflow_step/queue/plasma-isolation-queue-removed/1.0"
+            bob_wfs.do_action(
+                wset_q.euid,
+                action_group=wset_q_axn_grp,
+                action=wset_q_axn,
+                action_ds=wset_q_ad
+            )
 
 
     def fill_plates(tubes=[]):
@@ -226,8 +179,6 @@ def test_create_accessioning_wf():
 
             scanned_bcs = "\n".join(tubes)
             q_wfs = ""
-            
-
             for i in trf_child_cont.child_of_lineages:
                 if i.parent_instance.b_sub_type == "plasma-isolation-queue-available":
                     q_wfs = i.parent_instance
@@ -252,7 +203,9 @@ def test_create_accessioning_wf():
             for i in plasma_cont.child_of_lineages:
                 if i.parent_instance.super_type == "workflow_step":
                     pi_wfs = i.parent_instance
-
+            
+            wfset_wf = pi_wfs.child_of_lineages[0].parent_instance
+            
             action_ds_plasma = pi_wfs.json_addl["action_groups"]["fill_plate"]["actions"][
                 "action/workflow_step_queue/fill_plate_undirected/1.0"
             ]
@@ -264,8 +217,7 @@ def test_create_accessioning_wf():
                 action="action/workflow_step_queue/fill_plate_undirected/1.0",
                 action_ds=action_ds_plasma,
             )
-            # _fill_plate_undirected(wfs_plasma.euid, action_ds_plasma)
-            set_status(bob_wf, pi_wfs, "in_progress")
+            set_status(bob_wfs, pi_wfs, "complete")
 
             ### ENDING WITH ANEXTRACTION PLATE!  Need to check quant and add more from here.
 
@@ -279,19 +231,19 @@ def test_create_accessioning_wf():
             ]["action/workflow_step_plate_operations/cfdna_quant/1.0"]
             # action_data_dat = wfs_plt.json_addl["actions"]["cfdna_quant"]
             action_data_dat["captured_data"]["gdna_quant"] = ""
-            #set_status(bob_wfs, pi_wfs, "complete")
-            bob_wfs.do_action(
+            yy = bob_wfs.do_action(
                 plt_fill_wfs.euid,
                 action_group="plate_operations",
                 action="action/workflow_step_plate_operations/cfdna_quant/1.0",
                 action_ds=action_data_dat,
             )
-            set_status(bob_wfs, plt_fill_wfs, "in_progress")
+            set_status(bob_wfs, plt_fill_wfs, "complete")
 
             eplt = None
             for i in plt_fill_wfs.parent_of_lineages:
                 if i.child_instance.super_type == "workflow_step":
                     eplt = i.child_instance
+            set_status(bob_wfs, eplt, "in_progress")
 
             next_plate = ""
             for i in plt_fill_wfs.parent_of_lineages:
@@ -303,15 +255,12 @@ def test_create_accessioning_wf():
             ]["action/workflow_step_plate_operations/stamp_copy_plate/1.0"]
             stamp_action_data["captured_data"]["plate_euid"] = next_plate
 
-            bob_wfs.do_action(
+            xx = bob_wfs.do_action(
                 plt_fill_wfs.euid,
                 action_group="plate_operations",
                 action="action/workflow_step_plate_operations/stamp_copy_plate/1.0",
                 action_ds=stamp_action_data,
             )
-
-            #set_status(bob_wfs, plt_fill_wfs, "complete")
-            ## Third copy of a plate
 
             for i in plt_fill_wfs.parent_of_lineages:
                 if i.child_instance.btype == "plate-operations":
@@ -331,9 +280,6 @@ def test_create_accessioning_wf():
                 action="action/workflow_step_plate_operations/stamp_copy_plate/1.0",
                 action_ds=stamp_action_data2,
             )
-            set_status(bob_wfs, sec_stamp_wfs, "in_progress")
-
-            #set_status(bob_wfs, sec_stamp_wfs, "complete")
 
 
             # make a control
@@ -349,10 +295,24 @@ def test_create_accessioning_wf():
             bob_wfs.create_generic_instance_lineage_by_euids(tube.euid, rgnt.euid)
 
 
+            wset_q = wfset_wf
+            wset_q_axn = "action/move-queues/move-among-ay-top-queues/1.0"
+            wset_q_axn_grp = "queue-move"
+            wset_q_ad = wset_q.json_addl["action_groups"][wset_q_axn_grp][
+                "actions"][wset_q_axn]  
+            wset_q_ad["captured_data"]["q_selection"] = "workflow_step/queue/plasma-isolation-queue-exception/1.0" if randint(0,5) > 4 else "workflow_step/queue/plasma-isolation-queue-removed/1.0"
+            bob_wfs.do_action(
+                wset_q.euid,
+                action_group=wset_q_axn_grp,
+                action=wset_q_axn,
+                action_ds=wset_q_ad
+            )
+            
+
     n_tubes = 1 # no more than 20
 
     create_tubes(n_tubes)
 
     fill_plates(tubes=TUBES) 
     
-    assert 1 == 1
+    assert 1 == 1 

@@ -211,6 +211,21 @@ def create_tubes(n=1):
         TUBES.append(trf_child_cont.euid)
 
 
+
+        wset_q = wfs
+        wset_q_axn = "action/move-queues/move-among-ay-top-queues/1.0"
+        wset_q_axn_grp = "acc-queue-move"
+        wset_q_ad = wset_q.json_addl["action_groups"][wset_q_axn_grp][
+            "actions"][wset_q_axn]  
+        wset_q_ad["captured_data"]["q_selection"] = "workflow_step/queue/plasma-isolation-queue-exception/1.0" if randint(0,13) > 10 else "workflow_step/queue/plasma-isolation-queue-removed/1.0"
+        bob_wfs.do_action(
+            wset_q.euid,
+            action_group=wset_q_axn_grp,
+            action=wset_q_axn,
+            action_ds=wset_q_ad
+        )
+
+
 def fill_plates(tubes=[]):
         # Create some controls to add to the plate!
         giab_cx, giab_mx = bob_wf.create_container_with_content(
@@ -258,7 +273,9 @@ def fill_plates(tubes=[]):
         for i in plasma_cont.child_of_lineages:
             if i.parent_instance.super_type == "workflow_step":
                 pi_wfs = i.parent_instance
-
+        
+        wfset_wf = pi_wfs.child_of_lineages[0].parent_instance
+        
         action_ds_plasma = pi_wfs.json_addl["action_groups"]["fill_plate"]["actions"][
             "action/workflow_step_queue/fill_plate_undirected/1.0"
         ]
@@ -284,7 +301,7 @@ def fill_plates(tubes=[]):
         ]["action/workflow_step_plate_operations/cfdna_quant/1.0"]
         # action_data_dat = wfs_plt.json_addl["actions"]["cfdna_quant"]
         action_data_dat["captured_data"]["gdna_quant"] = ""
-        bob_wfs.do_action(
+        yy = bob_wfs.do_action(
             plt_fill_wfs.euid,
             action_group="plate_operations",
             action="action/workflow_step_plate_operations/cfdna_quant/1.0",
@@ -308,7 +325,7 @@ def fill_plates(tubes=[]):
         ]["action/workflow_step_plate_operations/stamp_copy_plate/1.0"]
         stamp_action_data["captured_data"]["plate_euid"] = next_plate
 
-        bob_wfs.do_action(
+        xx = bob_wfs.do_action(
             plt_fill_wfs.euid,
             action_group="plate_operations",
             action="action/workflow_step_plate_operations/stamp_copy_plate/1.0",
@@ -347,6 +364,20 @@ def fill_plates(tubes=[]):
 
         bob_wfs.create_generic_instance_lineage_by_euids(tube.euid, rgnt.euid)
 
+
+        wset_q = wfset_wf
+        wset_q_axn = "action/move-queues/move-among-ay-top-queues/1.0"
+        wset_q_axn_grp = "queue-move"
+        wset_q_ad = wset_q.json_addl["action_groups"][wset_q_axn_grp][
+            "actions"][wset_q_axn]  
+        wset_q_ad["captured_data"]["q_selection"] = "workflow_step/queue/plasma-isolation-queue-exception/1.0" if randint(0,5) > 4 else "workflow_step/queue/plasma-isolation-queue-removed/1.0"
+        bob_wfs.do_action(
+            wset_q.euid,
+            action_group=wset_q_axn_grp,
+            action=wset_q_axn,
+            action_ds=wset_q_ad
+        )
+        
 
 n_tubes = 20 if int(sys.argv[1]) > 20 else int(sys.argv[1])
 
