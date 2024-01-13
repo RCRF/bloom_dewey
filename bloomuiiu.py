@@ -154,7 +154,7 @@ class WorkflowService(object):
                             except Exception as e:
                                 pass
                 try:
-                    ay_dss[i]['avg_d_fx'] = float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx'])
+                    ay_dss[i]['avg_d_fx'] = round(float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx']),2)
                 except Exception as e:
                     ay_dss[i]['avg_d_fx'] = 'na'
                 wset = ''
