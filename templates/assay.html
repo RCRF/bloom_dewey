@@ -116,7 +116,7 @@
                         no worksets in queue.
                         {% endif %}
                     {% for wset in queue.child_instance.parent_of_lineages %}
-                        <p> <a target=pq2 href=/workflow_details?workflow_euid={{ wset.child_instance.euid }}>{{ wset.child_instance.euid }}</a> {{ wset.child_instance.json_addl.get('properties',{}).get('name','na') }} - Items: {{ wset.child_instance.items_count }}</p>
+                        <p> <a target=pq2 href=/workflow_details?workflow_euid={{ wset.child_instance.euid }}>{{ wset.child_instance.euid }}</a> {{ wset.child_instance.json_addl.get('properties',{}).get('name','na') }} -  {{ wset.child_instance.bstate }}</p>
                     
                 {% endfor %}
                     </ul></ul>
