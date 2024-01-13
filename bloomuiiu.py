@@ -118,6 +118,7 @@ class WorkflowService(object):
         template = self.env.get_template("assay.html")
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         ay_ds = {}
+        print('\n\n\nAAAAAAAA\n\n\n')
         for i in (
             bobdb.session.query(bobdb.Base.classes.workflow_instance)
             .filter_by(is_deleted=False,is_singleton=True)
@@ -126,6 +127,7 @@ class WorkflowService(object):
             if show_type == 'all' or i.json_addl.get('assay_type','all') == show_type:
                 ay_ds[i.euid] = i
 
+        print('\n\n\n\n\nBBBBBB\n\n\n\n')
         assays = []
         ay_dss = {}
         atype={}
@@ -139,13 +141,14 @@ class WorkflowService(object):
 
         for i in sorted(ay_ds.keys()):
             assays.append(ay_ds[i])
-            ay_dss[i] = {"Instantaneous COGS" : round(bobdb.get_cost_of_euid_children(i),2)}
+            ay_dss[i] = {"Instantaneous COGS" : 0 if True else round(bobdb.get_cost_of_euid_children(i),2)}
             ay_dss[i]['tot'] = 0
             ay_dss[i]['tit_s'] = 0
             ay_dss[i]['tot_fx'] = 0
 
             for q in ay_ds[i].parent_of_lineages:
                 for c in q.child_instance.parent_of_lineages:
+                    break
                     for cc in c.child_instance.parent_of_lineages:
                         if cc.child_instance.name == "package:generic:1.0":
                             try:
@@ -153,6 +156,7 @@ class WorkflowService(object):
                                 ay_dss[i]['tot_fx'] += 1
                             except Exception as e:
                                 pass
+                print('\n\n\nXXXXXXXX\n\n')
                 try:
                     ay_dss[i]['avg_d_fx'] = round(float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx']),2)
                 except Exception as e:
