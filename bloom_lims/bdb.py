@@ -1022,6 +1022,29 @@ class BloomObj:
         # Execute the query
         return query.all()
 
+
+    # SPECIAL QUERIES
+    def query_all_fedex_transit_times(self):
+        query = text("""
+        SELECT euid,         
+        (json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision AS transit_time      
+        FROM generic_instance
+        WHERE
+        jsonb_typeof(json_addl -> 'properties') = 'object' AND
+        jsonb_typeof(json_addl -> 'properties' -> 'fedex_tracking_data') = 'array' AND
+        jsonb_typeof((json_addl -> 'properties' -> 'fedex_tracking_data' -> 0)) = 'object' AND
+        (json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision >= 0;
+        """)
+
+        # Execute the query
+        result = self.session.execute(query)
+
+        # Extract euids and transit times from the result
+        euid_transit_time_tuples = [(row[0], row[1]) for row in result]
+
+        return euid_transit_time_tuples
+
+
     def create_instance_by_template_components(
         self, super_type, btype, b_sub_type, version, bstate="active"
     ):
@@ -1030,6 +1053,7 @@ class BloomObj:
                 super_type, btype, b_sub_type, version
             )[0].euid
         )
+        
         
     # Is this too special casey? Belong lower?
     def create_container_with_content(self,cx_quad_tup, mx_quad_tup):
