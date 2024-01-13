@@ -1,6 +1,8 @@
 # Bloom : Templated Abstract Polymorphic (and opinionated) LIMS 
-### ( >> POC RELEASE v0.8.9 << )
-_a conceptual gambit in collaboration with chatGPT4 which yielded Bloom_ 
+
+_a conceptual gambit in collaboration with chatGPT4_  /// _POC v0.8.10_
+
+[![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml) [![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml) [![BLOOM CENTOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml) 
 
 Built from first principles and drawing upon 30 years experience scaling laboratory process. Constructed with as few object model shortcuts as I could manage ( I believe these shortcuts are among the main reasons LIMS nearly universally dissapoint ). Supporting both arbitrary and prescribed interacting objects. Intended for use: by small to factory scale laboratories, in regulated environments, for both research & operations usecases.  Bloom can handle multiple areas LIS tend to touch: acessioning, lab processes, specimen/sample management, equipment, regulatory and compliance.  Bloom is still in a _functional proof of concept_, so buyer beware. Thoughts, collaborators & [consulting](https://www.linkedin.com/in/john--major/) projects are all welcome! 
 
@@ -139,19 +141,6 @@ Indeed, `sqlalchemy` is aptly named.
 
 ### TLDR, Graphs
 So many nodes and edges.
-
-
-# Build Test Status (MacOS / Ubuntu 22.04 / Centos 9  )
-_~100 tests and counting_
-
-## MacOS
-[![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml)
-
-## Ubuntu 22.04
-[![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml)
-
-## Centos 9
-[![BLOOM CENTOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml)
 
 
 
@@ -429,4 +418,4 @@ pytest
 * Requirements should not be created assuming what is/is not possible.  This is one of the most insidious drivers of LIMS failures.
 * Is the tech stack approachable?
 * Is the tech stack sustainable?  
-  
+
