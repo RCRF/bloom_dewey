@@ -886,8 +886,7 @@ class WorkflowService(object):
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def dindex(self, globalFilterLevel=0, globalZoom=0, globalStartNodeEUID=None):
-        self.generate_dag_json_from_all_objects()
-
+        dag_fn = self.generate_dag_json_from_all_objects()
         # Load your template
         tmpl = self.env.get_template("dindex.html")
 
@@ -895,7 +894,7 @@ class WorkflowService(object):
         return tmpl.render(style=self.get_root_style(),
             globalFilterLevel=globalFilterLevel,
             globalZoom=globalZoom,
-            globalStartNodeEUID=globalStartNodeEUID,
+            globalStartNodeEUID=globalStartNodeEUID,dag_json_file=dag_fn
         )
 
     @cherrypy.expose
@@ -934,7 +933,8 @@ class WorkflowService(object):
         # Define colors for each TABLECLASS_instance
         BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
         last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
-
+        cherrypy.session["user_data"]["dag_fn"] = f"./dags/{cherrypy.session}_dag.json"
+        
         if (
             "schema_mod_dt" not in cherrypy.session
             or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
@@ -1100,10 +1100,12 @@ class WorkflowService(object):
             json.dump(dag_json, f, indent=4)
 
         print(f"All DAG JSON saved to {output_file}")
+        
+        return   cherrypy.session["user_data"]["dag_fn"]
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def get_dag(self):
+    def DELget_dag(self):
         dag_data = {"elements": {"nodes": [], "edges": []}}
         if os.path.exists("dag.json"):
             with open("dag.json", "r") as f:
