@@ -725,20 +725,6 @@ class WorkflowService(object):
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def toggle_state(self, euid):
-        referer = cherrypy.request.headers.get("Referer", "/default_page")
-
-        bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
-        obj = bobdb.get_by_euid(euid)
-        obj.bstate = "active" if obj.bstate == "inactive" else "inactive"
-        flag_modified(obj, "bstate")
-        bobdb.session.flush()
-        bobdb.session.commit()
-
-        raise cherrypy.HTTPRedirect(referer)
-
-    @cherrypy.expose
-    @require_auth(redirect_url="/login")
     def delete_by_euid(self, euid):
         referer = cherrypy.request.headers.get("Referer", "/default_page")
 

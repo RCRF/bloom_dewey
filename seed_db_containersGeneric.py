@@ -60,7 +60,6 @@ def create_template_from_json(json_file, db):
                 version=version,
                 json_addl=json_addl,
                 instance_prefix=obj_prefix,
-                bstate="active",
                 is_singleton=True,
                 bstatus="ready",
                 polymorphic_discriminator=f"{table_prefix}_template",

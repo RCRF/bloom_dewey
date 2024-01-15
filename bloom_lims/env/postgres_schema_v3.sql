@@ -67,7 +67,6 @@ CREATE TABLE generic_template (
     version TEXT NOT NULL,
     json_addl JSONB NOT NULL, -- To store additional properties
     json_addl_schema JSONB, -- To store additional properties schema
-    bstate TEXT,
     bstatus TEXT NOT NULL,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -85,7 +84,6 @@ CREATE INDEX idx_generic_template_is_deleted ON generic_template(is_deleted);
 CREATE INDEX idx_generic_template_super_type ON generic_template(super_type);
 CREATE INDEX idx_generic_template_b_sub_type ON generic_template(b_sub_type);
 CREATE INDEX idx_generic_template_verssion ON generic_template(version);
-CREATE INDEX idx_generic_template_bstate ON generic_template(bstate);
 CREATE INDEX idx_generic_template_mod_df ON generic_template(modified_dt);
 CREATE INDEX idx_generic_template_instance_prefix ON generic_template(instance_prefix);
 CREATE INDEX idx_generic_template_polymorphic_discriminator  ON generic_template(polymorphic_discriminator);
@@ -127,7 +125,6 @@ CREATE TABLE generic_instance (
     b_sub_type TEXT NOT NULL,
     created_dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     version TEXT NOT NULL,
-    bstate TEXT,
     bstatus TEXT NOT NULL,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     template_uuid UUID NOT NULL REFERENCES generic_template(uuid),
@@ -146,7 +143,6 @@ CREATE INDEX idx_generic_instance_template_uuid ON generic_instance(template_uui
 CREATE INDEX idx_generic_instance_super_type ON generic_instance(super_type);
 CREATE INDEX idx_generic_instance_b_sub_type ON generic_instance(b_sub_type);
 CREATE INDEX idx_generic_instance_verssion ON generic_instance(version);
-CREATE INDEX idx_generic_instance_bstate ON generic_instance(bstate);
 CREATE INDEX idx_generic_instance_mod_df ON generic_instance(modified_dt);
 CREATE INDEX idx_generic_instance_json_addl_gin ON generic_instance USING GIN (json_addl);
 CREATE INDEX idx_generic_instance_singleton ON generic_instance(is_singleton);
@@ -211,7 +207,6 @@ CREATE TABLE generic_instance_lineage (
     btype TEXT,
     b_sub_type TEXT,
     json_addl JSONB,
-    bstate TEXT,
     bstatus TEXT,    
     version TEXT,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,

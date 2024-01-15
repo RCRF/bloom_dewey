@@ -84,7 +84,6 @@
                     <th onclick="sortTable(3, 'genericTemplateTable')">Modified</th>
                     <th onclick="sortTable(4, 'genericTemplateTable')">Status</th>
                     <th onclick="sortTable(5, 'genericTemplateTable')">Type</th>
-                    <th onclick="sortTable(6, 'genericTemplateTable')">State</th>
                     <th onclick="sortTable(7, 'genericTemplateTable')">Deleted?</th>
                     <th onclick="sortTable(8, 'genericTemplateTable')">Do Some</th>
                     <!-- Renamed column -->
@@ -99,7 +98,6 @@
                         <td>{{ workflow.modified_dt.strftime("%Y-%m-%d %H:%M:%S").split('.')[0] }}</td>
                         <td>{{ workflow.bstatus }}</td>
                         <td>{{ workflow.btype }}</td>
-                        <td>{{ workflow.bstate }}</td>
                         <td>{{ workflow.is_deleted }}</td>
                         <td>
                             <button onclick="location.href='/workflow_details?workflow_euid={{ workflow.euid }}'">work</button>

@@ -117,7 +117,6 @@ class bloom_core(Base):
     b_sub_type = Column(Text, nullable=True)
     version = Column(Text, nullable=True)
 
-    bstate = Column(Text, nullable=True)
     bstatus = Column(Text, nullable=True)
 
     json_addl = Column(JSON, nullable=True)
@@ -645,7 +644,6 @@ class BloomObj:
             version=template.version,
             json_addl=template.json_addl,
             template_uuid=template.uuid,
-            bstate=template.bstate,
             bstatus=template.bstatus,
             super_type=template.super_type,
             is_singleton=is_singleton,
@@ -781,7 +779,6 @@ class BloomObj:
                         b_sub_type=parent_instance.b_sub_type,
                         version=parent_instance.version,
                         json_addl=parent_instance.json_addl,
-                        bstate=parent_instance.bstate,
                         bstatus=parent_instance.bstatus,
                         super_type=parent_instance.super_type,
                         parent_type=parent_instance.polymorphic_discriminator,
@@ -807,7 +804,6 @@ class BloomObj:
             b_sub_type=parent_instance.b_sub_type,
             version=parent_instance.version,
             json_addl=parent_instance.json_addl,
-            bstate=parent_instance.bstate,
             bstatus=parent_instance.bstatus,
             super_type="generic",
             parent_type=f"{parent_instance.super_type}:{parent_instance.btype}:{parent_instance.b_sub_type}:{parent_instance.version}",
@@ -992,8 +988,6 @@ class BloomObj:
             )
         if version is not None:
             query = query.filter(self.Base.classes.generic_instance.version == version)
-        #if bstate is not None:
-        #    query = query.filter(self.Base.classes.generic_instance.bstate == bstate)
 
         query = query.filter(self.Base.classes.generic_instance.is_deleted == self.is_deleted)
         
@@ -1018,8 +1012,6 @@ class BloomObj:
             )
         if version is not None:
             query = query.filter(self.Base.classes.generic_template.version == version)
-        #if bstate is not None:
-        #    query = query.filter(self.Base.classes.generic_template.bstate == bstate)
 
         query = query.filter(self.Base.classes.generic_template.is_deleted == self.is_deleted)
         # Execute the query
@@ -1089,7 +1081,7 @@ class BloomObj:
 
 
     def create_instance_by_template_components(
-        self, super_type, btype, b_sub_type, version, bstate="active"
+        self, super_type, btype, b_sub_type, version
     ):
         return self.create_instances(
             self.query_template_by_component_v2(
@@ -1697,8 +1689,8 @@ class BloomWorkflow(BloomObj):
         for euid in action_ds["captured_data"]["discard_barcodes"].split("\n"):
             try:
                 a_container = self.get_by_euid(euid)
-                a_container.bstate = "destroyed"
-                flag_modified(a_container, "bstate")
+                a_container.bstatus = "destroyed"
+                flag_modified(a_container, "bstatus")
                 self.session.flush()
                 self.session.commit()
 
