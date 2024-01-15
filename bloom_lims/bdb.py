@@ -157,12 +157,12 @@ class generic_instance(bloom_core):
     parent_of_lineages = relationship(
         "generic_instance_lineage",
         primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.parent_instance_uuid),generic_instance_lineage.is_deleted == False)",
-        backref="parent_instance",
+        backref="parent_instance", lazy='dynamic'
     )
     child_of_lineages = relationship(
         "generic_instance_lineage",
         primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.child_instance_uuid),generic_instance_lineage.is_deleted == False)",
-        backref="child_instance",
+        backref="child_instance", lazy='dynamic'
     )
 
     def get_sorted_parent_of_lineages(
@@ -1185,7 +1185,7 @@ class BloomObj:
                 destination_q = q.child_instance
                 break
             
-        if len(wfset.child_of_lineages) != 1 or destination_q == "":
+        if len(wfset.child_of_lineages.all()) != 1 or destination_q == "":
             self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
             self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
             raise Exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
