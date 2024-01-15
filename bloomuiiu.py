@@ -729,10 +729,15 @@ class WorkflowService(object):
     def bloom_schema_report(self):
         template = self.env.get_template("bloom_schema_report.html")
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
-        a_stat=query_generic_instance_and_lin_stats()
-        b_stats=query_generic_template_stats()
+        a_stat=bobdb.query_generic_instance_and_lin_stats()
+        b_stats=bobdb.query_generic_template_stats()
         reports = [a_stat,b_stats  ]
-        return template.render(style=self.get_root_style(),reports=reports)
+        nrows = 0
+        for i in b_stats:
+            nrows += int(i['Total_Templates'])
+        for ii in a_stat:
+            nrows += int(ii['Total_Instances'])
+        return template.render(style=self.get_root_style(),reports=reports,nrows=nrows)
     
     
     @cherrypy.expose
