@@ -336,6 +336,11 @@ class WorkflowService(object):
         
         return {'status': 'success', 'message': 'User preference updated'}
 
+
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def queue_details(self):
+        pass
     
     @cherrypy.expose
     @require_auth(redirect_url="/login")
