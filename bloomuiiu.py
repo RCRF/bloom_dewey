@@ -723,6 +723,18 @@ class WorkflowService(object):
 
         raise cherrypy.HTTPRedirect(referer)
 
+
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def bloom_schema_report(self):
+        template = self.env.get_template("bloom_schema_report.html")
+        bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+        a_stat=query_generic_instance_and_lin_stats()
+        b_stats=query_generic_template_stats()
+        reports = [a_stat,b_stats  ]
+        return template.render(style=self.get_root_style(),reports=reports)
+    
+    
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def delete_by_euid(self, euid):

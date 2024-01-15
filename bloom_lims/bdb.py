@@ -1017,8 +1017,89 @@ class BloomObj:
         # Execute the query
         return query.all()
 
+    # Aggregate Report SQL
+    def query_generic_template_stats(self):
+        q = text("""
+            SELECT
+                'Generic Template Summary' as Report,
+                COUNT(*) as Total_Templates,
+                COUNT(DISTINCT btype) as Distinct_Base_Types,
+                COUNT(DISTINCT b_sub_type) as Distinct_Sub_Types,
+                COUNT(DISTINCT super_type) as Distinct_Super_Types,
+                MAX(created_dt) as Latest_Creation_Date,
+                MIN(created_dt) as Earliest_Creation_Date,
+                AVG(AGE(NOW(), created_dt)) as Average_Age,
+                COUNT(CASE WHEN is_singleton THEN 1 END) as Singleton_Count
+            FROM
+                generic_template
+            WHERE
+                is_deleted = :is_deleted
+        """)
 
-    # OPTIMIZED SQL  QUERIES WHERE ORM IS TOO SLOW 
+        result = self.session.execute(q, {'is_deleted': self.is_deleted}).fetchall()
+
+        # Define the column names based on your SELECT statement
+        columns = [
+            "Report", "Total_Templates", "Distinct_Base_Types", "Distinct_Sub_Types",
+            "Distinct_Super_Types", "Latest_Creation_Date", "Earliest_Creation_Date",
+            "Average_Age", "Singleton_Count"
+        ]
+
+        # Convert each row to a dictionary
+        return [dict(zip(columns, row)) for row in result]
+    
+     
+    
+    def query_generic_instance_and_lin_stats(self):
+        q = text(f"""
+        SELECT
+            -- Summary from generic_instance table
+            'Generic Instance Summary' as Report,
+            COUNT(*) as Total_Instances,
+            COUNT(DISTINCT btype) as Distinct_Types,
+            COUNT(DISTINCT polymorphic_discriminator) as Distinct_Polymorphic_Discriminators,
+            COUNT(DISTINCT super_type) as Distinct_Super_Types,
+            COUNT(DISTINCT b_sub_type) as Distinct_Sub_Types,
+            MAX(created_dt) as Latest_Creation_Date,
+            MIN(created_dt) as Earliest_Creation_Date,
+            AVG(AGE(NOW(), created_dt)) as Average_Age
+        FROM
+            generic_instance
+        WHERE
+            is_deleted = {self.is_deleted}
+            
+        UNION ALL
+
+        SELECT
+            -- Summary from generic_instance_lineage table
+            'Generic Instance Lineage Summary',
+            COUNT(*) as Total_Lineages,
+            COUNT(DISTINCT parent_type) as Distinct_Parent_Types,
+            COUNT(DISTINCT child_type) as Distinct_Child_Types,
+            COUNT(DISTINCT polymorphic_discriminator) as Distinct_Polymorphic_Discriminators,
+            COUNT(DISTINCT super_type) as Distinct_Super_Types,
+            MAX(created_dt) as Latest_Creation_Date,
+            MIN(created_dt) as Earliest_Creation_Date,
+            AVG(AGE(NOW(), created_dt)) as Average_Age
+        FROM
+            generic_instance_lineage
+        WHERE
+            is_deleted = {self.is_deleted};
+        """)
+
+        result = self.session.execute(q, {'is_deleted': self.is_deleted}).fetchall()
+
+        # Define the column names based on your SELECT statement
+        columns = [
+        "Report", "Total_Instances", "Distinct_Types", "Distinct_Polymorphic_Discriminators",
+        "Distinct_Super_Types", "Distinct_Sub_Types", "Latest_Creation_Date",
+        "Earliest_Creation_Date", "Average_Age"
+        ]
+
+        # Convert each row to a dictionary
+        return [dict(zip(columns, row)) for row in result]
+
+
     def query_cost_of_all_children(self,euid):
         query = text(f"""
             WITH RECURSIVE descendants AS (
