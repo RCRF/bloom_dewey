@@ -934,7 +934,7 @@ class WorkflowService(object):
 
         BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
         last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
-        cherrypy.session["user_data"]["dag_fn"] = f"./dags/{cherrypy.session}_dag.json"
+        cherrypy.session["user_data"]["dag_fn"] = f"./dags/{str(cherrypy.session)}_dag.json"
         output_file = cherrypy.session["user_data"]["dag_fn"]
         if (
             "schema_mod_dt" not in cherrypy.session
