@@ -117,7 +117,7 @@
                         
                         {% else %}
 
-                        <a href=queue_details?pagination={{pagination.xx}}&queue_euid={{ queue.euid }}>Queue Details</a>
+                        <a href=queue_details?queue_euid={{ queue.child_instance.euid }}>Queue Details</a>
                         
                         {% endif %}
                         

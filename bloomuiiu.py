@@ -339,8 +339,22 @@ class WorkflowService(object):
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def queue_details(self):
-        pass
+    def queue_details(self, queue_euid,page=1):
+        page = int(page)
+        if page < 1:
+            page = 1
+        per_page = 500 # Items per page
+        user_logged_in = True if 'user_data' in cherrypy.session else False
+        bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
+        queue = bobdb.get_by_euid(queue_euid)
+        qm = []
+        for i in queue.parent_of_lineages:
+            qm.append(i.child_instance)
+        queue_details = queue.sort_by_euid(qm)
+        queue_details = queue_details[(page-1)*per_page:page*per_page]
+        template = self.env.get_template("queue_details.html")
+        pagination = {'next': page+1, 'prev': page-1}
+        return template.render(style=self.get_root_style(), queue=queue, queue_details=queue_details, pagination=pagination)
     
     @cherrypy.expose
     @require_auth(redirect_url="/login")

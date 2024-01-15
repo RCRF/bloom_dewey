@@ -127,6 +127,9 @@ class bloom_core(Base):
     is_deleted = Column(BOOLEAN, nullable=True, server_default=FetchedValue())
 
 
+    @staticmethod
+    def sort_by_euid(a_list):
+        return sorted(a_list, key=lambda a: a.euid)
 
 ## Generic
 class generic_template(bloom_core):

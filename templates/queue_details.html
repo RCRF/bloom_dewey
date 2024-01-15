@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Queue Details</title>
+    <link rel="stylesheet" href="{{ style.skin_css }}">
+    <link rel="stylesheet" href="static/style.css">
+    <script src="static/action_buttons.js"></script>
+
+</head>
+<body>
+    <h1>Queue {{pagination.euid}} Details</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>EUID</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th>Modified Date</th>
+                <th>Name</th>
+                <th>Lab Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detail in queue_details %}
+            <tr>
+                <td>{{ detail.euid }}</td>
+                <td>{{ detail.bstatus }}</td>    
+                <td>{{ detail.created_dt.strftime('%Y-%m-%d %H:%M:%S %Z') }}</td>
+                <td>{{ detail.modified_dt.strftime('%Y-%m-%d %H:%M:%S %Z') }}</td>
+
+                <td>{{ detail.json_addl['properties'].get('name', 'N/A') }}</td>
+                <td>{{ detail.json_addl['properties'].get('lab_code', 'N/A') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div>
+           <a href="/queue_details?queue_euid={{pagination.euid}}&page={{pagination.prev }}">Previous 100</a> /// 
+            <a href="/queue_details?queue_euid={{pagination.euid}}&page={{pagination.next }}">Next 100</a>
+    </div>
+</body>
+</html>
