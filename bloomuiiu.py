@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime, timedelta
 
-from sqlalchemy import func
+from sqlalchemy import func, text
 import cherrypy
 
 from jinja2 import Environment, FileSystemLoader
@@ -886,8 +886,7 @@ class WorkflowService(object):
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def dindex(self, globalFilterLevel=0, globalZoom=0, globalStartNodeEUID=None):
-        self.generate_dag_json_from_all_objects()
-
+        dag_fn = self.generate_dag_json_from_all_objects()
         # Load your template
         tmpl = self.env.get_template("dindex.html")
 
@@ -895,7 +894,7 @@ class WorkflowService(object):
         return tmpl.render(style=self.get_root_style(),
             globalFilterLevel=globalFilterLevel,
             globalZoom=globalZoom,
-            globalStartNodeEUID=globalStartNodeEUID,
+            globalStartNodeEUID=globalStartNodeEUID,dag_json_file=dag_fn
         )
 
     @cherrypy.expose
@@ -927,14 +926,160 @@ class WorkflowService(object):
         else:
             return {"error": "Node not found"}
 
+
+
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def generate_dag_json_from_all_objects(self, output_file="dag.json"):
+
+        BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
+        last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
+        cherrypy.session["user_data"]["dag_fn"] = f"./dags/{str(cherrypy.session)}_dag.json"
+        output_file = cherrypy.session["user_data"]["dag_fn"]
+        if (
+            "schema_mod_dt" not in cherrypy.session
+            or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
+        ):
+            print(
+                f"Dag WILL BE Regenerated, Schema Has Changed. {output_file} being generated."
+            )
+        else:
+            print(
+                f"Dag Not Regenerated, Schema Has Not Changed. {output_file} unchanged."
+            )
+            return
+        cherrypy.session["schema_mod_dt"] = last_schema_edit_dt.changed_at
+
+        colors = {
+            "container": "#372568",
+            "content": "#4560D5",
+            "workflow": "#2CB6F0",
+            "workflow_step" : "#93FE45",
+            "equipment": "#7B0403",
+            "object_set": "#FE9B2D",
+            "actor": "#FEDC45",
+            "test_requisition": "#FDDC45",
+            "data": "#FCDC45",
+            "generic": "pink",
+            "action": "#FEDC25",
+        }
+        sub_colors = {"well": "#70658c"}
+
+        # SQL query to fetch instances
+        instance_query = text("""
+    SELECT euid, name, super_type, btype, b_sub_type, version
+    FROM generic_instance
+    WHERE is_deleted = False;
+        """)
+
+        # SQL query to fetch lineages
+        lineage_query = text("""
+SELECT 
+    lineage.euid AS lineage_euid,
+    parent.euid AS parent_euid,
+    child.euid AS child_euid
+FROM 
+    generic_instance_lineage AS lineage
+JOIN 
+    generic_instance AS parent ON lineage.parent_instance_uuid = parent.uuid
+JOIN 
+    generic_instance AS child ON lineage.child_instance_uuid = child.uuid
+WHERE 
+    lineage.is_deleted = False;
+
+        """)
+
+        # Execute queries
+        instance_result = BO.session.execute(instance_query).fetchall()
+        lineage_result = BO.session.execute(lineage_query).fetchall()
+
+        # Construct nodes and edges
+        nodes = []
+        edges = []
+
+
+        for instance in instance_result:
+            node = {
+                "data": {
+                    "id": str(instance.euid),
+                    "type": "instance",
+                    "euid": str(instance.euid),
+                    "name": instance.name,
+                    "btype": instance.btype,
+                    "super_type": instance.super_type,
+                    "b_sub_type": instance.super_type + "." + instance.btype + "." + instance.b_sub_type,
+                    "version": instance.version,
+                    "color": colors.get(instance.super_type, "pink"),
+                },
+                "position": {"x": 0, "y": 0},
+                "group": "nodes",
+            }
+            nodes.append(node)
+
+        for lineage in lineage_result:
+            edge = {
+                "data": {
+                    "source": str(lineage.parent_euid),
+                    "target": str(lineage.child_euid),
+                    "id": str(lineage.lineage_euid),
+                },
+                "group": "edges",
+            }
+            edges.append(edge)
+
+        # Construct JSON structure
+    
+        dag_json = {
+            "elements": {"nodes": nodes, "edges": edges},
+            "style": [
+                {
+                    "selector": "node",
+                    "style": {"background-color": "data(color)", "label": "data(name)"},
+                },
+                {
+                    "selector": "edge",
+                    "style": {
+                        "width": "3px",
+                        "line-color": "rgb(204,204,204)",
+                        "source-arrow-color": "rgb(204,204,204)",
+                        "source-arrow-shape": "triangle",
+                        "curve-style": "bezier",
+                        "control-point-step-size": "40px",
+                    },
+                },
+            ],
+            "data": {},
+            "zoomingEnabled": True,
+            "userZoomingEnabled": True,
+            "zoom": 1.8745865634962724,
+            "minZoom": 1e-50,
+            "maxZoom": 1e50,
+            "panningEnabled": True,
+            "userPanningEnabled": True,
+            "pan": {"x": 180.7595665772659, "y": 52.4950387619553},
+            "boxSelectionEnabled": True,
+            "renderer": {"name": "canvas"},
+        }
+
+        # Write to file
+        with open(output_file, "w") as f:
+            json.dump(dag_json, f, indent=4)
+
+        print(f"All DAG JSON saved to {output_file}")
+
+                                 
+                                 
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @require_auth(redirect_url="/login")
-    def generate_dag_json_from_all_objects(self, output_file="dag.json"):
+    def xgenerate_dag_json_from_all_objects(self, output_file=None):
         # Define colors for each TABLECLASS_instance
+        
         BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
         last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
-
+        cherrypy.session["user_data"]["dag_fn"] = f"./dags/{cherrypy.session}_dag.json"
+        output_file = cherrypy.session["user_data"]["dag_fn"]
         if (
             "schema_mod_dt" not in cherrypy.session
             or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
@@ -1100,15 +1245,17 @@ class WorkflowService(object):
             json.dump(dag_json, f, indent=4)
 
         print(f"All DAG JSON saved to {output_file}")
+        
+        return   cherrypy.session["user_data"]["dag_fn"]
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def get_dag(self):
+        dag_fn = cherrypy.session["user_data"]["dag_fn"]
         dag_data = {"elements": {"nodes": [], "edges": []}}
-        if os.path.exists("dag.json"):
-            with open("dag.json", "r") as f:
+        if os.path.exists(dag_fn):
+            with open(dag_fn, "r") as f:
                 dag_data = json.load(f)
-
         return dag_data
 
     @cherrypy.expose
