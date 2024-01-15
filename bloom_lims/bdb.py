@@ -1023,18 +1023,58 @@ class BloomObj:
         return query.all()
 
 
-    # SPECIAL QUERIES
-    def query_all_fedex_transit_times(self):
-        query = text("""
-        SELECT euid,         
-        (json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision AS transit_time      
-        FROM generic_instance
-        WHERE
-        jsonb_typeof(json_addl -> 'properties') = 'object' AND
-        jsonb_typeof(json_addl -> 'properties' -> 'fedex_tracking_data') = 'array' AND
-        jsonb_typeof((json_addl -> 'properties' -> 'fedex_tracking_data' -> 0)) = 'object' AND
-        (json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision >= 0;
+    # OPTIMIZED SQL  QUERIES WHERE ORM IS TOO SLOW 
+    def query_cost_of_all_children(self,euid):
+        query = text(f"""
+            WITH RECURSIVE descendants AS (
+            -- Initial query to get the root instance
+            SELECT gi.uuid, gi.euid, gi.json_addl
+            FROM generic_instance gi
+            WHERE gi.euid = '{euid}' -- Replace with your target euid
+
+            UNION ALL
+
+            -- Recursive part to get all descendants
+            SELECT child_gi.uuid, child_gi.euid, child_gi.json_addl
+            FROM generic_instance_lineage gil
+            JOIN descendants d ON gil.parent_instance_uuid = d.uuid
+            JOIN generic_instance child_gi ON gil.child_instance_uuid = child_gi.uuid
+            WHERE NOT child_gi.is_deleted -- Assuming you want to exclude deleted instances
+        )
+        SELECT d.euid, 
+            d.json_addl -> 'cogs' ->> 'cost' AS cost
+        FROM descendants d
+        WHERE d.json_addl ? 'cogs' AND 
+            d.json_addl -> 'cogs' ? 'cost' AND 
+            d.json_addl -> 'cogs' ->> 'cost' <> ''; -- Check if 'cost' exists and is not an empty string
         """)
+        
+        # Execute the query
+        result = self.session.execute(query)
+
+        # Extract euids and transit times from the result
+        euid_cost_tuples = [(row[0], row[1]) for row in result]
+
+        return euid_cost_tuples
+
+        
+    def query_all_fedex_transit_times_by_ay_euid(self, qx_euid):
+
+        query = text(f"""SELECT gi.euid,
+       (gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision AS transit_time
+        FROM generic_instance AS gi
+        JOIN generic_instance_lineage AS gil1 ON gi.uuid = gil1.child_instance_uuid
+        JOIN generic_instance AS gi_parent1 ON gil1.parent_instance_uuid = gi_parent1.uuid
+        JOIN generic_instance_lineage AS gil2 ON gi_parent1.uuid = gil2.child_instance_uuid
+        JOIN generic_instance AS gi_parent2 ON gil2.parent_instance_uuid = gi_parent2.uuid
+        WHERE
+        gi_parent2.euid = '{qx_euid}' AND
+        jsonb_typeof(gi.json_addl -> 'properties') = 'object' AND
+        jsonb_typeof(gi.json_addl -> 'properties' -> 'fedex_tracking_data') = 'array' AND
+        jsonb_typeof((gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0)) = 'object' AND
+    (gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision >= 0;
+        """)
+
 
         # Execute the query
         result = self.session.execute(query)
@@ -1415,36 +1455,16 @@ class BloomObj:
 
         return False
 
-    def get_cost_of_euid_children(self, euid):
-        # Function to fetch and calculate the COGS for a given object
-        def calculate_cogs(orm_instance):
-            if 'cogs' not in orm_instance.json_addl or 'state' not in orm_instance.json_addl['cogs']:
-                raise ValueError(f"COGS or state information missing for EUID: {orm_instance.euid}")
-            
-            if orm_instance.json_addl['cogs']['state'] != 'active':
-                return 0
 
-            cost = float(orm_instance.json_addl['cogs']['cost'])
-            fractional_cost = float(orm_instance.json_addl['cogs'].get('fractional_cost', 1))
-            allocation_type = orm_instance.json_addl['cogs'].get('allocation_type', 'single')
-
-            active_children = len([child for child in orm_instance.parent_of_lineages if 'cogs' in child.json_addl and child.json_addl['cogs'].get('state') == 'active'])
-            if active_children == 0:
-                active_children = 1.0
-            return cost #* float(fractional_cost) / float(active_children)
-
-        # Recursive function to traverse the graph and accumulate COGS
-        def traverse_and_calculate_children_cogs(orm_instance):
-            total_cogs = 0  # No need to calculate COGS for the initial instance
-
-            # Traverse parent_of_lineages to find child instances and accumulate their COGS
-            for lineage in orm_instance.parent_of_lineages:
-                child_instance = lineage.child_instance
-                if child_instance:
-                    total_cogs += calculate_cogs(child_instance) + traverse_and_calculate_children_cogs(child_instance)
-
-            return total_cogs
-
+    
+    def get_cost_of_euid_children(self,euid):
+        tot_cost = 0
+        ctr = 0
+        for ec_tups in self.query_cost_of_all_children(euid):
+            tot_cost += float(ec_tups[1])
+            ctr += 1
+        return tot_cost if ctr > 0 else 'na'
+    
         # Start with the provided EUID
         initial_instance = self.session.query(self.Base.classes.generic_instance).filter_by(euid=euid).first()
         if initial_instance:

@@ -141,26 +141,16 @@ class WorkflowService(object):
 
         for i in sorted(ay_ds.keys()):
             assays.append(ay_ds[i])
-            ay_dss[i] = {"Instantaneous COGS" : 0 if True else round(bobdb.get_cost_of_euid_children(i),2)}
+            ay_dss[i] = {"Instantaneous COGS" : round(bobdb.get_cost_of_euid_children(i),2)}
             ay_dss[i]['tot'] = 0
             ay_dss[i]['tit_s'] = 0
             ay_dss[i]['tot_fx'] = 0
-
+                
             for q in ay_ds[i].parent_of_lineages:
-                for c in q.child_instance.parent_of_lineages:
-                    break
-                    for cc in c.child_instance.parent_of_lineages:
-                        if cc.child_instance.name == "package:generic:1.0":
-                            try:
-                                ay_dss[i]['tit_s'] += int(cc.child_instance.json_addl['properties']['fedex_tracking_data'][0]['Transit_Time_sec'])
-                                ay_dss[i]['tot_fx'] += 1
-                            except Exception as e:
-                                pass
-                print('\n\n\nXXXXXXXX\n\n')
-                try:
-                    ay_dss[i]['avg_d_fx'] = round(float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx']),2)
-                except Exception as e:
-                    ay_dss[i]['avg_d_fx'] = 'na'
+                if show_type == 'accessioning':
+                    for fex_tup in bobdb.query_all_fedex_transit_times_by_ay_euid(q.child_instance.euid):   
+                        ay_dss[i]['tit_s'] += fex_tup[1]
+                        ay_dss[i]['tot_fx'] += 1
                 wset = ''
                 n = q.child_instance.json_addl['properties']['name']
                 if n.startswith('In'):
@@ -173,8 +163,14 @@ class WorkflowService(object):
                     wset = 'avail'
                 ay_dss[i][wset]=len(q.child_instance.parent_of_lineages)
                 ay_dss[i]['tot'] += len(q.child_instance.parent_of_lineages)
-            ay_dss[i]['conv'] = float(ay_dss[i]['complete']) / float( ay_dss[i]['complete'] + ay_dss[i]['exception']) if ay_dss[i]['complete'] + ay_dss[i]['exception'] > 0 else 'na'  
-            ay_dss[i]['wsetp'] = float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']) if ay_dss[i]['tot'] > 0 else 'na'
+
+            try:
+                ay_dss[i]['avg_d_fx'] = round(float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx']),2)
+            except Exception as e:
+                ay_dss[i]['avg_d_fx'] = 'na'
+                    
+            ay_dss[i]['conv'] = round(float(ay_dss[i]['complete']) / float( ay_dss[i]['complete'] + ay_dss[i]['exception']),2) if ay_dss[i]['complete'] + ay_dss[i]['exception'] > 0 else 'na'  
+            ay_dss[i]['wsetp'] = round(float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']),2) if ay_dss[i]['tot'] > 0 else 'na'
                 
         return template.render( style=self.get_root_style(), workflow_instances=assays, ay_stats=ay_dss, atype=atype)
 
