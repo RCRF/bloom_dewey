@@ -114,8 +114,13 @@
                     <ul>
                         {% if queue.child_instance.parent_of_lineages.all()|length == 0 %}
                         no worksets in queue.
+                        
+                        {% else %}
+
+                        <a href=queue_details?queue_euid={{ queue.euid }}>Queue Details</a>
+                        
                         {% endif %}
-                        YOYOYO
+                        
 
                     </ul></ul>
                 {% endif %}
