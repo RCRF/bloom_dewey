@@ -476,7 +476,7 @@ class BLOOMdb3:
         self.logger.debug("STARTING BLOOMDB3")
         self.app_username = app_username
         self.engine = create_engine(
-            f"{db_url_prefix}{db_user}:{db_pass}@{db_hostname}/{db_name}"
+            f"{db_url_prefix}{db_user}:{db_pass}@{db_hostname}/{db_name}", echo=True
         )
         metadata = MetaData()
         self.Base = automap_base(metadata=metadata)
