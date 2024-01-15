@@ -354,11 +354,11 @@ def fill_plates(tubes=[]):
 
         # make a control
         rgnt = bob_wfs.create_instance_by_template_components(
-            "content", "control", "giab-HG002", "1.0", "active"
+            "content", "control", "giab-HG002", "1.0"
         )[0][0]
         # put in a tube
         tube = bob_wfs.create_instance_by_template_components(
-            "container", "tube", "tube-generic-10ml", "1.0", "active"
+            "container", "tube", "tube-generic-10ml", "1.0"
         )[0][0]
         # put the reagent in the tube
 
