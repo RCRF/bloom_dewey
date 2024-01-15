@@ -731,7 +731,7 @@ class WorkflowService(object):
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         a_stat=bobdb.query_generic_instance_and_lin_stats()
         b_stats=bobdb.query_generic_template_stats()
-        reports = [a_stat,b_stats  ]
+        reports = [[a_stat[0]],[a_stat[1]],b_stats  ]
         nrows = 0
         for i in b_stats:
             nrows += int(i['Total_Templates'])
