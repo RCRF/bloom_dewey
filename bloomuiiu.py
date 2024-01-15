@@ -929,12 +929,13 @@ class WorkflowService(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @require_auth(redirect_url="/login")
-    def generate_dag_json_from_all_objects(self, output_file="dag.json"):
+    def generate_dag_json_from_all_objects(self, output_file=None):
         # Define colors for each TABLECLASS_instance
+        
         BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
         last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
         cherrypy.session["user_data"]["dag_fn"] = f"./dags/{cherrypy.session}_dag.json"
-        
+        output_file = cherrypy.session["user_data"]["dag_fn"]
         if (
             "schema_mod_dt" not in cherrypy.session
             or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
@@ -1105,12 +1106,12 @@ class WorkflowService(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def DELget_dag(self):
+    def get_dag(self):
+        dag_fn = cherrypy.session["user_data"]["dag_fn"]
         dag_data = {"elements": {"nodes": [], "edges": []}}
-        if os.path.exists("dag.json"):
-            with open("dag.json", "r") as f:
+        if os.path.exists(dag_fn):
+            with open(dag_fn, "r") as f:
                 dag_data = json.load(f)
-
         return dag_data
 
     @cherrypy.expose
