@@ -23,7 +23,7 @@
         <tbody>
             {% for detail in queue_details %}
             <tr>
-                <td>{{ detail.euid }}</td>
+                <td><a href=/workflow_details?workflow_euid={{detail.euid}}>{{ detail.euid }}</a></td>
                 <td>{{ detail.bstatus }}</td>    
                 <td>{{ detail.created_dt.strftime('%Y-%m-%d %H:%M:%S %Z') }}</td>
                 <td>{{ detail.modified_dt.strftime('%Y-%m-%d %H:%M:%S %Z') }}</td>

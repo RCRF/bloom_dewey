@@ -353,7 +353,7 @@ class WorkflowService(object):
         queue_details = queue.sort_by_euid(qm)
         queue_details = queue_details[(page-1)*per_page:page*per_page]
         template = self.env.get_template("queue_details.html")
-        pagination = {'next': page+1, 'prev': page-1}
+        pagination = {'next': page+1, 'prev': page-1, 'euid': queue_euid}
         return template.render(style=self.get_root_style(), queue=queue, queue_details=queue_details, pagination=pagination)
     
     @cherrypy.expose
