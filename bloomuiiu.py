@@ -161,7 +161,7 @@ class WorkflowService(object):
                     wset = 'exception'
                 elif n.startswith('Ready'):
                     wset = 'avail'
-                lin_len=len(q.child_instance.parent_of_lineages.all())
+                lin_len=len(q.child_instance.parent_of_lineages.all()) 
                 ay_dss[i][wset]=lin_len
                 ay_dss[i]['tot'] += lin_len
 
