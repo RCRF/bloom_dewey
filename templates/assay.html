@@ -112,7 +112,7 @@
             {% elif queue.child_instance.btype == 'queue' %}
                 <ul>Worksets
                     <ul>
-                        {% if queue.child_instance.parent_of_lineages|length == 0 %}
+                        {% if queue.child_instance.parent_of_lineages.all()|length == 0 %}
                         no worksets in queue.
                         {% endif %}
                     {% for wset in queue.child_instance.parent_of_lineages %}

@@ -161,8 +161,9 @@ class WorkflowService(object):
                     wset = 'exception'
                 elif n.startswith('Ready'):
                     wset = 'avail'
-                ay_dss[i][wset]=len(q.child_instance.parent_of_lineages)
-                ay_dss[i]['tot'] += len(q.child_instance.parent_of_lineages)
+                lin_len=len(q.child_instance.parent_of_lineages.all())
+                ay_dss[i][wset]=lin_len
+                ay_dss[i]['tot'] += lin_len
 
             try:
                 ay_dss[i]['avg_d_fx'] = round(float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx']),2)
