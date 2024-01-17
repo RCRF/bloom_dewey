@@ -164,7 +164,7 @@ class WorkflowService(object):
                 lins = q.child_instance.parent_of_lineages.all()
                 ay_dss[i][wset]=len(lins)
                 lctr = 0
-                lctr_max = 500
+                lctr_max = 150
                 for llin in lins:
                     if lctr > lctr_max:
                         break

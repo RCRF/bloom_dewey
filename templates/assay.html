@@ -37,7 +37,7 @@
 
     {% for assay in workflow_instances %}
    
-    <button class="accordion"><a target=a href=/euid_details?euid={{ assay.euid }}>{{ assay.euid }}</a> - {{ assay.json_addl['properties'].get('name',assay.euid) }} 
+    <button class="accordion">{{ assay.euid }} - {{ assay.json_addl['properties'].get('name',assay.euid) }} 
         
         <hr>
         <ul>

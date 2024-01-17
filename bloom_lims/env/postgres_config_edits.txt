@@ -1,0 +1,31 @@
+# Some edits I made to the AWS instance postgres config file to nudge performance.
+
+# a DB with 10M records consumes ~ 130G disk in the DB dir.
+
+# I largely do not know what I'm doing here :-P
+
+# cp /home/ubuntu/miniconda3/envs/BLOOM/share/postgresql.conf.sample /home/ubuntu/miniconda3/envs/BLOOM/share/postgresql.conf
+
+
+max_connections = 500                   # (change requires restart)
+reserved_connections = 5                # (change requires restart)
+superuser_reserved_connections = 15     # (change requires restart)
+
+
+shared_buffers = 32GB                   # min 128kB
+                                        # (change requires restart)
+huge_pages = try                        # on, off, or try
+                                        # (change requires restart)
+huge_page_size = 0                      # zero for system default
+
+work_mem = 128MB                                # min 64kB
+
+maintenance_work_mem = 256MB            # min 1MB
+effective_cache_size = 128GB
+
+
+max_worker_processes = 32               # (change requires restart)
+max_parallel_workers_per_gather = 8     # taken from max_parallel_workers
+max_parallel_maintenance_workers = 8    # taken from max_parallel_workers
+max_parallel_workers = 32               # maximum number of max_worker_processes that
+                                        # can be used in parallel operations
