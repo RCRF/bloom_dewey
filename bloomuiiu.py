@@ -891,6 +891,21 @@ class WorkflowService(object):
 
         raise cherrypy.HTTPRedirect(referer)
 
+
+    @cherrypy.expose
+    @require_auth(redirect_url="/login")
+    def dindex2(self, globalFilterLevel=6, globalZoom=0, globalStartNodeEUID=None):
+        dag_fn = self.generate_dag_json_from_all_objects_v2(euid=globalStartNodeEUID,depth=globalFilterLevel)
+        # Load your template
+        tmpl = self.env.get_template("dindex2.html")
+
+        # Render the template with parameters
+        return tmpl.render(style=self.get_root_style(),
+            globalFilterLevel=globalFilterLevel,
+            globalZoom=globalZoom,
+            globalStartNodeEUID=globalStartNodeEUID,dag_json_file=dag_fn
+        )
+        
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def dindex(self, globalFilterLevel=0, globalZoom=0, globalStartNodeEUID=None):
@@ -1076,21 +1091,22 @@ WHERE
         print(f"All DAG JSON saved to {output_file}")
 
                                  
-                                 
-
+                         
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @require_auth(redirect_url="/login")
-    def xgenerate_dag_json_from_all_objects(self, output_file=None):
-        # Define colors for each TABLECLASS_instance
-        
+    def generate_dag_json_from_all_objects_v2(self, output_file="dag.json", euid='AY1',depth=6):
+
+        if euid in [None,'','None']:    
+            euid = 'AY1'
         BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
         last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
-        cherrypy.session["user_data"]["dag_fn"] = f"./dags/{cherrypy.session}_dag.json"
-        output_file = cherrypy.session["user_data"]["dag_fn"]
+        cherrypy.session["user_data"]["dag_fnv2"] = f"./dags/{str(cherrypy.session)}_{depth}_dagv2.json"
+        output_file = cherrypy.session["user_data"]["dag_fnv2"]
+
         if (
             "schema_mod_dt" not in cherrypy.session
             or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
+            or os.path.exists(output_file) == False
         ):
             print(
                 f"Dag WILL BE Regenerated, Schema Has Changed. {output_file} being generated."
@@ -1103,119 +1119,76 @@ WHERE
         cherrypy.session["schema_mod_dt"] = last_schema_edit_dt.changed_at
 
         colors = {
-            "container_instance": "#372568",
-            "content_instance": "#4560D5",
-            "workflow_instance": "#2CB6F0",
-            "workflow_step_instance": "#93FE45",
-            "equipment_instance": "#7B0403",
-            "object_set_instance": "#FE9B2D",
-            "actor_instance": "#FEDC45",
-            "test_requisition_instance": "#FDDC45",
-            "data_instance": "#FCDC45",
-            "generic_instance": "pink",
-            "action_instance": "#FEDC25",
+            "container": "#372568",
+            "content": "#4560D5",
+            "workflow": "#2CB6F0",
+            "workflow_step" : "#93FE45",
+            "equipment": "#7B0403",
+            "object_set": "#FE9B2D",
+            "actor": "#FEDC45",
+            "test_requisition": "#FDDC45",
+            "data": "#FCDC45",
+            "generic": "pink",
+            "action": "#FEDC25",
         }
         sub_colors = {"well": "#70658c"}
 
-        # Collect all instances and lineages from different tables
-        instances = []
-        lineages = []
-        for table_class_name, color in colors.items():
-            if hasattr(BO.Base.classes, table_class_name):
-                table_class = getattr(BO.Base.classes, table_class_name)
-                instances.extend(
-                    BO.session.query(table_class).filter_by(is_deleted=False).all()
-                )
-                lineage_class_name = table_class_name + "_lineage"
-                if hasattr(BO.Base.classes, lineage_class_name):
-                    lineage_class = getattr(BO.Base.classes, lineage_class_name)
-                    lineages.extend(
-                        BO.session.query(lineage_class)
-                        .filter_by(is_deleted=False)
-                        .all()
-                    )
+        instance_result = []
+        lineage_result = {}
+        for r in BO.fetch_graph_data_by_node_depth(euid, depth):
+            if r[0] in [None,'','None']:    
+                pass
+            else:       
 
-        lineages.extend(
-            BO.session.query(BO.Base.classes.generic_instance_lineage)
-            .filter_by(is_deleted=False)
-            .all()
-        )
+                instance = {'euid': r[0], 'name':r[2], 'btype': r[4], 'super_type': r[3], 'b_sub_type': r[5],   'version': r[6]}
+                instance_result.append(instance)
+                
+                if r[8] in [None,'','None']:    
+                    pass
+                else:
+                    lin_edge = {'parent_euid': r[9], 'child_euid': r[10], 'lineage_euid': r[8]}
+                    lineage_result[r[8]] = lin_edge
+
+            
 
         # Construct nodes and edges
         nodes = []
         edges = []
 
-        for instance in instances:
-            classn = (
-                str(instance.__class__).split(".")[-1].replace(">", "").replace("'", "")
-            )
 
+        for instance in instance_result:
             node = {
                 "data": {
-                    "id": instance.euid,
+                    "id": str(instance['euid']),
                     "type": "instance",
-                    "euid": instance.euid,
-                    "name": instance.name,
-                    "btype": instance.super_type,
-                    "super_type": instance.super_type,
-                    "b_sub_type": instance.super_type
-                    + "."
-                    + instance.btype
-                    + "."
-                    + instance.b_sub_type,
-                    "version": instance.version,
-                    "color": colors[classn]
-                    if instance.btype != "well"
-                    else sub_colors["well"],
+                    "euid": str(instance['euid']),
+                    "name": instance['name'],
+                    "btype": instance['btype'],
+                    "super_type": instance['super_type'],
+                    "b_sub_type": instance['super_type'] + "." + instance['btype'] + "." + instance['b_sub_type'],
+                    "version": instance['version'],
+                    "color": colors.get(instance['super_type'], "pink"),
                 },
                 "position": {"x": 0, "y": 0},
                 "group": "nodes",
             }
-
             nodes.append(node)
 
-            if hasattr(instance, "in_container") and len(instance.in_container) > 0:
-                for container in instance.in_container:
-                    edge = {
-                        "data": {
-                            "source": instance.euid,
-                            "target": container.euid,
-                            "id": f"{container.euid}_{instance.euid}",
-                        },
-                        "group": "edges",
-                    }
-                    edges.append(edge)
+        for l_i in lineage_result:
+            lineage = lineage_result[l_i] 
+            
+            edge = {
+                "data": {
+                    "source": str(lineage['parent_euid']),
+                    "target": str(lineage['child_euid']),
+                    "id": str(lineage['lineage_euid']),
+                },
+                "group": "edges",
+            }
+            edges.append(edge)
 
-            if hasattr(instance, "in_workflow"):
-                if instance.in_workflow not in [None]:
-                    wf = instance.in_workflow
-                    edge = {
-                        "data": {
-                            "source": wf.euid,
-                            "target": instance.euid,
-                            "id": f"{wf.euid}_{instance.euid}",
-                        },
-                        "group": "edges",
-                    }
-                    edges.append(edge)
-
-        for lineage in lineages:
-            if (
-                not BO.get(lineage.child_instance_uuid).is_deleted
-                and not BO.get(lineage.parent_instance_uuid).is_deleted
-            ):
-                edge = {
-                    "data": {
-                        "source": BO.get(lineage.parent_instance_uuid).euid,
-                        "target": BO.get(lineage.child_instance_uuid).euid,
-                        "id": lineage.euid,
-                    },
-                    "group": "edges",
-                }
-                edges.append(edge)
-            else:
-                pass
         # Construct JSON structure
+    
         dag_json = {
             "elements": {"nodes": nodes, "edges": edges},
             "style": [
@@ -1254,7 +1227,7 @@ WHERE
 
         print(f"All DAG JSON saved to {output_file}")
         
-        return   cherrypy.session["user_data"]["dag_fn"]
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1266,6 +1239,17 @@ WHERE
                 dag_data = json.load(f)
         return dag_data
 
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_dagv2(self,euid='AY1',depth=6):
+        dag_fn = cherrypy.session["user_data"]["dag_fnv2"]
+        dag_data = {"elements": {"nodes": [], "edges": []}}
+        if os.path.exists(dag_fn):
+            with open(dag_fn, "r") as f:
+                dag_data = json.load(f)
+        return dag_data
+    
+    
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def update_dag(self):
