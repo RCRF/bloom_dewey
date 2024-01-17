@@ -1140,7 +1140,7 @@ WHERE
                 pass
             else:       
 
-                instance = {'euid': r[0], 'name':r[2], 'btype': r[4], 'super_type': r[3], 'b_sub_type': r[5],   'version': r[6]}
+                instance = {'euid': r[0], 'name':r[2], 'btype': r[3], 'super_type': r[4], 'b_sub_type': r[5],   'version': r[6]}
                 instance_result.append(instance)
                 
                 if r[8] in [None,'','None']:    

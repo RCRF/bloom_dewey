@@ -186,42 +186,47 @@
         var globalZoom = parseFloat('{{ globalZoom }}') || 4;
         var globalStartNodeEUID = '{{ globalStartNodeEUID }}' || 'AY1';
         var currentLayoutName = 'dagre'; // Default layout
-
         function filterNodes(distance) {
             document.getElementById('distanceDisplay').innerText = distance;
         
             if (!cy) return;
+            
+            var selectedNodeId = cy.$('node:selected').id() || globalStartNodeEUID;
+            
+            // Check if the current URL already has the parameters
+            var currentURL = new URL(window.location.href);
+            var currentDistance = currentURL.searchParams.get('globalFilterLevel');
+            var currentEUID = currentURL.searchParams.get('globalStartNodeEUID');
         
-            var selectedNodeId = cy.$('node:selected').id();
-            if (!selectedNodeId) {
-                alert('Please select a node first.');
-                return;
-            }
-        
-            if (distance === "0") {
-                // Show all elements and apply a layout when the slider is at zero
-                cy.elements().style('display', 'element');
-                // cy.layout({ name: currentLayoutName }).run();        
-                applyLayout({ name: currentLayoutName });
-
+            if (currentDistance !== distance || currentEUID !== selectedNodeId) {
+                currentURL.searchParams.set('globalFilterLevel', distance);
+                currentURL.searchParams.set('globalStartNodeEUID', selectedNodeId);
+                window.location.href = currentURL.toString();
             } else {
-                // Hide all elements initially
-                cy.elements().style('display', 'none');
-        
-                var bfs = cy.elements().bfs({
-                    roots: '#' + selectedNodeId,
-                    visit: function(v, e, u, i, depth) {
-                        if (depth <= parseInt(distance)) {
-                            v.style('display', 'element');
-                            if (e) e.style('display', 'element');
-                        }
-                    },
-                    directed: false
-                });
-        
-                // Show the selected node and its immediate neighborhood regardless of the distance
-                cy.$('#' + selectedNodeId).closedNeighborhood().style('display', 'element');
+                // Adjust the graph without reloading the page
+                adjustGraphBasedOnDistance(distance, selectedNodeId);
             }
+        }
+        
+        function adjustGraphBasedOnDistance(distance, nodeId) {
+            // Implement the logic to adjust the graph based on the distance
+            // This might involve showing/hiding nodes, changing styles, etc.
+            // For example:
+            cy.elements().style('display', 'none');
+            
+            var bfs = cy.elements().bfs({
+                roots: '#' + nodeId,
+                visit: function(v, e, u, i, depth) {
+                    if (depth <= parseInt(distance)) {
+                        v.style('display', 'element');
+                        if (e) e.style('display', 'element');
+                    }
+                },
+                directed: false
+            });
+        
+            // Show the selected node and its immediate neighborhood regardless of the distance
+            cy.$('#' + nodeId).closedNeighborhood().style('display', 'element');
         }
         
         function selectAndCenterRandomNode() {

@@ -1166,60 +1166,60 @@ class BloomObj:
 
 
     def fetch_graph_data_by_node_depth(self, start_euid, depth):
-        # SQL query with placeholders for parameters
-        query = text("""WITH RECURSIVE graph_data AS (
-            SELECT 
-                gi.euid, 
-                gi.uuid, 
-                gi.name, 
-                gi.btype, 
-                gi.super_type, 
-                gi.b_sub_type, 
-                gi.version, 
-                0 AS depth,
-                NULL::text AS lineage_euid,
-                NULL::text AS lineage_parent_euid,
-                NULL::text AS lineage_child_euid
-            FROM 
-                generic_instance gi
-            WHERE 
-                gi.uuid = (SELECT uuid FROM generic_instance WHERE euid = :start_euid AND is_deleted = FALSE) 
-                AND gi.is_deleted = FALSE
+            # SQL query with placeholders for parameters
+        query = text(f"""WITH RECURSIVE graph_data AS (
+                SELECT 
+                    gi.euid, 
+                    gi.uuid, 
+                    gi.name, 
+                    gi.btype, 
+                    gi.super_type, 
+                    gi.b_sub_type, 
+                    gi.version, 
+                    0 AS depth,
+                    NULL::text AS lineage_euid,
+                    NULL::text AS lineage_parent_euid,
+                    NULL::text AS lineage_child_euid
+                FROM 
+                    generic_instance gi
+                WHERE 
+                    gi.euid = '{start_euid}' AND gi.is_deleted = FALSE
 
-            UNION ALL
+                UNION
 
-            SELECT 
-                gi.euid, 
-                gi.uuid, 
-                gi.name, 
-                gi.btype, 
-                gi.super_type, 
-                gi.b_sub_type, 
-                gi.version, 
-                gd.depth + 1,
-                gil.euid AS lineage_euid,
-                parent_instance.euid AS lineage_parent_euid,
-                child_instance.euid as lineage_child_euid
-            FROM 
-                generic_instance gi
-            JOIN 
-                generic_instance_lineage gil ON gi.uuid = gil.child_instance_uuid OR gi.uuid = gil.parent_instance_uuid
-            JOIN 
-                graph_data gd ON gil.parent_instance_uuid = gd.uuid OR gil.child_instance_uuid = gd.uuid
-            JOIN 
-                generic_instance parent_instance ON gil.parent_instance_uuid = parent_instance.uuid
-            JOIN 
-                generic_instance child_instance ON gil.child_instance_uuid = child_instance.uuid
-            WHERE 
-                gi.is_deleted = FALSE AND gd.depth < :depth
+                SELECT 
+                    gi.euid, 
+                    gi.uuid, 
+                    gi.name, 
+                    gi.btype, 
+                    gi.super_type, 
+                    gi.b_sub_type, 
+                    gi.version, 
+                    gd.depth + 1,
+                    gil.euid AS lineage_euid,
+                    parent_instance.euid AS lineage_parent_euid,
+                    child_instance.euid as lineage_child_euid
+                FROM 
+                    generic_instance_lineage gil
+                JOIN 
+                    generic_instance gi ON gi.uuid = gil.child_instance_uuid OR gi.uuid = gil.parent_instance_uuid
+                JOIN 
+                    generic_instance parent_instance ON gil.parent_instance_uuid = parent_instance.uuid
+                JOIN 
+                    generic_instance child_instance ON gil.child_instance_uuid = child_instance.uuid
+                JOIN 
+                    graph_data gd ON (gil.parent_instance_uuid = gd.uuid AND gi.uuid = gil.child_instance_uuid) OR 
+                                    (gil.child_instance_uuid = gd.uuid AND gi.uuid = gil.parent_instance_uuid)
+                WHERE 
+                    gi.is_deleted = FALSE AND gd.depth < {depth}
             )
             SELECT DISTINCT * FROM graph_data;
         """)
-
-        # Execute the query with parameters
-        result = self.session.execute(query, {'start_euid': start_euid, 'depth': depth})
-        return result.fetchall()
-
+        
+        # Execute the query
+        result = self.session.execute(query)
+        return result
+        
 
     def create_instance_by_template_components(
         self, super_type, btype, b_sub_type, version
