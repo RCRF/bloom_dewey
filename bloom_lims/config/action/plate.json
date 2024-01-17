@@ -30,5 +30,49 @@
         "comments": ""
       }
     }
+  },
+  "stamp_plates_into_plate": {
+    "1.0": {
+      "action_template": {
+        "action_name": "Stamp plates into plate",
+        "method_name": "do_stamp_plates_into_plate",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;source_barcodes&quot; rows=&quot;6&quot; cols=&quot;30&quot;></textarea>",
+          "Destination Plate EUID": ""
+        },
+        "verify_data": "yes",
+        "verify" : {"instance_type" : "container/*/*/*"},
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "description": "Stamp 1-* plates into an existing plate. Link the plate and well relationships, and link contents. Assume direct mapping of wells.",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      
+      },
+      "child_workflow_step_obj": {
+        "workflow_step/plate-operations/plate-added-to/*/": {
+          "json_addl": {
+            "properties": {
+              "comments": "",
+              "step_number": "0"
+            }
+          }
+        }
+      }
+    } 
+    }
   }
 }

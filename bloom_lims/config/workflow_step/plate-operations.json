@@ -130,13 +130,26 @@
             "verify" : {"instance_type" : "container/*/*/*"}
         }
         }
+        },
+        "stamp-plates-into-plate" : {
+          "group_order": "6",
+          "group_name": "Stamp Plates Into Plate",
+          "actions": 
+            { "action/plate/stamp_plates_into_plate/1.0/": {
+            "action_name" : "Add Plates to Plate",
+            "verify_data": "yes",
+            "verify" : {"instance_type" : "container/*/*/*"}
         }
+        }
+
+        }
+        
       }
     }
   },
-  "stamp-copy-plate": {
+  "plate-added-to": {
     "1.0": {
-      "description": "Stamp Copy Plate",
+      "description": "Existing plate, had 1+ plates merged into it.",
       "singleton": "0",
       "step_properties": {
         "start_timestamp": "",
@@ -147,7 +160,7 @@
         "step_number": ""
       },
       "properties": {
-        "name": "Stamp Copy Plate",
+        "name": "Plate Added To",
         "comments": "",
         "step_number": "",
         "lab_code":""
