@@ -1,0 +1,55 @@
+{
+  
+  "create-pool-from-containers": {
+    "1.0": {
+      "action_template": {
+        "action_name": "Create A Pool",
+        "method_name": "do_action_create_pool",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "_capture_barcodes": "<textarea name=&quot;discard_barcodes&quot; rows=&quot;24&quot; cols=&quot;50&quot;></textarea>"
+        },
+        "verify_data": "yes",
+        "verify" : {"instance_type" : "container/*/*/*"},
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "description": "Create Pool",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "child_container_obj": {
+        "container/tube/tube-eppi-1.5ml/1.0/": {
+          "json_addl": {
+            "properties": {
+              "comments": ""
+            }
+          }
+        }
+      },
+        "child_workflow_step_obj": {
+          "workflow_step/pool/generic/*/": {
+            "json_addl": {
+              "properties": {
+                "comments": "",
+                "step_number": "0"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 
+  

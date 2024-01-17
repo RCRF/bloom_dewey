@@ -2,7 +2,7 @@
 
 function showCapturedDataForm(button, actionDataJson, stepEuid, actionName, actionGroup) {
     try {
-        var uniqueFormId = stepEuid + '-' + actionName + '-form';
+        var uniqueFormId = stepEuid + '-' + actionName + actionGroup + '-form';
         var existingForm = document.getElementById(uniqueFormId);
 
         // Check if the form already exists

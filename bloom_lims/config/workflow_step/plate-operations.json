@@ -96,6 +96,40 @@
             "action/workflow_step_plate_operations/stamp_copy_plate/1.0/": {},
             "action/workflow_step_plate_operations/cfdna_quant/1.0/": {}
           }
+        },
+        "rgnts" : {
+          "group_order": "3",
+          "group_name": "Add Reagent Container",
+          "actions": {
+            "action/object/set-child-object/1.0/" : {
+              "action_name" : "Link Reagent Container",
+              "verify_data": "yes",
+              "verify" : {"instance_type" : "container/*/*/*"}
+          }
+          }  
+
+        },
+        "eqpt" : {
+          "group_order": "4",
+          "group_name": "Equipment",
+          "actions": 
+          { "action/object/set-child-object/1.0/" : {
+            "action_name" : "Link Equipment",
+            "verify_data": "yes",
+            "verify" : {"instance_type" : "equipment/*/*/*"}
+        }
+        }
+        },
+        "pool" : {
+          "group_order": "5",
+          "group_name": "Pool",
+          "actions": 
+          { "action/pool/create-pool-from-containers/1.0/": {
+            "action_name" : "Create Pool From Containers",
+            "verify_data": "yes",
+            "verify" : {"instance_type" : "container/*/*/*"}
+        }
+        }
         }
       }
     }

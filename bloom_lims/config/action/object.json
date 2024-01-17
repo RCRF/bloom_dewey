@@ -1,0 +1,34 @@
+{
+  "set-child-object": {
+    "1.0": {
+      "action_template": {
+        "action_name": "Set Object As Child",
+        "method_name": "do_action_set_child_object",
+        "action_executed": "0",
+        "max_executions": "-1",
+        "action_enabled": "1",
+        "capture_data": "yes",
+        "captured_data": {
+          "EUID": ""
+        },
+        "verify_data": "yes",
+        "verify" : {"instance_type" : "*/*/*/*"},
+        "deactivate_actions_when_executed": [],
+        "executed_datetime": [],
+        "action_order": "0",
+        "action_simple_value": "",
+        "action_user": [],
+        "curr_user": "",
+        "description": "Set Child Obj",
+        "step_properties": {
+          "start_timestamp": "",
+          "end_timestamp": "",
+          "start_operator": "",
+          "end_operator": "",
+          "comments": "",
+          "step_number": ""
+        }
+      }
+    }
+  }
+}
