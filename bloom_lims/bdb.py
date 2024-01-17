@@ -1101,17 +1101,18 @@ class BloomObj:
 
 
     def query_cost_of_all_children(self,euid):
+        # limited to 10,000 children right now... 
         query = text(f"""
             WITH RECURSIVE descendants AS (
             -- Initial query to get the root instance
-            SELECT gi.uuid, gi.euid, gi.json_addl
+            SELECT gi.uuid, gi.euid, gi.json_addl, gi.created_dt
             FROM generic_instance gi
             WHERE gi.euid = '{euid}' -- Replace with your target euid
 
             UNION ALL
 
             -- Recursive part to get all descendants
-            SELECT child_gi.uuid, child_gi.euid, child_gi.json_addl
+            SELECT child_gi.uuid, child_gi.euid, child_gi.json_addl, child_gi.created_dt
             FROM generic_instance_lineage gil
             JOIN descendants d ON gil.parent_instance_uuid = d.uuid
             JOIN generic_instance child_gi ON gil.child_instance_uuid = child_gi.uuid
@@ -1122,8 +1123,11 @@ class BloomObj:
         FROM descendants d
         WHERE d.json_addl ? 'cogs' AND 
             d.json_addl -> 'cogs' ? 'cost' AND 
-            d.json_addl -> 'cogs' ->> 'cost' <> ''; -- Check if 'cost' exists and is not an empty string
+            d.json_addl -> 'cogs' ->> 'cost' <> ''
+        ORDER BY d.created_dt DESC -- Order the final result set
+        LIMIT 10000; -- Limit to the last 10000 records
         """)
+                     
         
         # Execute the query
         result = self.session.execute(query)
@@ -1145,6 +1149,7 @@ class BloomObj:
         JOIN generic_instance AS gi_parent2 ON gil2.parent_instance_uuid = gi_parent2.uuid
         WHERE
         gi_parent2.euid = '{qx_euid}' AND
+        gi.btype = 'package' AND
         jsonb_typeof(gi.json_addl -> 'properties') = 'object' AND
         jsonb_typeof(gi.json_addl -> 'properties' -> 'fedex_tracking_data') = 'array' AND
         jsonb_typeof((gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0)) = 'object' AND
