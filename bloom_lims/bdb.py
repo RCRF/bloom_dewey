@@ -1124,8 +1124,7 @@ class BloomObj:
         WHERE d.json_addl ? 'cogs' AND 
             d.json_addl -> 'cogs' ? 'cost' AND 
             d.json_addl -> 'cogs' ->> 'cost' <> ''
-        ORDER BY d.created_dt DESC -- Order the final result set
-        LIMIT 10000; -- Limit to the last 10000 records
+        ORDER BY d.created_dt DESC -- Order the final result set        
         """)
                      
         

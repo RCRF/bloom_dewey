@@ -141,7 +141,7 @@ class WorkflowService(object):
 
         for i in sorted(ay_ds.keys()):
             assays.append(ay_ds[i])
-            ay_dss[i] = {"Instantaneous COGS" : round(bobdb.get_cost_of_euid_children(i),2)}
+            ay_dss[i] = {"Instantaneous COGS" : 0}  # round(bobdb.get_cost_of_euid_children(i),2)}
             ay_dss[i]['tot'] = 0
             ay_dss[i]['tit_s'] = 0
             ay_dss[i]['tot_fx'] = 0
@@ -161,9 +161,17 @@ class WorkflowService(object):
                     wset = 'exception'
                 elif n.startswith('Ready'):
                     wset = 'avail'
-                lin_len=len(q.child_instance.parent_of_lineages.all()) 
-                ay_dss[i][wset]=lin_len
-                ay_dss[i]['tot'] += lin_len
+                lins = q.child_instance.parent_of_lineages.all()
+                ay_dss[i][wset]=len(lins)
+                lctr = 0
+                lctr_max = 500
+                for llin in lins:
+                    if lctr > lctr_max:
+                        break
+                    else:
+                        ay_dss[i]["Instantaneous COGS"] += round(bobdb.get_cost_of_euid_children(llin.child_instance.euid),2)
+                        ay_dss[i]['tot'] += 1            
+                    lctr += 1
 
             try:
                 ay_dss[i]['avg_d_fx'] = round(float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx']),2)
