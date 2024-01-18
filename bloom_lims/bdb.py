@@ -475,12 +475,13 @@ class BLOOMdb3:
         db_user=os.environ.get("USER", "bloom"),
         db_name="bloom",
         app_username=os.environ.get("USER", "bloomdborm"),
+        echo_sql=os.environ.get("ECHO_SQL", False)
     ):
         self.logger = logging.getLogger(__name__)
         self.logger.debug("STARTING BLOOMDB3")
         self.app_username = app_username
         self.engine = create_engine(
-            f"{db_url_prefix}{db_user}:{db_pass}@{db_hostname}/{db_name}", echo=True
+            f"{db_url_prefix}{db_user}:{db_pass}@{db_hostname}/{db_name}", echo=echo_sql
         )
         metadata = MetaData()
         self.Base = automap_base(metadata=metadata)
@@ -663,7 +664,7 @@ class BloomObj:
             json_addl_overrides["action_groups"] = ai
             _update_recursive(parent_instance.json_addl, json_addl_overrides)
             self.session.add(parent_instance)
-            self.session.flush()
+            ##self.session.flush()
             self.session.commit()
         except Exception as e:
             self.logger.error(f"Error creating instance from template {template_euid}")
@@ -716,7 +717,7 @@ class BloomObj:
                 parent_instance,
                 ret_objs,
             )
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
 
         return ret_objs  
@@ -788,7 +789,7 @@ class BloomObj:
                         polymorphic_discriminator=f"{parent_instance.super_type}_instance_lineage",
                     )
                     self.session.add(lineage_record)
-                    self.session.flush()
+                    ##self.session.flush()
                     ret_objs[1].append(child_instance)
 
         return ret_objs
@@ -814,7 +815,7 @@ class BloomObj:
         )
         self.session.add(lineage_record)
         self.session.flush()
-        self.session.commit()
+        #self.session.commit()
 
         return lineage_record
 
@@ -850,7 +851,7 @@ class BloomObj:
         new_instance = self.create_instance(template.euid)
         _update_recursive(new_instance.json_addl, defaults_ds)
         flag_modified(new_instance, "json_addl")
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
 
         return new_instance
@@ -1252,9 +1253,9 @@ class BloomObj:
 
         container.json_addl['properties']['name'] = content.json_addl['properties']["name"]
         flag_modified(container, "json_addl")
-        self.session.flush()
-        self.session.commit() 
+        ##self.session.flush()
         self.create_generic_instance_lineage_by_euids(container.euid, content.euid)
+        self.session.commit() 
 
         return container, content
 
@@ -1273,7 +1274,7 @@ class BloomObj:
             obj = self.get(uuid)
 
         obj.is_deleted = True
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
 
     def delete_by_euid(self, euid):
@@ -1312,10 +1313,83 @@ class BloomObj:
         self._do_action_base(euid, action, action_group, action_ds, now_dt)
         return r
 
+    def ret_plate_wells_dict(self, plate):
+        plate_wells = {}
+        for lin in plate.parent_of_lineages:
+            if lin.child_instance.btype == "well":
+               
+                well = lin.child_instance
+                content_arr = []
+                for c in well.parent_of_lineages:
+                    if c.child_instance.super_type == "content":
+                        content_arr.append(c.child_instance)
+                content = None    
+                if len(content_arr) == 0:
+                    pass
+                elif len(content_arr) == 1:
+                    content = content_arr[0]
+                else:
+                    self.logger.exception(f"More than one content found for well {well.euid}")
+                    raise Exception(f"More than one content found for well {well.euid}")
+                
+                plate_wells[lin.child_instance.json_addl["cont_address"]["name"]] = (lin.child_instance,content)
 
+        return plate_wells
+    
+        
     def do_stamp_plates_into_plate(self, euid, action_ds):
-        # from IPython import embed; embed(); 
+        # Taking a stab at moving to a non obsessive commit world
+        from IPython import embed; embed(); 
         pass
+        euid_obj = self.get_by_euid(euid)
+
+        dest_plate = self.get_by_euid(action_ds['captured_data']['Destination Plate EUID'])
+        source_plates = []
+        source_plates_well_digested = []
+        for source_plt_euid in action_ds['captured_data']['source_barcodes'].split('\n'):
+            spo = self.get_by_euid(source_plt_euid)
+            source_plates.append(spo)
+            source_plates_well_digested.append(self.ret_plate_wells_dict(spo))
+        
+        wfs = ""
+        for layout_str in action_ds["child_workflow_step_obj"]:
+            wfs = self.create_instance_by_code(
+                layout_str, action_ds["child_workflow_step_obj"][layout_str]
+            )
+            self.create_generic_instance_lineage_by_euids(euid_obj.euid, wfs.euid)
+
+        self.create_generic_instance_lineage_by_euids(wfs.euid, dest_plate.euid)
+        
+        for spo in source_plates:
+            self.create_generic_instance_lineage_by_euids(wfs.euid, spo.euid)
+        
+        # For all plates being stamped into the destination, link all source plate wells to the destination plate wells, and the contensts of source wells to destination wells.
+        # Further, if a dest well is empty, create a new content instance for it and link appropriately.
+        for dest_well in dest_plate.parent_of_lineages:
+            if dest_well.child_instance.btype == "well":
+                well_name = dest_well.child_instance.json_addl['cont_address']['name']
+                for spod in source_plates_well_digested:
+                    if well_name in spod:
+                        self.create_generic_instance_lineage_by_euids(spod[well_name][0].euid,dest_well.child_instance.euid)
+                        if spod[well_name][1] != None:
+                            for dwc in dest_well.child_instance.parent_of_lineages:
+                                if dwc.child_instance.super_type == "content":
+                                    self.create_generic_instance_lineage_by_euids(spod[well_name][1].euid, dwc.child_instance.euid)
+                        del spod[well_name]
+        ## TODO
+        ### IF there are any source wells left, create new content instances for them and link to the dest wells
+        remaining_wells = 0
+        for i in source_plates_well_digested:
+            for j in i:
+                remaining_wells += 1
+        if remaining_wells > 0:
+            self.logger.exception(f"ERROR: {remaining_wells} wells left over after stamping")
+            self.session.rollback()
+            raise Exception(f"ERROR: {remaining_wells} wells left over after stamping")
+
+        self.session.commit()
+
+        return wfs
     
     def do_action_move_workset_to_another_queue(self, euid, action_ds):
 
@@ -1338,7 +1412,7 @@ class BloomObj:
         lineage_link = wfset.child_of_lineages[0]
         self.create_generic_instance_lineage_by_euids(destination_q.euid, wfset.euid)
         self.delete_obj(lineage_link)
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
                                                   
 
@@ -1378,7 +1452,7 @@ class BloomObj:
                 layout_str, action_ds["child_workflow_step_obj"][layout_str]
             )
             self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, wfs.euid)
-            self.session.flush()
+            ##self.session.flush()
             self.session.commit()
     
         package = ""
@@ -1394,14 +1468,14 @@ class BloomObj:
             package = self.create_instance_by_code(
                 layout_str, action_ds["new_container_obj"][layout_str]
             )
-            self.session.flush()
+            ##elf.session.flush()
             self.session.commit()
 
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
 
         self.create_generic_instance_lineage_by_euids(wfs.euid, package.euid)
-
+        self.session.commit()
         return wfs
         
         # There are A LOT of common patterns with these actions, and only a small number of them too. ABSCRACT MOAR
@@ -1498,7 +1572,7 @@ class BloomObj:
 
             flag_modified(bobj, "json_addl")
             flag_modified(bobj, "bstatus")
-            self.session.flush()
+            ##self.session.flush()
             self.session.commit()
         except Exception as e:
             self.logger.exception(f"ERROR: {e}")
@@ -1574,7 +1648,7 @@ class BloomObj:
 
         # from sqlalchemy.orm.attributes import flag_modified
         flag_modified(bobj, "json_addl")
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
 
         return bobj
@@ -1828,12 +1902,12 @@ class BloomWorkflow(BloomObj):
             )
             self.create_generic_instance_lineage_by_euids(wf.uuid, wfs.euid)
             # wfs.workflow_instance_uuid = wf.uuid
-            self.session.flush()
+            ##self.session.flush()
             self.session.commit()
 
         wf.bstatus = "in_progress"
         flag_modified(wf, "bstatus")
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
 
         for euid in action_ds["captured_data"]["discard_barcodes"].split("\n"):
@@ -1841,12 +1915,13 @@ class BloomWorkflow(BloomObj):
                 a_container = self.get_by_euid(euid)
                 a_container.bstatus = "destroyed"
                 flag_modified(a_container, "bstatus")
-                self.session.flush()
+                ##self.session.flush()
                 self.session.commit()
 
                 self.create_generic_instance_lineage_by_euids(
                     wfs.euid, a_container.euid
                 )
+                self.session.commit()
 
             except Exception as e:
                 self.logger.exception(f"ERROR: {e}")
@@ -1876,7 +1951,7 @@ class BloomWorkflow(BloomObj):
             # wfs.workflow_instance_uuid = wf.uuid
             self.create_generic_instance_lineage_by_euids(wf.euid, wfs.euid)
 
-            self.session.flush()
+            ##self.session.flush()
             self.session.commit()
 
         package = ""
@@ -1892,16 +1967,16 @@ class BloomWorkflow(BloomObj):
             package = self.create_instance_by_code(
                 layout_str, action_ds["new_container_obj"][layout_str]
             )
-            self.session.flush()
+            ##self.session.flush()
             self.session.commit()
             # wfs.json_addl["properties"]["actual_output_euid"].append(package.euid)
         wf.bstatus = "in_progress"
         flag_modified(wf, "bstatus")
-        self.session.flush()
+        ##self.session.flush()
         self.session.commit()
 
         self.create_generic_instance_lineage_by_euids(wfs.euid, package.euid)
-
+        self.session.commit()
         return wfs
 
 
@@ -1990,8 +2065,8 @@ class BloomWorkflowStep(BloomObj):
             child_data.json_addl["properties"]["temperature_timestamp"] = now_dt
             child_data.json_addl["properties"]["temperature_log_user"] = un
             flag_modified(child_data, "json_addl")
-            self.session.commit()
             self.create_generic_instance_lineage_by_euids(wfs_euid, child_data.euid)
+            self.session.commit()
 
     def do_action_ycreate_test_req_and_link_child_workflow_step(
         self, wfs_euid, action_ds
@@ -2014,9 +2089,9 @@ class BloomWorkflowStep(BloomObj):
                             "action_enabled"
                         ] = "0"
         flag_modified(i.parent_instance, "json_addl")
-        self.session.flush()
-        self.session.commit()
+        ##self.session.flush()
         self.create_generic_instance_lineage_by_euids(tri_euid, container_euid)
+        self.session.commit()
 
     def do_action_stamp_copy_plate(self, wfs_euid, action_ds):
 
@@ -2050,6 +2125,8 @@ class BloomWorkflowStep(BloomObj):
         new_wells = new_plt_parts[1]
         self.create_generic_instance_lineage_by_euids(child_wfs.euid, new_plt.euid)
         self.create_generic_instance_lineage_by_euids(in_plt.euid, new_plt.euid)
+        self.session.commit()
+        
         for new_w in new_wells:
             nwn = new_w.json_addl["cont_address"]["name"]
             in_well = wells_ds[nwn][0]
@@ -2063,6 +2140,8 @@ class BloomWorkflowStep(BloomObj):
                     in_samp.euid, new_samp.euid
                 )
                 self.create_generic_instance_lineage_by_euids(new_w.euid, new_samp.euid)
+    
+        self.session.commit()
 
         return child_wfs
 
@@ -2077,7 +2156,8 @@ class BloomWorkflowStep(BloomObj):
             )
             self.session.commit()
         self.create_generic_instance_lineage_by_euids(wfs.euid, child_wfs.euid)
-
+        self.session.commit()
+        
         child_data = ""
         for dlayout_str in action_ds["child_container_obj"]:
             child_data = self.create_instance_by_code(
@@ -2093,6 +2173,8 @@ class BloomWorkflowStep(BloomObj):
                     ch.child_instance.euid, child_data.euid
                 )
                 self._add_random_values_to_plate(ch.child_instance)
+
+        self.session.commit()
 
         return child_wfs
 
@@ -2189,6 +2271,7 @@ class BloomWorkflowStep(BloomObj):
             self.create_generic_instance_lineage_by_euids(
                 child_wfs.euid, child_tube_obj.euid
             )
+        self.session.commit()
         return child_wfs
 
     def do_action_fill_plate_undirected(self, wfs_euid, action_ds):
@@ -2255,7 +2338,7 @@ class BloomWorkflowStep(BloomObj):
 
         self.create_generic_instance_lineage_by_euids(wfs.euid, child_wfs.euid)
         self.create_generic_instance_lineage_by_euids(child_wfs.euid, plate.euid)
-
+        self.session.commit()
         return child_wfs
 
     def do_action_fill_plate_directed(self, wfs_euid, action, action_ds):
@@ -2328,7 +2411,7 @@ class BloomWorkflowStep(BloomObj):
 
         # if here, add to the queue!
         self.create_generic_instance_lineage_by_euids(wfs.euid, cont_euid)
-
+        self.session.commit()
         return wfs
 
     def do_action_create_child_container_and_link_child_workflow_step(
@@ -2379,7 +2462,7 @@ class BloomWorkflowStep(BloomObj):
                     new_ctnt = ""
                     for cli_k in cli:
                         new_ctnt = self.create_instance_by_code(cli_k, cli[cli_k])
-                        self.session.flush()
+                        ##self.session.flush()
                         self.session.commit()
                         self.create_generic_instance_lineage_by_euids(
                             child_cont.euid, new_ctnt.euid
@@ -2397,7 +2480,7 @@ class BloomWorkflowStep(BloomObj):
             raise e
 
         self.create_generic_instance_lineage_by_euids(child_wfs.euid, child_cont.euid)
-
+        self.session.commit()
         return child_wfs
 
     def do_action_create_test_req_and_link_child_workflow_step(
@@ -2439,7 +2522,7 @@ class BloomWorkflowStep(BloomObj):
             new_test_req.euid, prior_cont_euid
         )
         self.create_generic_instance_lineage_by_euids(child_wfs.euid, new_test_req.euid)
-
+        self.session.commit()
         return (child_wfs, new_test_req, prior_cont_euid)
 
 
@@ -2472,7 +2555,7 @@ class BloomReagent(BloomObj):
             )
             self.create_generic_instance_lineage_by_euids(i.euid, new_reagent.euid)
             probe_ctr += 1
-        
+        self.session.commit()   
         return plate.euid
         
 class BloomEquipment(BloomObj):
