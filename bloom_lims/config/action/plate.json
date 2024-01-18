@@ -41,7 +41,7 @@
         "action_enabled": "1",
         "capture_data": "yes",
         "captured_data": {
-          "_capture_barcodes": "<textarea name=&quot;source_barcodes&quot; rows=&quot;6&quot; cols=&quot;30&quot;></textarea>",
+          "_capture_barcodes": "Source Plate EUIDs:<textarea name=&quot;source_barcodes&quot; rows=&quot;6&quot; cols=&quot;30&quot;></textarea><br>",
           "Destination Plate EUID": ""
         },
         "verify_data": "yes",

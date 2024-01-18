@@ -4,6 +4,8 @@ import json
 import sys
 import re
 
+import random
+
 import logging
 from .logging_config import setup_logging
 
@@ -618,7 +620,7 @@ class BloomObj:
 
     # centralizing creation more cleanly.
     def create_instance(self, template_euid, json_addl_overrides={}):
-        """Given an EUID for an object template, instantiate an instance from the thmplate.
+        """Given an EUID for an object template, instantiate an instance from the template.
             No child objects defined by the tmplate will be generated.
 
             json_addl_overrides is a dict of key value pairs that will be merged into the json_addl of the template, with new keys created and existing keys over written.
@@ -1302,12 +1304,19 @@ class BloomObj:
             r = self.do_action_create_package_and_first_workflow_step_assay(euid, action_ds)
         elif action_method == "do_action_move_workset_to_another_queue":
             r= self.do_action_move_workset_to_another_queue(euid, action_ds)
+        elif action_method == "do_stamp_plates_into_plate":
+            r=self.do_stamp_plates_into_plate(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
         self._do_action_base(euid, action, action_group, action_ds, now_dt)
         return r
 
+
+    def do_stamp_plates_into_plate(self, euid, action_ds):
+        # from IPython import embed; embed(); 
+        pass
+    
     def do_action_move_workset_to_another_queue(self, euid, action_ds):
 
         wfset = self.get_by_euid(euid)
@@ -2010,6 +2019,7 @@ class BloomWorkflowStep(BloomObj):
         self.create_generic_instance_lineage_by_euids(tri_euid, container_euid)
 
     def do_action_stamp_copy_plate(self, wfs_euid, action_ds):
+
         wfs = self.get_by_euid(wfs_euid)
         in_plt = self.get_by_euid(action_ds["captured_data"]["plate_euid"])
         wells_ds = {}
@@ -2433,6 +2443,38 @@ class BloomWorkflowStep(BloomObj):
         return (child_wfs, new_test_req, prior_cont_euid)
 
 
+class BloomReagent(BloomObj):
+    def __init__(self, bdb):
+        super().__init__(bdb)
+
+    def create_rgnt_24w_plate_TEST(self, rg_code='idt-probes-rare-mendelian'):
+        # I am taking a short cut and not taking time to think about making this generic.
+
+        containers = self.create_instances(
+            self.query_template_by_component_v2(
+                "container", "plate", "fixed-plate-24", "1.0"
+            )[0].euid
+        )
+        
+        plate = containers[0][0]
+        wells = containers[1]   
+        probe_ctr = 1
+        
+        for i in wells:
+            probe_name = f"id_probe_{probe_ctr}"
+            seq_1 = ''.join(random.choices('ATCG', k=18))
+            seq_2 = ''.join(random.choices('ATCG', k=18))
+        
+            new_reagent = self.create_instance(
+                self.query_template_by_component_v2(
+                    "content", "reagent", rg_code, "1.0"
+                )[0].euid, {"properties": {"probe_name": probe_name, "probe_seq_1": seq_1, "probe_seq_2": seq_2}}
+            )
+            self.create_generic_instance_lineage_by_euids(i.euid, new_reagent.euid)
+            probe_ctr += 1
+        
+        return plate.euid
+        
 class BloomEquipment(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)

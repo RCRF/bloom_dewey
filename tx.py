@@ -1,12 +1,17 @@
 import pytest
 from bloom_lims.bdb import BLOOMdb3
-from bloom_lims.bdb import BloomWorkflow, BloomWorkflowStep, BloomObj
+from bloom_lims.bdb import BloomWorkflow, BloomWorkflowStep, BloomObj, BloomReagent
 import sys
 import os
 
 bob_wf = BloomWorkflow(BLOOMdb3())
 
 bob_wfs = BloomWorkflowStep(BLOOMdb3())
+
+bob_rg = BloomReagent(BLOOMdb3())
+
+idt_plate_euid = bob_rg.create_rgnt_24w_plate_TEST('idt-probes-rare-mendelian')
+naoh_plate_euid = bob_rg.create_rgnt_24w_plate_TEST('naoh')
 
 from random import randint
 

@@ -147,6 +147,53 @@
       }
     }
   },
+  "stamp-copy-plate": {
+    "1.0": {
+      "description": "Stamp Copy Plate",
+      "singleton": "0",
+      "step_properties": {
+        "start_timestamp": "",
+        "end_timestamp": "",
+        "start_operator": "",
+        "end_operator": "",
+        "comments": "",
+        "step_number": ""
+      },
+      "properties": {
+        "name": "Stamp Copy Plate",
+        "comments": "",
+        "step_number": "",
+        "lab_code":""
+      },
+      "instantiation_layouts": [],
+      "cogs" : {
+        "state" : "active",
+        "cost" : "0.00",
+        "cost_split_by_children" : [{"*/*/*/*":{}}],
+        "allocation_type" : ""
+      },
+      "expected_inputs": [],
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        },
+        "plate_operations": {
+          "group_order": "2",
+          "group_name": "Plate Operations",
+          "actions": {
+            "action/workflow_step_plate_operations/stamp_copy_plate/1.0/": {},
+            "action/workflow_step_plate_operations/cfdna_quant/1.0/": {}
+          }
+        }
+      }
+    }
+  },
   "plate-added-to": {
     "1.0": {
       "description": "Existing plate, had 1+ plates merged into it.",
