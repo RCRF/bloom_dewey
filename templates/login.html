@@ -4,37 +4,48 @@
         <title>Bloom Login</title>
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
-        <script>
-            function validateEmail(email) {
-                const re = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                return re.test(email);
-            }
+<script>
+    function validateEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    }
 
-            function validateForm() {
-                var email = document.getElementById('email').value;
-                if (!validateEmail(email)) {
-                    alert('Please enter a valid email address.');
-                    return false;
-                }
-                return true;
-            }
-        </script>
+    function validateForm() {
+        var email = document.getElementById('email').value;
+        if (!validateEmail(email)) {
+            alert('Please enter a valid email address.');
+            return false;
+        }
+        return true;
+    }
+
+    function handleGitHubLogin() {
+        window.location.href = 'https://dnwdltvkhlmxctjbdodq.supabase.co/auth/v1/authorize?provider=github&scope=user:email';
+    }
+
+    function handleGoogleLogin() {
+        window.location.href = 'https://dnwdltvkhlmxctjbdodq.supabase.co/auth/v1/authorize?provider=google&userinfo.email';
+    }
+</script>
+
     </head>
     <body>
         <h1>
             Bloom Login <small> <a href=dindex2>( graph view )</a></small> <a href=https://github.com/Daylily-Informatics/bloom><font style="font-size: 10px;">github</font></a> ::: <a href=/ >( B ) </a>
         </h1>
         <ul><hr><ul>
-            <br><h3> Enter Your Email To Begin A Bloom Session</h3><ul>
+            <br><h3> Login or Signup with your Email To Begin A Bloom Session</h3><ul>
                 <form method="post" action="/login" onsubmit="return validateForm()">
                     <label for="email">Email:</label>
                     <input type="text" id="email" name="email">
                     <br>
                     <label for="pwd">Password Not Required At This Time</label>
-                    <input value='na' type="hidden" id="pwd" name="password">
+                    <input value='notapplicable' type="hidden" id="pwd" name="password">
                     <br>
                     <input type="submit" value="Login">
                 </form>
+            <button onclick="handleGitHubLogin()">Login with GitHub</button>
+            <button onclick="handleGoogleLogin()">Login with Gmail</button>
         </ul></ul></ul>
     </body>
 </html>
