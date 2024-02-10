@@ -17,7 +17,7 @@ LOGGING_CONFIG = {
     "loggers": {
         "": {  # root logger
             "handlers": ["console"],
-            "level": "WARNING",
+            "level": "DEBUG",
             "propagate": True,
         },
         "bloom_lims.bdb": {

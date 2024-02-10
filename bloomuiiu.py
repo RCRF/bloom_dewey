@@ -5,9 +5,15 @@ from datetime import datetime
 import jwt
 from flask import Flask
 from flask_cors import CORS
+from typing import Union
+from fastapi.staticfiles import StaticFiles
 
-app = Flask(__name__)
+from fastapi import FastAPI
+
+app = FastAPI()
 CORS(app)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 
 from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime, timedelta
