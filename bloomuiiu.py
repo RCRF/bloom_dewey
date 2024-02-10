@@ -1,7 +1,20 @@
-import os
+import logging
 import sys
 import json
 from datetime import datetime
+import jwt
+from flask import Flask
+from flask_cors import CORS
+from typing import Union
+from fastapi.staticfiles import StaticFiles
+
+from fastapi import FastAPI
+
+app = FastAPI()
+CORS(app)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/templates", StaticFiles(directory="templates"), name="templates")
+
 from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime, timedelta
 
@@ -9,11 +22,16 @@ from sqlalchemy import func, text
 import cherrypy
 
 from jinja2 import Environment, FileSystemLoader
-
+from bloom_lims.logging_config import setup_logging
 from bloom_lims.bdb import BLOOMdb3
 from bloom_lims.bdb import BloomObj, BloomWorkflow, BloomWorkflowStep
 
 from collections import defaultdict
+
+import json
+import requests
+import os
+from auth.supabase.connection import create_supabase_client
 
 SKIP_AUTH = False if len(sys.argv) < 3 else True
 
@@ -93,8 +111,11 @@ def require_auth(redirect_url="/login"):
             else:
                 # Authenticated, proceed to the requested page
                 return func(self, *args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 class WorkflowService(object):
     def __init__(self):
@@ -103,13 +124,13 @@ class WorkflowService(object):
         )  # Assuming you have HTML templates in a 'templates' directory
         self.env.globals["get_well_color"] = get_well_color
         self.env.filters["is_instance"] = is_instance
+        setup_logging()
 
     @cherrypy.expose
     def index(self):
         user_logged_in = True if 'user_data' in cherrypy.session else False
         template = self.env.get_template("index.html")
-        return template.render( style=self.get_root_style(), user_logged_in=user_logged_in)
-
+        return template.render(style=self.get_root_style(), user_logged_in=user_logged_in)
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -120,17 +141,17 @@ class WorkflowService(object):
         ay_ds = {}
         print('\n\n\nAAAAAAAA\n\n\n')
         for i in (
-            bobdb.session.query(bobdb.Base.classes.workflow_instance)
-            .filter_by(is_deleted=False,is_singleton=True)
-            .all()
+                bobdb.session.query(bobdb.Base.classes.workflow_instance)
+                        .filter_by(is_deleted=False, is_singleton=True)
+                        .all()
         ):
-            if show_type == 'all' or i.json_addl.get('assay_type','all') == show_type:
+            if show_type == 'all' or i.json_addl.get('assay_type', 'all') == show_type:
                 ay_ds[i.euid] = i
 
         print('\n\n\n\n\nBBBBBB\n\n\n\n')
         assays = []
         ay_dss = {}
-        atype={}
+        atype = {}
 
         if show_type == 'assay':
             atype['type'] = 'Assays'
@@ -141,14 +162,14 @@ class WorkflowService(object):
 
         for i in sorted(ay_ds.keys()):
             assays.append(ay_ds[i])
-            ay_dss[i] = {"Instantaneous COGS" : 0}  # round(bobdb.get_cost_of_euid_children(i),2)}
+            ay_dss[i] = {"Instantaneous COGS": 0}  # round(bobdb.get_cost_of_euid_children(i),2)}
             ay_dss[i]['tot'] = 0
             ay_dss[i]['tit_s'] = 0
             ay_dss[i]['tot_fx'] = 0
-                
+
             for q in ay_ds[i].parent_of_lineages:
                 if show_type == 'accessioning':
-                    for fex_tup in bobdb.query_all_fedex_transit_times_by_ay_euid(q.child_instance.euid):   
+                    for fex_tup in bobdb.query_all_fedex_transit_times_by_ay_euid(q.child_instance.euid):
                         ay_dss[i]['tit_s'] += fex_tup[1]
                         ay_dss[i]['tot_fx'] += 1
                 wset = ''
@@ -162,27 +183,33 @@ class WorkflowService(object):
                 elif n.startswith('Ready'):
                     wset = 'avail'
                 lins = q.child_instance.parent_of_lineages.all()
-                ay_dss[i][wset]=len(lins)
+                ay_dss[i][wset] = len(lins)
                 lctr = 0
                 lctr_max = 150
                 for llin in lins:
                     if lctr > lctr_max:
                         break
                     else:
-                        ay_dss[i]["Instantaneous COGS"] += round(bobdb.get_cost_of_euid_children(llin.child_instance.euid),2)
-                        ay_dss[i]['tot'] += 1            
+                        ay_dss[i]["Instantaneous COGS"] += round(
+                            bobdb.get_cost_of_euid_children(llin.child_instance.euid), 2)
+                        ay_dss[i]['tot'] += 1
                     lctr += 1
 
             try:
-                ay_dss[i]['avg_d_fx'] = round(float(ay_dss[i]['tit_s'])/60.0/60.0/24.0 / float(ay_dss[i]['tot_fx']),2)
+                ay_dss[i]['avg_d_fx'] = round(
+                    float(ay_dss[i]['tit_s']) / 60.0 / 60.0 / 24.0 / float(ay_dss[i]['tot_fx']), 2)
             except Exception as e:
                 ay_dss[i]['avg_d_fx'] = 'na'
-                    
-            ay_dss[i]['conv'] = round(float(ay_dss[i]['complete']) / float( ay_dss[i]['complete'] + ay_dss[i]['exception']),2) if ay_dss[i]['complete'] + ay_dss[i]['exception'] > 0 else 'na'  
-            ay_dss[i]['wsetp'] = round(float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']),2) if ay_dss[i]['tot'] > 0 else 'na'
-                
-        return template.render( style=self.get_root_style(), workflow_instances=assays, ay_stats=ay_dss, atype=atype)
 
+            ay_dss[i]['conv'] = round(
+                float(ay_dss[i]['complete']) / float(ay_dss[i]['complete'] + ay_dss[i]['exception']), 2) if ay_dss[i][
+                                                                                                                'complete'] + \
+                                                                                                            ay_dss[i][
+                                                                                                                'exception'] > 0 else 'na'
+            ay_dss[i]['wsetp'] = round(float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']), 2) if \
+                ay_dss[i]['tot'] > 0 else 'na'
+
+        return template.render(style=self.get_root_style(), workflow_instances=assays, ay_stats=ay_dss, atype=atype)
 
     @cherrypy.expose
     def logout(self):
@@ -196,69 +223,189 @@ class WorkflowService(object):
         # Redirect the user to the login page or another appropriate page after logging out
         raise cherrypy.HTTPRedirect('/')
 
+    cherrypy.config.update({
+        'log.screen': True,  # Log messages to the console
+        'log.access_file': '',  # Disable access log file
+        'log.error_file': '',  # Disable error log file
+    })
 
+    # The purpose of this method is to handle the callback auth
+    # from supabase and selected providers (GITHUB, GOOGLE, ETC)
+
+    # For future use this to ensure proper CORS
+
+    @app.route('/', methods=['POST'])
+    @cherrypy.expose
+    def oauth_callback(self):
+
+        # Extract access token from JSON payload
+        try:
+            cl = cherrypy.request.headers['Content-Length']
+            rawbody = cherrypy.request.body.read(int(cl))
+            body = json.loads(rawbody)
+            access_token = body.get('accessToken')
+        except Exception as e:
+            return "Error extracting access token."
+
+        if not access_token:
+            return "No access token provided."
+        # Attempt to decode the JWT to get email
+        try:
+            decoded_token = jwt.decode(access_token, options={"verify_signature": False})
+            primary_email = decoded_token.get('email')
+        except jwt.DecodeError:
+            primary_email = None
+
+        # If email not in JWT, use GitHub API to fetch user email
+        if not primary_email:
+            email_response = requests.get(
+                'https://api.github.com/user/emails',
+                headers={'Authorization': f'token {access_token}'}
+            )
+
+            if email_response.status_code != 200:
+                return "Failed to retrieve user email from GitHub."
+
+            emails = email_response.json()
+            primary_email = next((email['email'] for email in emails if email['primary']), None)
+
+        if not primary_email:
+            return "No primary email found for the user."
+
+        # Update the udat.json file with the user's information
+        user_data_file = './etc/udat.json'
+        try:
+            with open(user_data_file, 'r+') as f:
+                user_data = json.load(f)
+
+                # Add or update user data as needed
+                user_data[primary_email] = {
+                    "style_css": "static/skins/bloom.css",
+                }
+
+                f.seek(0)
+                json.dump(user_data, f, indent=4)
+                f.truncate()
+
+                # Log the contents of user_data after making changes
+                print("User Data After:", user_data)
+
+                # Set user data in CherryPy session
+                cherrypy.session['user_data'] = user_data.get(primary_email, {})
+                cherrypy.session['user'] = primary_email
+
+        except Exception as e:
+            error_message = f"Error updating udat.json file: {str(e)}"
+            return error_message
+
+        # Redirect to home page or dashboard
+        raise cherrypy.HTTPRedirect('/')
+
+        return "login successful and user data updated."
+
+    # The purpose of this method is a traditional login/signup with user email
     @cherrypy.expose
     def login(self, email=None, password=None):
+        # Initialize Supabase client
+        logging.info("function called")
+
+        supabase = create_supabase_client()
+
+        if not email or not password:
+            # Show the login page if email or password is missing
+            template = self.env.get_template("login.html")
+            return template.render(style=self.get_root_style())
+        response = None
+        # user_data_file is the path to your JSON file
         user_data_file = './etc/udat.json'
-        user_data = {}
 
-        if email in [None] or password in [None]:
-            if SKIP_AUTH:
-                email="skip@auth.ai"
-                password="na"
-            else:
-                # Show the login page
-                template = self.env.get_template("login.html")
-                return template.render(style=self.get_root_style())
-        
-        # Load or create user data
+        # Ensure user data file exists
         if not os.path.exists(user_data_file):
-            print(f"User data file not found in {user_data_file}, creating empty file...")
-            os.system(f"mkdir -p etc && echo '{{}}' > {user_data_file}")
-
-        with open(user_data_file, 'r') as f:
-            user_data = json.load(f)
-        
-        if email and email not in user_data:
-            # New user, create entry
-            user_data[email] = {'style_css': 'static/skins/bloom.css'}
+            os.makedirs(os.path.dirname(user_data_file), exist_ok=True)
             with open(user_data_file, 'w') as f:
-                json.dump(user_data, f)
+                json.dump({}, f)
 
-        # Set user session
-        cherrypy.session['user_data'] = user_data.get(email, {})
-        cherrypy.session['user_data']['wf_filter'] = 'off'
-        cherrypy.session['user'] = email
-        # Redirect to a different page or render a success message
+        # Load user data
+        with open(user_data_file, 'r+') as f:
+            user_data = json.load(f)
+
+        session_obtained = False
+        if email in user_data:
+            # Attempt to sign in the user with Supabase
+            try:
+                response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                if 'error' not in response or response['error'] is None:
+                    session_obtained = True
+                else:
+                    # Handle sign-in error
+                    return "Error signing in: " + response['error']['message']
+                    raise cherrypy.HTTPRedirect('/')
+            except Exception as e:
+                return "An error occurred during sign-in."
+                raise cherrypy.HTTPRedirect('/')
+        else:
+            # Attempt to sign up the user on Supabase
+            try:
+                response = supabase.auth.sign_up({"email": email, "password": password})
+                if 'error' not in response or response['error'] is None:
+                    session_obtained = True
+                else:
+                    return "Error signing up: " + response['error']['message']
+                    raise cherrypy.HTTPRedirect('/')
+            except Exception as e:
+                return "during the sign-up process if you signed up with a provider you should use that method to log in"
+                raise cherrypy.HTTPRedirect('/')
+
+        user_data_file = './etc/udat.json'
+        try:
+            with open(user_data_file, 'r+') as f:
+                user_data = json.load(f)
+
+                # Add or update user data as needed
+                user_data[email] = {
+                    "style_css": "static/skins/bloom.css",
+                }
+
+                f.seek(0)
+                json.dump(user_data, f, indent=4)
+                f.truncate()
+
+                # Log the contents of user_data after making changes
+                print("User Data After:", user_data)
+
+                # Set user data in CherryPy session
+                cherrypy.session['user_data'] = user_data.get(email, {})
+                cherrypy.session['user'] = email
+
+        except Exception as e:
+            error_message = f"Error updating udat.json file: {str(e)}"
+            return error_message
+
+        # Redirect to home page or dashboard
         raise cherrypy.HTTPRedirect('/')
-    
-    
+
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def calculate_cogs_children(self, euid):
+    def Acalculate_cogs_children(self, euid):
         try:
             bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
-            cogs_value =round(bobdb.get_cost_of_euid_children(euid),2)
+            cogs_value = round(bobdb.get_cost_of_euid_children(euid), 2)
             return json.dumps({"success": True, "cogs_value": cogs_value})
         except Exception as e:
             cherrypy.log("Error in calculate_cogs_children: ", traceback=True)
             return json.dumps({"success": False, "message": str(e)})
-    
-    
-    
+
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def calculate_cogs_parents(self, euid):
         try:
             bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
-            cogs_value = round(bobdb.get_cogs_to_produce_euid(euid),2)
+            cogs_value = round(bobdb.get_cogs_to_produce_euid(euid), 2)
             return json.dumps({"success": True, "cogs_value": cogs_value})
         except Exception as e:
             cherrypy.log("Error in calculate_cogs_parents: ", traceback=True)
             return json.dumps({"success": False, "message": str(e)})
-    
-    
-    
+
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def set_filter(self, curr_val='off'):
@@ -267,20 +414,18 @@ class WorkflowService(object):
         else:
             cherrypy.session['user_data']['wf_filter'] = 'off'
 
-    
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def admin(self,dest='na'):
-        dest_section = {'section':dest}
+    def admin(self, dest='na'):
+        dest_section = {'section': dest}
         template = self.env.get_template("admin.html")
 
         # Assuming user_data is stored in the CherryPy session
         user_data = cherrypy.session.get('user_data', {})
 
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
-        
-        
-         # Mock or real printer_info data
+
+        # Mock or real printer_info data
 
         if 'print_lab' in user_data:
             bobdb.get_lab_printers(user_data['print_lab'])
@@ -288,7 +433,7 @@ class WorkflowService(object):
         csss = []
         for css in sorted(os.popen('ls -1 static/skins/*css').readlines()):
             csss.append(css.rstrip())
-            
+
         printer_info = {
             'print_lab': bobdb.printer_labs,
             'printer_name': bobdb.site_printers,
@@ -297,10 +442,11 @@ class WorkflowService(object):
         }
 
         # Render the template with user data and printer info
-        return template.render(style=self.get_root_style(),user_data=user_data, printer_info=printer_info, dest_section=dest_section)
+        return template.render(style=self.get_root_style(), user_data=user_data, printer_info=printer_info,
+                               dest_section=dest_section)
 
     @cherrypy.expose
-    def get_root_style(self):   
+    def get_root_style(self):
         rs_obj = {"skin_css": 'static/skins/bloom.css'}
         try:
             user_data = cherrypy.session.get('user_data', {})
@@ -309,7 +455,7 @@ class WorkflowService(object):
             pass
 
         return rs_obj
-        
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
@@ -319,7 +465,7 @@ class WorkflowService(object):
         data = cherrypy.request.json
         key = data.get('key')
         value = data.get('value')
-        
+
         # Load existing user data from the file
         user_data_file = './etc/udat.json'
         if os.path.exists(user_data_file):
@@ -341,17 +487,16 @@ class WorkflowService(object):
 
         # Update the user session dictionary
         cherrypy.session['user_data'] = user_data[email]
-        
-        return {'status': 'success', 'message': 'User preference updated'}
 
+        return {'status': 'success', 'message': 'User preference updated'}
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def queue_details(self, queue_euid,page=1):
+    def queue_details(self, queue_euid, page=1):
         page = int(page)
         if page < 1:
             page = 1
-        per_page = 500 # Items per page
+        per_page = 500  # Items per page
         user_logged_in = True if 'user_data' in cherrypy.session else False
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         queue = bobdb.get_by_euid(queue_euid)
@@ -359,11 +504,12 @@ class WorkflowService(object):
         for i in queue.parent_of_lineages:
             qm.append(i.child_instance)
         queue_details = queue.sort_by_euid(qm)
-        queue_details = queue_details[(page-1)*per_page:page*per_page]
+        queue_details = queue_details[(page - 1) * per_page:page * per_page]
         template = self.env.get_template("queue_details.html")
-        pagination = {'next': page+1, 'prev': page-1, 'euid': queue_euid}
-        return template.render(style=self.get_root_style(), queue=queue, queue_details=queue_details, pagination=pagination)
-    
+        pagination = {'next': page + 1, 'prev': page - 1, 'euid': queue_euid}
+        return template.render(style=self.get_root_style(), queue=queue, queue_details=queue_details,
+                               pagination=pagination)
+
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def generic_templates(self):
@@ -381,7 +527,7 @@ class WorkflowService(object):
             if temp.super_type not in grouped_templates:
                 grouped_templates[temp.super_type] = []
             grouped_templates[temp.super_type].append(temp)
-        return template.render(style=self.get_root_style(),grouped_templates=grouped_templates)
+        return template.render(style=self.get_root_style(), grouped_templates=grouped_templates)
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -429,10 +575,10 @@ class WorkflowService(object):
         workflow_statistics = {k: dict(v) for k, v in workflow_statistics.items()}
 
         return template.render(style=self.get_root_style(),
-            workflows=workflows,
-            workflow_statistics=workflow_statistics,
-            unique_workflow_types=unique_workflow_types,
-        )
+                               workflows=workflows,
+                               workflow_statistics=workflow_statistics,
+                               unique_workflow_types=unique_workflow_types,
+                               )
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -467,9 +613,8 @@ class WorkflowService(object):
 
         # Render the template with the fetched data
         return template.render(style=self.get_root_style(),
-            equipment_list=equipment_instances, template_list=equipment_templates
-        )
-
+                               equipment_list=equipment_instances, template_list=equipment_templates
+                               )
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -483,7 +628,6 @@ class WorkflowService(object):
             # Add more options as needed
         ]
         return options
-    
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -504,8 +648,8 @@ class WorkflowService(object):
         )
         # Render the template with the fetched data
         return template.render(style=self.get_root_style(),
-            instance_list=reagent_instances, template_list=reagent_templates
-        )
+                               instance_list=reagent_instances, template_list=reagent_templates
+                               )
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -526,8 +670,8 @@ class WorkflowService(object):
         )
         # Render the template with the fetched data
         return template.render(style=self.get_root_style(),
-            instance_list=control_instances, template_list=control_templates
-        )
+                               instance_list=control_instances, template_list=control_templates
+                               )
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -550,7 +694,7 @@ class WorkflowService(object):
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         instance = bobdb.get_by_euid(euid)
         template = self.env.get_template("vertical_exp.html")
-        return template.render(style=self.get_root_style(),instance=instance)
+        return template.render(style=self.get_root_style(), instance=instance)
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -568,8 +712,7 @@ class WorkflowService(object):
         related_plates = self.get_related_plates(main_plate)
         related_plates.append(main_plate)
         # Render the template with the main plate and related plates data
-        return template.render(style=self.get_root_style(),main_plate=main_plate, related_plates=related_plates)
-
+        return template.render(style=self.get_root_style(), main_plate=main_plate, related_plates=related_plates)
 
     def get_related_plates(self, main_plate):
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
@@ -594,8 +737,8 @@ class WorkflowService(object):
             num_cols = 0
             for lineage in plate.parent_of_lineages:
                 if (
-                    lineage.parent_instance.euid == plate.euid
-                    and lineage.child_instance.btype == "well"
+                        lineage.parent_instance.euid == plate.euid
+                        and lineage.child_instance.btype == "well"
                 ):
                     cd = lineage.child_instance.json_addl.get("cont_address", {})
                     num_rows = max(num_rows, int(cd.get("row_idx", 0)))
@@ -619,8 +762,8 @@ class WorkflowService(object):
 
         for i in plate.parent_of_lineages:
             if (
-                i.parent_instance.euid == plate.euid
-                and i.child_instance.btype == "well"
+                    i.parent_instance.euid == plate.euid
+                    and i.child_instance.btype == "well"
             ):
                 cd = i.child_instance.json_addl["cont_address"]
                 if int(cd["row_idx"]) > num_rows:
@@ -634,7 +777,7 @@ class WorkflowService(object):
         if not plate:
             return "Plate not found."
         # Render the template with the plate data
-        return template.render(style=self.get_root_style(),plate=plate)
+        return template.render(style=self.get_root_style(), plate=plate)
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -661,8 +804,9 @@ class WorkflowService(object):
         stats_30d = get_stats(30)
 
         return self.env.get_template("database_statistics.html").render(style=self.get_root_style(),
-            stats_1d=stats_1d, stats_7d=stats_7d, stats_30d=stats_30d
-        )
+                                                                        stats_1d=stats_1d, stats_7d=stats_7d,
+                                                                        stats_30d=stats_30d
+                                                                        )
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -683,9 +827,9 @@ class WorkflowService(object):
         )
 
         return template.render(style=self.get_root_style(),
-            generic_templates=generic_templates,
-            unique_discriminators=unique_discriminators,
-        )
+                               generic_templates=generic_templates,
+                               unique_discriminators=unique_discriminators,
+                               )
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -707,11 +851,11 @@ class WorkflowService(object):
         audit_logs = bobdb.query_audit_log_by_euid(euid)
         # Pass the dictionary to the template
         return template.render(style=self.get_root_style(),
-            object=obj_dict,
-            relationships=relationship_data,
-            audit_logs=audit_logs,
-            oobj=obj,
-        )
+                               object=obj_dict,
+                               relationships=relationship_data,
+                               audit_logs=audit_logs,
+                               oobj=obj,
+                               )
 
     @cherrypy.expose
     @require_auth(redirect_url="/login")
@@ -731,23 +875,21 @@ class WorkflowService(object):
 
         raise cherrypy.HTTPRedirect(referer)
 
-
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def bloom_schema_report(self):
         template = self.env.get_template("bloom_schema_report.html")
         bobdb = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
-        a_stat=bobdb.query_generic_instance_and_lin_stats()
-        b_stats=bobdb.query_generic_template_stats()
-        reports = [[a_stat[0]],[a_stat[1]],b_stats  ]
+        a_stat = bobdb.query_generic_instance_and_lin_stats()
+        b_stats = bobdb.query_generic_template_stats()
+        reports = [[a_stat[0]], [a_stat[1]], b_stats]
         nrows = 0
         for i in b_stats:
             nrows += int(i['Total_Templates'])
         for ii in a_stat:
             nrows += int(ii['Total_Instances'])
-        return template.render(style=self.get_root_style(),reports=reports,nrows=nrows)
-    
-    
+        return template.render(style=self.get_root_style(), reports=reports, nrows=nrows)
+
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def delete_by_euid(self, euid):
@@ -785,7 +927,8 @@ class WorkflowService(object):
         template = self.env.get_template("workflow_details.html")
         workflow = bwfdb.get_sorted_euid(workflow_euid)
         accordion_states = dict(cherrypy.session)
-        return template.render(style=self.get_root_style(),workflow=workflow, accordion_states=accordion_states, udat=cherrypy.session['user_data'])
+        return template.render(style=self.get_root_style(), workflow=workflow, accordion_states=accordion_states,
+                               udat=cherrypy.session['user_data'])
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -796,7 +939,6 @@ class WorkflowService(object):
         state = data["state"]  # 'open
         cherrypy.session[step_euid] = state
         return {"status": "success"}
-
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -811,18 +953,17 @@ class WorkflowService(object):
         bobdb = BloomWorkflow(BLOOMdb3(app_username=cherrypy.session['user']))
         bo = bobdb.get_by_euid(euid)
 
-
         ds["curr_user"] = cherrypy.session.get("user", "bloomui-user")
-        udat = cherrypy.session.get("user_data",{}  )
+        udat = cherrypy.session.get("user_data", {})
         ds['lab'] = udat.get("print_lab", "BLOOM")
-        ds['printer_name'] = udat.get("printer_name","")
-        ds['label_zpl_style'] = udat.get("label_style","")
-        ds['alt_a'] = udat.get("alt_a","")
-        ds['alt_b'] = udat.get("alt_b","")
-        ds['alt_c'] = udat.get("alt_c",)
-        ds['alt_d'] = udat.get("alt_d","")   
-        ds['alt_e'] = udat.get("alt_e","")                                     
-                                     
+        ds['printer_name'] = udat.get("printer_name", "")
+        ds['label_zpl_style'] = udat.get("label_style", "")
+        ds['alt_a'] = udat.get("alt_a", "")
+        ds['alt_b'] = udat.get("alt_b", "")
+        ds['alt_c'] = udat.get("alt_c", )
+        ds['alt_d'] = udat.get("alt_d", "")
+        ds['alt_e'] = udat.get("alt_e", "")
+
         if bo.__class__.__name__ == "workflow_instance":
             bwfdb = BloomWorkflow(BLOOMdb3(app_username=cherrypy.session['user']))
             act = bwfdb.do_action(
@@ -891,21 +1032,20 @@ class WorkflowService(object):
 
         raise cherrypy.HTTPRedirect(referer)
 
-
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def dindex2(self, globalFilterLevel=6, globalZoom=0, globalStartNodeEUID=None):
-        dag_fn = self.generate_dag_json_from_all_objects_v2(euid=globalStartNodeEUID,depth=globalFilterLevel)
+        dag_fn = self.generate_dag_json_from_all_objects_v2(euid=globalStartNodeEUID, depth=globalFilterLevel)
         # Load your template
         tmpl = self.env.get_template("dindex2.html")
 
         # Render the template with parameters
         return tmpl.render(style=self.get_root_style(),
-            globalFilterLevel=globalFilterLevel,
-            globalZoom=globalZoom,
-            globalStartNodeEUID=globalStartNodeEUID,dag_json_file=dag_fn
-        )
-        
+                           globalFilterLevel=globalFilterLevel,
+                           globalZoom=globalZoom,
+                           globalStartNodeEUID=globalStartNodeEUID, dag_json_file=dag_fn
+                           )
+
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def dindex(self, globalFilterLevel=0, globalZoom=0, globalStartNodeEUID=None):
@@ -915,10 +1055,10 @@ class WorkflowService(object):
 
         # Render the template with parameters
         return tmpl.render(style=self.get_root_style(),
-            globalFilterLevel=globalFilterLevel,
-            globalZoom=globalZoom,
-            globalStartNodeEUID=globalStartNodeEUID,dag_json_file=dag_fn
-        )
+                           globalFilterLevel=globalFilterLevel,
+                           globalZoom=globalZoom,
+                           globalStartNodeEUID=globalStartNodeEUID, dag_json_file=dag_fn
+                           )
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -949,19 +1089,17 @@ class WorkflowService(object):
         else:
             return {"error": "Node not found"}
 
-
-
     @cherrypy.expose
     @require_auth(redirect_url="/login")
     def generate_dag_json_from_all_objects(self, output_file="dag.json"):
 
-        BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
+        BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
         cherrypy.session["user_data"]["dag_fn"] = f"./dags/{str(cherrypy.session)}_dag.json"
         output_file = cherrypy.session["user_data"]["dag_fn"]
         if (
-            "schema_mod_dt" not in cherrypy.session
-            or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
+                "schema_mod_dt" not in cherrypy.session
+                or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
         ):
             print(
                 f"Dag WILL BE Regenerated, Schema Has Changed. {output_file} being generated."
@@ -977,7 +1115,7 @@ class WorkflowService(object):
             "container": "#372568",
             "content": "#4560D5",
             "workflow": "#2CB6F0",
-            "workflow_step" : "#93FE45",
+            "workflow_step": "#93FE45",
             "equipment": "#7B0403",
             "object_set": "#FE9B2D",
             "actor": "#FEDC45",
@@ -1020,7 +1158,6 @@ WHERE
         nodes = []
         edges = []
 
-
         for instance in instance_result:
             node = {
                 "data": {
@@ -1051,7 +1188,7 @@ WHERE
             edges.append(edge)
 
         # Construct JSON structure
-    
+
         dag_json = {
             "elements": {"nodes": nodes, "edges": edges},
             "style": [
@@ -1090,23 +1227,21 @@ WHERE
 
         print(f"All DAG JSON saved to {output_file}")
 
-                                 
-                         
     @cherrypy.expose
     @require_auth(redirect_url="/login")
-    def generate_dag_json_from_all_objects_v2(self, output_file="dag.json", euid='AY1',depth=6):
+    def generate_dag_json_from_all_objects_v2(self, output_file="dag.json", euid='AY1', depth=6):
 
-        if euid in [None,'','None']:    
+        if euid in [None, '', 'None']:
             euid = 'AY1'
-        BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))           
+        BO = BloomObj(BLOOMdb3(app_username=cherrypy.session['user']))
         last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
         cherrypy.session["user_data"]["dag_fnv2"] = f"./dags/{str(cherrypy.session)}_{depth}_dagv2.json"
         output_file = cherrypy.session["user_data"]["dag_fnv2"]
 
         if (
-            "schema_mod_dt" not in cherrypy.session
-            or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
-            or os.path.exists(output_file) == False
+                "schema_mod_dt" not in cherrypy.session
+                or cherrypy.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
+                or os.path.exists(output_file) == False
         ):
             print(
                 f"Dag WILL BE Regenerated, Schema Has Changed. {output_file} being generated."
@@ -1122,7 +1257,7 @@ WHERE
             "container": "#372568",
             "content": "#4560D5",
             "workflow": "#2CB6F0",
-            "workflow_step" : "#93FE45",
+            "workflow_step": "#93FE45",
             "equipment": "#7B0403",
             "object_set": "#FE9B2D",
             "actor": "#FEDC45",
@@ -1136,25 +1271,23 @@ WHERE
         instance_result = []
         lineage_result = {}
         for r in BO.fetch_graph_data_by_node_depth(euid, depth):
-            if r[0] in [None,'','None']:    
+            if r[0] in [None, '', 'None']:
                 pass
-            else:       
+            else:
 
-                instance = {'euid': r[0], 'name':r[2], 'btype': r[3], 'super_type': r[4], 'b_sub_type': r[5],   'version': r[6]}
+                instance = {'euid': r[0], 'name': r[2], 'btype': r[3], 'super_type': r[4], 'b_sub_type': r[5],
+                            'version': r[6]}
                 instance_result.append(instance)
-                
-                if r[8] in [None,'','None']:    
+
+                if r[8] in [None, '', 'None']:
                     pass
                 else:
                     lin_edge = {'parent_euid': r[9], 'child_euid': r[10], 'lineage_euid': r[8]}
                     lineage_result[r[8]] = lin_edge
 
-            
-
         # Construct nodes and edges
         nodes = []
         edges = []
-
 
         for instance in instance_result:
             node = {
@@ -1175,8 +1308,8 @@ WHERE
             nodes.append(node)
 
         for l_i in lineage_result:
-            lineage = lineage_result[l_i] 
-            
+            lineage = lineage_result[l_i]
+
             edge = {
                 "data": {
                     "source": str(lineage['parent_euid']),
@@ -1188,7 +1321,7 @@ WHERE
             edges.append(edge)
 
         # Construct JSON structure
-    
+
         dag_json = {
             "elements": {"nodes": nodes, "edges": edges},
             "style": [
@@ -1226,8 +1359,6 @@ WHERE
             json.dump(dag_json, f, indent=4)
 
         print(f"All DAG JSON saved to {output_file}")
-        
-
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1241,15 +1372,14 @@ WHERE
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def get_dagv2(self,euid='AY1',depth=6):
+    def get_dagv2(self, euid='AY1', depth=6):
         dag_fn = cherrypy.session["user_data"]["dag_fnv2"]
         dag_data = {"elements": {"nodes": [], "edges": []}}
         if os.path.exists(dag_fn):
             with open(dag_fn, "r") as f:
                 dag_data = json.load(f)
         return dag_data
-    
-    
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def update_dag(self):
@@ -1311,7 +1441,7 @@ if __name__ == "__main__":
             "tools.staticdir.on": True,
             "tools.staticdir.dir": root_server_dir,
             "server.socket_host": "0.0.0.0",
-            "server.socket_port": 8080,
+            "server.socket_port": 58080,
             "server.thread_pool": 20,
             "server.socket_queue_size": 50,
             "tools.sessions.on": True,

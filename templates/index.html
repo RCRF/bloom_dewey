@@ -6,6 +6,42 @@
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
 
+
+<script>
+            function checkForOauthCode() {
+                 const urlFragment = new URLSearchParams(window.location.hash.substring(1)); // Remove the # and parse
+                const accessToken = urlFragment.get('access_token');
+                console.log("Access token:", accessToken);
+
+                if (accessToken) {
+                    // Send the code to the backend
+                    fetch('http://0.0.0.0:58080/oauth_callback', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ accessToken: accessToken }),
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log("Response from server:", data);
+                        alert(" authentication successful!");
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert("Failed to process GitHub authentication.");
+                    });
+                } else {
+                    console.log("No GitHub code found on home page.");
+                }
+            }
+
+            window.onload = function() {
+                checkForOauthCode();
+            };
+
+        </script>
+
         <style>
             .accordion {
                 cursor: pointer;
