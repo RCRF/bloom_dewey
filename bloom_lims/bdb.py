@@ -49,7 +49,6 @@ from sqlalchemy.orm.attributes import flag_modified
 import sqlalchemy.orm as sqla_orm
 
 import zebra_day.print_mgr as zdpm
-
 try:
     import fedex_tracking_day.fedex_track as FTD
 except Exception as e:

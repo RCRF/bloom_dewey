@@ -233,7 +233,7 @@
             <ul>
             <h3>Search by EUID/Barcode</h3>
             <ul>
-                <form action="/euid_details" method="post">
+                <form action="/euid_details" method="get">
                     <label for="euid">EUID:</label>
                     <input class="idx_text" type="text" id="euid" name="euid" />
                     <input type="submit" value="Submit" class="idx_button" />
@@ -241,7 +241,7 @@
             </ul>
             <h3>Plate Visualization</h3>
             <ul>
-                <form action="/plate_visualization" method="post">
+                <form action="/plate_visualization" method="get">
                     <label for="plate_euid">Plate EUID:</label>
                     <input class="idx_text" type="text" id="plate_euid" name="plate_euid">
                     <input type="submit" value="Submit" class="idx_button">
