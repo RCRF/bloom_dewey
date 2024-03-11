@@ -1,3 +1,4 @@
+# 2024-03-11 >>BROKEN DURING REFACTOR<<
 # Bloom : Templated Abstract Polymorphic (and opinionated) LIMS 
 _a conceptual gambit in collaboration with chatGPT4_  /// _POC v0.8.21_
 
