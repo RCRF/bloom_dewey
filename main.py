@@ -5,6 +5,12 @@ import os
 import json
 import uvicorn
 
+# The following three lines allow for dropping embed() in to block and present an IPython shell
+from IPython import embed
+import nest_asyncio
+nest_asyncio.apply()
+
+
 from fastapi import (
     FastAPI,
     Depends,
@@ -56,11 +62,15 @@ cookie_scheme = APIKeyCookie(name="session")
 SKIP_AUTH = False if len(sys.argv) < 3 else True
 
 
+def run_embedded_ipython_shell():
+        # Function to run the IPython shell
+        embed()
+
 async def is_instance(value, type_name):
     return isinstance(value, eval(type_name))
 
 
-async def get_well_color(quant_value):
+def get_well_color(quant_value):
     # Transition from purple to white
     if quant_value <= 0.5:
         r = int(128 + 127 * (quant_value / 0.5))  # From 128 to 255
@@ -429,7 +439,7 @@ async def calculate_cogs_parents(euid, request: Request, _auth=Depends(require_a
     except Exception as e:
         return json.dumps({"success": False, "message": str(e)})
 
-
+@app.get("/set_filter")
 async def set_filter(request: Request, _auth=Depends(require_auth), curr_val='off'):
     if curr_val == 'off':
         request.session['user_data']['wf_filter'] = 'on'
@@ -790,7 +800,7 @@ async def get_related_plates(request: Request, main_plate, _auth=Depends(require
     return related_plates
 
 
-@app.get("/plate_display")
+@app.get("/plate_visualization")
 async def plate_visualization(request: Request, plate_euid, _auth=Depends(require_auth)):
     bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
     # Fetch the plate and its wells
@@ -821,7 +831,9 @@ async def plate_visualization(request: Request, plate_euid, _auth=Depends(requir
 
     content = templates.get_template("plate_display.html").render(
         style=style,
-        plate=plate)
+        plate=plate,
+        get_well_color=get_well_color
+        )
     return HTMLResponse(content=content)
 
     # What is the correct path for {style.skin.css}?
@@ -1032,7 +1044,7 @@ async def update_accordion_state(request: Request, _auth=Depends(require_auth)):
     return {"status": "success"}
 
 
-@app.post("/workflow-step-action")
+@app.post("/workflow_step_action")
 async def workflow_step_action(request: Request, _auth=Depends(require_auth)):
     data = await request.json()
     euid = data.get("euid")
@@ -1054,12 +1066,12 @@ async def workflow_step_action(request: Request, _auth=Depends(require_auth)):
     ds['alt_e'] = udat.get("alt_e", "")
 
     if bo.__class__.__name__ == "workflow_instance":
-        bwfdb = BloomWorkflow(BLOOMdb3(app_username=request.session['user_data']))
+        bwfdb = BloomWorkflow(BLOOMdb3(app_username=request.session['user_data']['email']))
         act = bwfdb.do_action(
             euid, action_ds=ds, action=action, action_group=action_group
         )
     else:
-        bwfsdb = BloomWorkflowStep(BLOOMdb3(app_username=request.session['user_data']))
+        bwfsdb = BloomWorkflowStep(BLOOMdb3(app_username=request.session['user_data']['email']))
         act = bwfsdb.do_action(
             euid, action_ds=ds, action=action, action_group=action_group
         )
@@ -1345,8 +1357,10 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
     }
     sub_colors = {"well": "#70658c"}
 
-    instance_result = []
+    #instance_result = []
+    instance_result = {}
     lineage_result = {}
+
     for r in BO.fetch_graph_data_by_node_depth(euid, depth):
         if r[0] in [None, '', 'None']:
             pass
@@ -1354,7 +1368,7 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
 
             instance = {'euid': r[0], 'name': r[2], 'btype': r[3], 'super_type': r[4], 'b_sub_type': r[5],
                         'version': r[6]}
-            instance_result.append(instance)
+            instance_result[r[0]] = instance
 
             if r[8] in [None, '', 'None']:
                 pass
@@ -1366,7 +1380,8 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
     nodes = []
     edges = []
 
-    for instance in instance_result:
+    for instance_k in instance_result:
+        instance = instance_result[instance_k]
         node = {
             "data": {
                 "id": str(instance['euid']),
