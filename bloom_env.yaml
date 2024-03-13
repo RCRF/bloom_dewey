@@ -27,11 +27,11 @@ dependencies:
     - black
     - uvicorn==0.28.0
     - fastapi==0.110.0
-    - supabase~=2.3.4
-    - python-dotenv~=1.0.0
-    - httpx~=0.25.2
-    - itsdangerous-2.1.2
+    - supabase==2.3.4
+    - python-dotenv==1.0.0
+    - httpx==0.25.2
+    - itsdangerous==2.1.2
     - pyjwt==2.8.0
-    - python-multipart-0.0.9
+    - python-multipart==0.0.9
     - nest_asyncio==1.6.0
 prefix: /Users/daylily/miniconda/envs/BLOOM
