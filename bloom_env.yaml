@@ -33,4 +33,5 @@ dependencies:
     - itsdangerous-2.1.2
     - pyjwt==2.8.0
     - python-multipart-0.0.9
+    - nest_asyncio==1.6.0
 prefix: /Users/daylily/miniconda/envs/BLOOM
