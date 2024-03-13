@@ -1,8 +1,0 @@
-{
-    "john@daylilyinformatics.com": {
-        "style_css": "bloom.css",
-        "print_lab": "CA",
-        "printer_name": "192.168.1.18",
-        "label_zpl_style": "corners_1inX2in"
-    }
-}
