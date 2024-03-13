@@ -44,6 +44,7 @@ In this project we are using GitHub and Google.
 
 4. Change the project id variable in the index.html page
    - Copy your project id and replace it with your_project_id in the login.html file: **window.location.href = 'https://your_project_id.supabase.co/auth/v1/authorize?provider=google&userinfo.email'**
+  ** I think this is outdated, and the edits only need to happen in the login.html file? **
 
 
 **Additional Info**

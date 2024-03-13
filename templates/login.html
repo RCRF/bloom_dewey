@@ -48,7 +48,7 @@
 
     function handleGitHubLogin() {
         try {
-            window.location.href = 'https://dnwdltvkhlmxctjbdodq.supabase.co/auth/v1/authorize?provider=github&scope=user:email';
+            window.location.href = 'https://kslpzwcmkyrbxqmlhgln.supabase.co/auth/v1/authorize?provider=github&scope=user:email';
         } catch (error) {
             console.error("GitHub login error:", error);
             alert('An error occurred while attempting to log in with GitHub. Please try again.');
@@ -57,7 +57,7 @@
 
     function handleGoogleLogin() {
         try {
-            window.location.href = 'https://dnwdltvkhlmxctjbdodq.supabase.co/auth/v1/authorize?provider=google&userinfo.email';
+            window.location.href = 'https://kslpzwcmkyrbxqmlhgln.supabase.co/auth/v1/authorize?provider=google&userinfo.email';
         } catch (error) {
             console.error("Google login error:", error);
             alert('An error occurred while attempting to log in with Google. Please try again.');
@@ -70,23 +70,15 @@
         <h1>
             Bloom Login <small> <a href=dindex2>( graph view )</a></small> <a href=https://github.com/Daylily-Informatics/bloom><font style="font-size: 10px;">github</font></a> ::: <a href=/ >( B ) </a>
         </h1>
+        <ul><li><a href=/logout>LOGOUT</a></ul>
         <div id="error-message" style="color: red;"></div> <!-- Error message display -->
         <ul><hr><ul>
-            <br><h3> Login or Signup with your Email To Begin A Bloom Session</h3><ul>
-                <form method="post" action="/login" onsubmit="return validateForm()">
-                    <label for="email">Email:</label>
-                    <input type="text" id="email" name="email">
-                    <br>
-                    <label for="pwd">Password Not Required At This Time</label>
-                    <input value='notapplicable' type="hidden" id="pwd" name="password">
-                    <br>
-                    <input type="submit" value="Login">
-                </form>
+            <br><h3> Login w/Github or Google (this requires config! see docs)</h3><ul>
+                
             <button onclick="handleGitHubLogin()">Login with GitHub</button>
             <button onclick="handleGoogleLogin()">Login with Gmail</button>
         </ul></ul></ul>
-    </body>
-    <body>
+  <hr>
         <div id="error-message-no-network" style="color: red;"></div> <!-- Error message display for no network form -->
         <ul><hr><ul>
             <h2>Login Form without internet connection</h2>
@@ -95,7 +87,7 @@
                     <label for="emailwithoutnetwork">Email:</label>
                     <input type="text" id="emailwithoutnetwork" name="email">
                     <br>
-                    <label for="pwd">Password Not Required At This Time</label>
+                    <label for="pwd">Password Not Required At This Time</label> 
                     <input value='notapplicable' type="hidden" id="password" name="password">
                     <br>
                     <input type="submit" value="Login">

@@ -1,47 +1,8 @@
 {
     "john@daylilyinformatics.com": {
-        "style_css": "static/skins/bloom.css",
+        "style_css": "bloom.css",
         "print_lab": "CA",
         "printer_name": "192.168.1.18",
-        "label_zpl_style": "tube_2inX1in"
-    },
-    "skip@auth.ai": {
-        "style_css": "static/skins/bloom.css",
-        "print_lab": "BLOOM",
-        "printer_name": "192.168.1.18",
-        "label_zpl_style": "tube_2inX1in"
-    },
-    "john.e.major.jr@gmail.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "ret@red.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "g@g.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "h@h.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "a@v.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "q@q.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "a@a.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "jdurham38@gmail.com": {
-        "style_css": "bloom.css"
-    },
-    "icegainz@gmail.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "joshswebdevelopment@gmail.com": {
-        "style_css": "static/skins/bloom.css"
-    },
-    "jdurham9725@eagle.fgcu.edu": {
-        "style_css": "static/skins/bloom.css"
+        "label_zpl_style": "corners_1inX2in"
     }
 }
