@@ -29,6 +29,7 @@ dags/
 supabase.env
 .env
 etc/udat.json
+.DS_Store
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
