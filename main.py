@@ -141,6 +141,7 @@ async def authentication_required_exception_handler(request: Request, exc: Authe
 
 async def require_auth(request: Request):
     # Bypass auth check for the home page
+
     if request.url.path == '/':
         return {"email": "anonymous@user.com"}  # Return a default user or any placeholder
 
@@ -160,6 +161,7 @@ async def read_root(request: Request, _=Depends(require_auth)):
     count = request.session.get('count', 0)
     count += 1
     request.session['count'] = count
+    
     template = templates.get_template("index.html")
     user_data = request.session.get('user_data', {})
     style = {"skin_css": f"/static/skins/{user_data.get('style_css', 'bloom.css')}"}
@@ -219,7 +221,7 @@ async def oauth_callback(request: Request):
         f.seek(0)
         json.dump(user_data, f, indent=4)
         f.truncate()
-
+    
     request.session['user_data'] = {"email": primary_email, "style_css": "static/skins/bloom.css"}
 
     # Redirect to home page or dashboard
