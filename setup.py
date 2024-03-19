@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="bloom_lims",
-    version="0.8.23",
+    version="0.8.24",
     packages=find_packages(),
     install_requires=[
         # Add dependencies here,
