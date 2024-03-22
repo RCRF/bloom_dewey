@@ -11,6 +11,16 @@ import nest_asyncio
 nest_asyncio.apply()
 
 
+UDAT_FILE = './etc/udat.json'
+
+# Create if not exists
+os.makedirs(os.path.dirname(UDAT_FILE), exist_ok=True)
+if not os.path.exists(UDAT_FILE):
+    with open(UDAT_FILE, 'w') as f:
+        json.dump({}, f)
+
+
+
 from fastapi import (
     FastAPI,
     Depends,
@@ -66,7 +76,23 @@ class AuthenticationRequiredException(HTTPException):
     def __init__(self, detail: str = "Authentication required"):
         super().__init__(status_code=401, detail=detail)
 
-async def is_instance(value, type_name):
+
+
+def proc_udat(email):
+    with open(UDAT_FILE, 'r+') as f:
+        user_data = json.load(f)
+        if email not in user_data:
+            user_data[email] = {"style_css": "static/skins/bloom.css",
+                                "email": email
+            }
+        
+            f.seek(0)
+            json.dump(user_data, f, indent=4)
+            f.truncate()
+
+    return user_data[email]
+
+async def DELis_instance(value, type_name):
     return isinstance(value, eval(type_name))
 
 
@@ -207,22 +233,7 @@ async def oauth_callback(request: Request):
             else:
                 raise HTTPException(status_code=400, detail="Failed to retrieve user email from GitHub")
 
-    # Update user data file
-    user_data_file = './etc/udat.json'
-    os.makedirs(os.path.dirname(user_data_file), exist_ok=True)
-
-    if not os.path.exists(user_data_file):
-        with open(user_data_file, 'w') as f:
-            json.dump({}, f)
-
-    with open(user_data_file, 'r+') as f:
-        user_data = json.load(f)
-        user_data[primary_email] = {"style_css": "static/skins/bloom.css"}
-        f.seek(0)
-        json.dump(user_data, f, indent=4)
-        f.truncate()
-    
-    request.session['user_data'] = {"email": primary_email, "style_css": "static/skins/bloom.css"}
+    request.session['user_data'] =  proc_udat( primary_email )  # {"email": primary_email, "style_css": "static/skins/bloom.css"}
 
     # Redirect to home page or dashboard
     return RedirectResponse(url="/", status_code=303)
@@ -246,31 +257,9 @@ async def login_without_network(request: Request, response: Response, email: str
     if not email:
         return JSONResponse(content={"message": "Email is required"}, status_code=status.HTTP_400_BAD_REQUEST)
 
-    # Path to the user data file
-    user_data_file = './etc/udat.json'
-
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(user_data_file), exist_ok=True)
-
-    # Load or initialize the user data
-    if not os.path.exists(user_data_file):
-        user_data = {}
-    else:
-        with open(user_data_file, 'r') as f:
-            user_data = json.load(f)
-
-    # Check if the user exists in udat.json, sign up/login as necessary
-    if email not in user_data:
-        # Add the user if they don't exist
-
-        user_data[email] = {"style_css": "static/skins/bloom.css"}
-        with open(user_data_file, 'w') as f:
-            json.dump(user_data, f, indent=4)
-    # At this point, the user is considered logged in whether they were just added or already existed
-
     # Set session cookie after successful login, with a 60-minute expiration
     response.set_cookie(key="session", value="user_session_token", httponly=True, max_age=3600, path="/")
-    request.session['user_data'] = {'email': email}
+    request.session['user_data'] = proc_udat( email )
     print(request.session)
 
     # Redirect to the root path ("/") after successful login
@@ -287,14 +276,7 @@ async def login(request: Request, response: Response, email: str = Form(...)):
     if not email:
         return JSONResponse(content={"message": "Email is required"}, status_code=status.HTTP_400_BAD_REQUEST)
 
-    # Check if the user exists in udat.json
-    user_data_file = './etc/udat.json'
-    if not os.path.exists(user_data_file):
-        os.makedirs(os.path.dirname(user_data_file), exist_ok=True)
-        with open(user_data_file, 'w') as f:
-            json.dump({}, f)
-
-    with open(user_data_file, 'r+') as f:
+    with open(UDAT_FILE, 'r+') as f:
         user_data = json.load(f)
         if email not in user_data:
             # The email is not in udat.json, attempt to sign up the user
@@ -304,11 +286,8 @@ async def login(request: Request, response: Response, email: str = Form(...)):
                 return JSONResponse(content={"message": auth_response['error']['message']},
                                     status_code=status.HTTP_400_BAD_REQUEST)
             else:
-                # Update udat.json with the new user
-                user_data[email] = {"style_css": "static/skins/bloom.css"}
-                f.seek(0)
-                json.dump(user_data, f, indent=4)
-                f.truncate()
+                pass
+
         else:
             # The email exists in udat.json, attempt to sign in the user
             auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
@@ -319,13 +298,13 @@ async def login(request: Request, response: Response, email: str = Form(...)):
 
     # Set session cookie after successful authentication, with a 60-minute expiration
     response.set_cookie(key="session", value="user_session_token", httponly=True, max_age=3600, path="/")
-    request.session['user_data'] = {'email': email}
+    request.session['user_data'] = proc_udat( email )
     # Redirect to the root path ("/") after successful login/signup
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     # Add this line at the end of the /login endpoint
 
 
-templates = Environment(loader=FileSystemLoader("templates"))
+## ?? templates = Environment(loader=FileSystemLoader("templates"))
 
 
 @app.get("/assays", response_class=HTMLResponse)
@@ -372,8 +351,11 @@ async def assays(request: Request, show_type: str = 'all', _auth=Depends(require
         for q in ay_ds[i].parent_of_lineages:
             if show_type == 'accessioning':
                 for fex_tup in bobdb.query_all_fedex_transit_times_by_ay_euid(q.child_instance.euid):
-                    ay_dss[i]['tit_s'] += fex_tup[1]
-                    ay_dss[i]['tot_fx'] += 1
+                    try:
+                        ay_dss[i]['tit_s'] += float(fex_tup[1])
+                        ay_dss[i]['tot_fx'] += 1
+                    except Exception as e:
+                        print(e)
             wset = ''
             n = q.child_instance.json_addl['properties']['name']
             if n.startswith('In'):
@@ -502,20 +484,18 @@ async def update_preference(request: Request, auth: dict = Depends(require_auth)
     key = data.get('key')
     value = data.get('value')
 
-    user_data_file = './etc/udat.json'
-    if not os.path.exists(user_data_file):
+    if not os.path.exists(UDAT_FILE):
         return {'status': 'error', 'message': 'User data file not found'}
 
-    with open(user_data_file, 'r') as f:
+    with open(UDAT_FILE, 'r') as f:
         user_data = json.load(f)
 
     email = request.session.get('user_data', {}).get('email')
     if email in user_data:
         user_data[email][key] = value
-        with open(user_data_file, 'w') as f:
-            json.dump(user_data, f, indent=4)
-        # Only update the style_css in session if the key is 'style_css'
-        #if key == 'style_css':
+        with open(UDAT_FILE, 'w') as f:
+            json.dump(UDAT_FILE, f, indent=4)
+
         request.session['user_data'][key] = value
         return {'status': 'success', 'message': 'User preference updated'}
     else:

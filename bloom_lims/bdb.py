@@ -1142,7 +1142,7 @@ class BloomObj:
     def query_all_fedex_transit_times_by_ay_euid(self, qx_euid):
 
         query = text(f"""SELECT gi.euid,
-       (gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision AS transit_time
+        gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec' AS transit_time
         FROM generic_instance AS gi
         JOIN generic_instance_lineage AS gil1 ON gi.uuid = gil1.child_instance_uuid
         JOIN generic_instance AS gi_parent1 ON gil1.parent_instance_uuid = gi_parent1.uuid
@@ -1154,7 +1154,7 @@ class BloomObj:
         jsonb_typeof(gi.json_addl -> 'properties') = 'object' AND
         jsonb_typeof(gi.json_addl -> 'properties' -> 'fedex_tracking_data') = 'array' AND
         jsonb_typeof((gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0)) = 'object' AND
-    (gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec')::double precision >= 0;
+        COALESCE(NULLIF(gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec', ''), '0') >= '0';
         """)
 
 
@@ -1338,8 +1338,7 @@ class BloomObj:
         
     def do_stamp_plates_into_plate(self, euid, action_ds):
         # Taking a stab at moving to a non obsessive commit world
-        from IPython import embed; embed(); 
-        pass
+        
         euid_obj = self.get_by_euid(euid)
 
         dest_plate = self.get_by_euid(action_ds['captured_data']['Destination Plate EUID'])
@@ -1418,7 +1417,7 @@ class BloomObj:
 
 
     # Doing this globally for now
-    def do_action_create_package_and_first_workflow_step_assay(self, euid, action_ds={}):   
+    def do_action_create_package_and_first_workflow_step_assay(self, euid, action_ds={}):    
         wf = self.get_by_euid(euid)
             
         #'workflow_step_to_attach_as_child': {'workflow_step/queue/all-purpose/1.0/': {'json_addl': {'properties': {'name': 'hey user, SET THIS NAME ',
@@ -1440,6 +1439,8 @@ class BloomObj:
             fx_opsmd = self.track_fedex.get_fedex_ops_meta_ds(
                 action_ds["captured_data"]["Tracking Number"]
             )
+            # Check the transit time is calculated
+            tt = fx_opsmd[0]["Transit_Time_sec"]
         except Exception as e:
             self.logger.exception(f"ERROR: {e}")
 
@@ -1929,6 +1930,8 @@ class BloomWorkflow(BloomObj):
                 # self.session.rollback()
 
     def do_action_create_package_and_first_workflow_step(self, wf_euid, action_ds={}):
+        raise Exception("This is GARBAGE?")
+
         wf = self.get_by_euid(wf_euid)
         # 1001897582860000245100773464327825
         fx_opsmd = {}
