@@ -17,7 +17,7 @@
         </style>
     </head>
     <body>
-        <button id="toggleFilterButton" class="floating-buttonf">minimal recursion:{{ udat.get('wf_filter','XXX') }}</button>
+        <button id="toggleFilterButton" class="floating-buttonf">minimal recursion:{{ udat.get('wf_filter','no') }}</button>
 
         {% macro render_step(step, accordion_states) %}
             {% if step.polymorphic_discriminator == 'workflow_step_instance' or step.polymorphic_discriminator == 'workflow_instance' %}

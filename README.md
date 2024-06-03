@@ -441,5 +441,22 @@ pytest
 * Is the tech stack sustainable?  
 
  
- 
- 
+# Dev Scratch Notes
+Removing a dev db. Assumes your BLOOM env is activated.
+
+Stop pgsql
+- `source bloom_lims/bin/stop_bloom_db.sh` 
+
+Remove the db
+- `rm -rf bloom_lims/database/*`
+
+Rebuild the schema
+-  `source bloom_lims/env/install_postgres.sh skip` the skip will skip building the conda env. This will start pgsql in the env, and build the schema.
+
+Auto-gen 'n' passes of the lims schema
+- `python tx.py 2 ` . # runs through creating objects in the current workflows.
+
+Run the bloom UI
+
+
+

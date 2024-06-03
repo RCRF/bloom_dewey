@@ -15,7 +15,7 @@
 
                 if (accessToken) {
                     // Send the code to the backend
-                    fetch('http://0.0.0.0:58080/oauth_callback', {
+                    fetch('/oauth_callback', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
