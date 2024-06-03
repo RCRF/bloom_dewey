@@ -16,7 +16,8 @@ import pytz
 
 import socket
 import boto3
-from botocore.exceptions import NoCredentialsError
+import requests
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 
 from sqlalchemy import (
@@ -2599,53 +2600,94 @@ class BloomObjectSet(BloomObj):
 class AuditLog(BloomObj):
     def __init__(self, session, base):
         super().__init__(session, base)
- 
-class BloomFile(BloomObj):
-    def __init__(self, bdb):
-        super().__init__(bdb)
 
-    def create_file(self, metadata, data=None):
+class BloomFile(BloomObj):
+    def __init__(self, bdb, file_location="s3", s3_bucket_name=None, aws_access_key=None, aws_secret_key=None):
+        super().__init__(bdb)
+        
+        self.s3_bucket_name = s3_bucket_name
+        self.s3_client = None
+        self.file_location = file_location
+        if s3_bucket_name and aws_access_key and aws_secret_key:
+            self.s3_client = boto3.client(
+                's3',
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_secret_key
+            )
+
+    def create_file(self, metadata, data=None, local_path=None, url=None):
         """
-        Create a new file record with optional data upload.
+        Create a new file record with optional data upload or reference.
 
         :param metadata: dict containing metadata about the file
-        :param data: file data to be uploaded (optional)
+        :param data: file data to be uploaded to S3 (optional)
+        :param local_path: local path to the file (optional)
+        :param url: URL to the file (optional)
         :return: created file instance
         """
+        
+        core_attr = {
+            "s3_bucket_name": self.s3_bucket_name,
+            "file_location": self.file_location
+        }
+        
+        file_properties = {"properties": metadata, "core_attr": core_attr}
+        
         new_file = self.create_instance(
-            self.query_template_by_component_v2(
-                "file", "file", "generic", "1.0"
-            )[0].euid,
-            {"properties": metadata}
+            self.query_template_by_component_v2("file", "file", "generic", "1.0")[0].euid,
+            file_properties
         )
         
-        if data:
-            if 'data' not in new_file.json_addl:
-                new_file.json_addl['data'] = data
-                flag_modified(new_file, 'json_addl')
-                self.session.commit()
-            else:
-                raise Exception("Data has already been uploaded for this file.")
-        
         self.session.commit()
+        s3_key = new_file.euid
+
+        if data or local_path or url:
+            new_file = self.add_file_data(new_file.euid, data, local_path, url)
+        else:
+            logging.warning(f"No data provided for file creation: {data, local_path, url}.")
+
         return new_file
 
-    def upload_data(self, euid, data):
+    def add_file_data(self, euid, data=None, local_path=None, url=None):
         """
-        Upload data to an existing file.
+        Upload data to S3 or link to an external file location.
 
         :param euid: EUID of the file
-        :param data: file data to be uploaded
+        :param data: file data to be uploaded (optional)
+        :param local_path: local path to the file (optional)
+        :param url: URL to the file (optional)
         :return: updated file instance
         """
         file_instance = self.get_by_euid(euid)
-        if 'data' in file_instance.json_addl:
+        file_properties = {}
+        
+        if 's3_key' in file_instance.json_addl:
             raise Exception("Data has already been uploaded for this file.")
         
-        file_instance.json_addl['data'] = data
+        if data and self.s3_client:
+            s3_key = euid
+            try:
+                self.s3_client.put_object(Bucket=self.s3_bucket_name, Key=s3_key, Body=data)
+                file_properties["s3_key"] = s3_key
+            except NoCredentialsError:
+                raise Exception("S3 credentials are not available.")
+        elif local_path:
+            file_properties["local_path"] = local_path
+            file_properties["local_system_info"] = {
+                "machine_name": socket.gethostname(),
+                "ip_address": socket.gethostbyname(socket.gethostname())
+            }
+        elif url:
+            file_properties["url"] = url
+        else:
+            logging.warning(f"No data provided for file update: {euid, local_path, url}.")
+
+        _update_recursive(file_instance.json_addl, file_properties)
         flag_modified(file_instance, 'json_addl')
         self.session.commit()
+        
         return file_instance
+
 
     def update_metadata(self, euid, metadata):
         """
@@ -2661,6 +2703,7 @@ class BloomFile(BloomObj):
         self.session.commit()
         return file_instance
 
+
     def get_file_by_euid(self, euid):
         """
         Retrieve a file by its EUID.
@@ -2670,6 +2713,34 @@ class BloomFile(BloomObj):
         """
         return self.get_by_euid(euid)
 
+
+    def fetch_file_data(self, euid):
+        """
+        Retrieve the file data by its EUID.
+
+        :param euid: EUID of the file
+        :return: file data
+        """
+        file_instance = self.get_by_euid(euid)
+        
+        if 's3_key' in file_instance.json_addl:
+            s3_key = file_instance.json_addl['s3_key']
+            try:
+                response = self.s3_client.get_object(Bucket=self.s3_bucket_name, Key=s3_key)
+                return response['Body'].read()
+            except NoCredentialsError:
+                raise Exception("S3 credentials are not available.")
+        elif 'local_path' in file_instance.json_addl:
+            local_path = file_instance.json_addl['local_path']
+            with open(local_path, 'rb') as file:
+                return file.read()
+        elif 'url' in file_instance.json_addl:
+            url = file_instance.json_addl['url']
+            response = requests.get(url)
+            return response.content
+        else:
+            raise Exception("File data not found.")
+            
     def search_files_by_metadata(self, search_criteria):
         """
         Search for files matching specified metadata.
@@ -2684,6 +2755,7 @@ class BloomFile(BloomObj):
         results = query.all()
         return [result.euid for result in results]
 
+    
 class BloomFileSet(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)
@@ -2697,9 +2769,7 @@ class BloomFileSet(BloomObj):
         :return: created file set instance
         """
         new_file_set = self.create_instance(
-            self.query_template_by_component_v2(
-                "file", "file_set", "generic", "1.0"
-            )[0].euid,
+            self.query_template_by_component_v2("file", "file_set", "generic", "1.0")[0].euid,
             {"properties": metadata}
         )
         
