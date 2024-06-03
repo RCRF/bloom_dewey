@@ -1,6 +1,6 @@
 {
   "euid_prefixes": {
-    "default": "FL",
+    "default": "FX",
     "file": "FI",
     "file_set": "FS"
   }

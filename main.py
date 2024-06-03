@@ -740,8 +740,9 @@ async def control_overview(request: Request, _auth=Depends(require_auth)):
     return HTMLResponse(content=content)
 
 
-@app.post("/create_from_template")
-async def create_from_template(request: Request, euid: str = Form(...), _auth=Depends(require_auth)):
+@app.post("/create_from_template", response_class=HTMLResponse)
+@app.get("/create_from_template", response_class=HTMLResponse)
+async def create_from_template(request: Request, euid: str = None, _auth=Depends(require_auth)):
     bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
     template = bobdb.create_instances(euid)
 

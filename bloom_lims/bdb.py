@@ -463,6 +463,21 @@ class action_instance_lineage(generic_instance_lineage):
     __mapper_args__ = {
         "polymorphic_identity": "action_instance_lineage",
     }
+    
+class file_template(generic_template):
+    __mapper_args__ = {
+        "polymorphic_identity": "file_template",
+    }
+    
+class file_instance(generic_instance):
+    __mapper_args__ = {
+        "polymorphic_identity": "file_instance",
+    }
+    
+class file_instance_lineage(generic_instance_lineage):
+    __mapper_args__ = {
+        "polymorphic_identity": "file_instance_lineage",
+    }
 
 
 class BLOOMdb3:
@@ -525,6 +540,9 @@ class BLOOMdb3:
             action_template,
             action_instance,
             action_instance_lineage,
+            file_template,
+            file_instance,
+            file_instance_lineage,
         ]
         for cls in classes_to_register:
             class_name = cls.__name__

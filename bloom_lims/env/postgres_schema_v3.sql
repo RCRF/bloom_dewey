@@ -113,6 +113,9 @@ CREATE SEQUENCE xx_instance_seq;
 CREATE SEQUENCE wsq_instance_seq;
 CREATE SEQUENCE mrxq_instance_seq;
 CREATE SEQUENCE mcxq_instance_seq;
+CREATE SEQUENCE fx_instance_seq;
+CREATE SEQUENCE fi_instance_seq;
+CREATE SEQUENCE fs_instance_seq;
 
 CREATE TABLE generic_instance (
     uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -176,6 +179,10 @@ BEGIN
             WHEN prefix = 'QX' THEN nextval('wsq_instance_seq')
             WHEN prefix = 'MRX' THEN nextval('mrxq_instance_seq')
             WHEN prefix = 'MCX' THEN nextval('mcxq_instance_seq')
+            WHEN prefix = 'FX' THEN nextval('fx_instance_seq')
+            WHEN prefix = 'FI' THEN nextval('fi_instance_seq')
+            WHEN prefix = 'FS' THEN nextval('fs_instance_seq')
+
             -- Add more cases for other prefixes
             ELSE nextval('generic_instance_seq') -- Default sequence
         END;
