@@ -1,0 +1,7 @@
+{
+  "euid_prefixes": {
+    "default": "FL",
+    "file": "FI",
+    "file_set": "FS"
+  }
+}
