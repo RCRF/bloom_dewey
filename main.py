@@ -3,7 +3,48 @@ import jwt
 import httpx
 import os
 import json
-import uvicorn
+
+from datetime import datetime, timedelta, date
+
+
+# Do the logging thing
+import logging
+from logging.handlers import RotatingFileHandler
+
+
+def get_clean_timestamp():
+    # Format: YYYY-MM-DD hh:mm:ss
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+os.makedirs('logs', exist_ok=True)
+
+def setup_logging():
+    # uvicorn to capture logs from all libs
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # Define the log file name with a timestamp
+    log_filename = f"logs/bloom_{get_clean_timestamp()}.log"
+
+    # Stream handler (to console)
+    c_handler = logging.StreamHandler()
+    c_handler.setLevel(logging.INFO)  
+
+    # File handler (to file, with rotation)
+    f_handler = RotatingFileHandler(log_filename, maxBytes=10485760, backupCount=5)
+    f_handler.setLevel(logging.INFO)  
+
+    # Common log format
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    c_handler.setFormatter(formatter)
+    f_handler.setFormatter(formatter)
+
+    # Add handlers to the logger
+    logger.addHandler(c_handler)
+    logger.addHandler(f_handler)
+
+setup_logging()
+
 
 # The following three lines allow for dropping embed() in to block and present an IPython shell
 from IPython import embed
@@ -436,6 +477,12 @@ async def set_filter(request: Request, _auth=Depends(require_auth), curr_val='of
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin(request: Request, _auth=Depends(require_auth), dest='na'):
+
+    os.makedirs(os.path.dirname(UDAT_FILE), exist_ok=True)
+    if not os.path.exists(UDAT_FILE):
+        with open(UDAT_FILE, 'w') as f:
+            json.dump({}, f)
+
     dest_section = {'section': dest}
 
     user_data = request.session.get('user_data', {})
@@ -457,7 +504,7 @@ async def admin(request: Request, _auth=Depends(require_auth), dest='na'):
         'label_zpl_style': bobdb.zpl_label_styles,
         'style_css': csss
     }
-    csss = [os.path.basename(css) for css in csss]  # Get just the file names
+    csss = ["static/skins/"+os.path.basename(css) for css in csss]  # Get just the file names
 
     printer_info['style_css'] = csss
     style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
@@ -470,6 +517,7 @@ async def admin(request: Request, _auth=Depends(require_auth), dest='na'):
         printer_info=printer_info,
         dest_section=dest_section,
     )
+    
     return HTMLResponse(content=content)
 
 
@@ -494,7 +542,7 @@ async def update_preference(request: Request, auth: dict = Depends(require_auth)
     if email in user_data:
         user_data[email][key] = value
         with open(UDAT_FILE, 'w') as f:
-            json.dump(UDAT_FILE, f, indent=4)
+            json.dump(user_data, f)
 
         request.session['user_data'][key] = value
         return {'status': 'success', 'message': 'User preference updated'}
