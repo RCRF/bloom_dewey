@@ -2615,12 +2615,13 @@ class BloomFile(BloomObj):
                 aws_secret_access_key=aws_secret_key
             )
 
-    def create_file(self, metadata, data=None, local_path=None, url=None):
+    def create_file(self, metadata, data=None, data_file_name=None, local_path=None, url=None):
         """
         Create a new file record with optional data upload or reference.
 
         :param metadata: dict containing metadata about the file
         :param data: file data to be uploaded to S3 (optional)
+        :param data_file_name: name of the file data (optional)
         :param local_path: local path to the file (optional)
         :param url: URL to the file (optional)
         :return: created file instance
@@ -2642,13 +2643,13 @@ class BloomFile(BloomObj):
         s3_key = new_file.euid
 
         if data or local_path or url:
-            new_file = self.add_file_data(new_file.euid, data, local_path, url)
+            new_file = self.add_file_data(new_file.euid, data, data_file_name, local_path, url)
         else:
             logging.warning(f"No data provided for file creation: {data, local_path, url}.")
 
         return new_file
 
-    def add_file_data(self, euid, data=None, local_path=None, url=None):
+    def add_file_data(self, euid, data=None, data_file_name=None, local_path=None, url=None):
         """
         Upload data to S3 or link to an external file location.
 
@@ -2669,6 +2670,7 @@ class BloomFile(BloomObj):
             try:
                 self.s3_client.put_object(Bucket=self.s3_bucket_name, Key=s3_key, Body=data)
                 file_properties["s3_key"] = s3_key
+                file_properties["data_file_name"] = data_file_name
             except NoCredentialsError:
                 raise Exception("S3 credentials are not available.")
         elif local_path:
