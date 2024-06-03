@@ -2595,3 +2595,152 @@ class AuditLog(BloomObj):
     def __init__(self, session, base):
         super().__init__(session, base)
  
+class BloomFile(BloomObj):
+    def __init__(self, bdb):
+        super().__init__(bdb)
+
+    def create_file(self, metadata, data=None):
+        """
+        Create a new file record with optional data upload.
+
+        :param metadata: dict containing metadata about the file
+        :param data: file data to be uploaded (optional)
+        :return: created file instance
+        """
+        new_file = self.create_instance(
+            self.query_template_by_component_v2(
+                "file", "file", "generic", "1.0"
+            )[0].euid,
+            {"properties": metadata}
+        )
+        
+        if data:
+            if 'data' not in new_file.json_addl:
+                new_file.json_addl['data'] = data
+                flag_modified(new_file, 'json_addl')
+                self.session.commit()
+            else:
+                raise Exception("Data has already been uploaded for this file.")
+        
+        self.session.commit()
+        return new_file
+
+    def upload_data(self, euid, data):
+        """
+        Upload data to an existing file.
+
+        :param euid: EUID of the file
+        :param data: file data to be uploaded
+        :return: updated file instance
+        """
+        file_instance = self.get_by_euid(euid)
+        if 'data' in file_instance.json_addl:
+            raise Exception("Data has already been uploaded for this file.")
+        
+        file_instance.json_addl['data'] = data
+        flag_modified(file_instance, 'json_addl')
+        self.session.commit()
+        return file_instance
+
+    def update_metadata(self, euid, metadata):
+        """
+        Update metadata of an existing file.
+
+        :param euid: EUID of the file
+        :param metadata: dict containing new metadata
+        :return: updated file instance
+        """
+        file_instance = self.get_by_euid(euid)
+        _update_recursive(file_instance.json_addl['properties'], metadata)
+        flag_modified(file_instance, 'json_addl')
+        self.session.commit()
+        return file_instance
+
+    def get_file_by_euid(self, euid):
+        """
+        Retrieve a file by its EUID.
+
+        :param euid: EUID of the file
+        :return: file instance
+        """
+        return self.get_by_euid(euid)
+
+    def search_files_by_metadata(self, search_criteria):
+        """
+        Search for files matching specified metadata.
+
+        :param search_criteria: dict containing metadata criteria
+        :return: list of matching EUIDs
+        """
+        query = self.session.query(self.Base.classes.file_instance)
+        for key, value in search_criteria.items():
+            query = query.filter(self.Base.classes.file_instance.json_addl['properties'][key].astext == value)
+        
+        results = query.all()
+        return [result.euid for result in results]
+
+class BloomFileSet(BloomObj):
+    def __init__(self, bdb):
+        super().__init__(bdb)
+
+    def create_file_set(self, file_euids, metadata):
+        """
+        Create a new file set with specified files and metadata.
+
+        :param file_euids: list of file EUIDs to be included in the set
+        :param metadata: dict containing metadata about the file set
+        :return: created file set instance
+        """
+        new_file_set = self.create_instance(
+            self.query_template_by_component_v2(
+                "file", "file_set", "generic", "1.0"
+            )[0].euid,
+            {"properties": metadata}
+        )
+        
+        for file_euid in file_euids:
+            file_instance = self.get_by_euid(file_euid)
+            self.create_generic_instance_lineage_by_euids(new_file_set.euid, file_instance.euid)
+        
+        self.session.commit()
+        return new_file_set
+
+    def add_files_to_set(self, set_euid, file_euids):
+        """
+        Add files to an existing file set.
+
+        :param set_euid: EUID of the file set
+        :param file_euids: list of file EUIDs to be added
+        :return: updated file set instance
+        """
+        file_set = self.get_by_euid(set_euid)
+        
+        for file_euid in file_euids:
+            file_instance = self.get_by_euid(file_euid)
+            self.create_generic_instance_lineage_by_euids(file_set.euid, file_instance.euid)
+        
+        self.session.commit()
+        return file_set
+
+    def get_file_set_by_euid(self, euid):
+        """
+        Retrieve a file set by its EUID.
+
+        :param euid: EUID of the file set
+        :return: file set instance
+        """
+        return self.get_by_euid(euid)
+
+    def search_file_sets_by_metadata(self, search_criteria):
+        """
+        Search for file sets matching specified metadata.
+
+        :param search_criteria: dict containing metadata criteria
+        :return: list of matching EUIDs
+        """
+        query = self.session.query(self.Base.classes.file_instance_lineage)
+        for key, value in search_criteria.items():
+            query = query.filter(self.Base.classes.file_instance_lineage.json_addl['properties'][key].astext == value)
+        
+        results = query.all()
+        return [result.euid for result in results]
