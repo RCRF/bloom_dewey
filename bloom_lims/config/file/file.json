@@ -5,7 +5,18 @@
       "properties": {
         "name": "Generic File",
         "comments": "",
-        "lab_code":""
+        "lab_code":"",
+        "orig_path": "",
+        "orig_file_name": "",
+        "orig_file_size_mb": "",
+        "orig_file_md5": "",
+        "orig_file_ext": "",
+        "current_location": "",
+        "current_location_s3_bucket": "",
+        "current_location_s3_key": "",
+        "current_location_path": "",
+        "current_location_file_name": "",
+        "current_location_url": ""
       },
       "expected_inputs": [],
       "expected_outputs": [],
