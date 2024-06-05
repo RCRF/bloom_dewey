@@ -1,4 +1,5 @@
 import sys
+import os
 import pytest
 import boto3
 import requests_mock
@@ -53,11 +54,13 @@ def test_create_file_with_data(bloom_file_instance):
     assert new_file.json_addl['properties']['original_file_size_bytes'] == file_data.getbuffer().nbytes
 
 def test_create_file_with_local_path(bloom_file_instance):
-    data_path = Path("tests/test_pdf.pdf")
-    new_file = bloom_file_instance.create_file(file_metadata={"description": "Local path test"}, full_path_to_file=str(data_path))
+    fn = "tests/test_png.png"
+    data_path = Path(fn)
+    new_file = bloom_file_instance.create_file(file_metadata={"description": "Local path test"}, full_path_to_file=fn)
     assert new_file is not None
     assert new_file.json_addl['properties']['description'] == "Local path test"
-    assert new_file.json_addl['properties']['original_file_size_bytes'] == data_path.stat().st_size
+    assert new_file.json_addl['properties']['original_file_size_bytes'] == os.path.getsize(fn)
+
 
 def test_create_file_with_url(bloom_file_instance):
     url = "https://github.com/Daylily-Informatics/bloom/blob/20240603b/tests/test_png.png"

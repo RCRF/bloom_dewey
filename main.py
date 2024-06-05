@@ -1595,11 +1595,8 @@ async def create_file(
         }
         new_file = None
         if file_data:
-            file_location = f"uploads/{file_data.filename}"
-            with open(file_location, "wb") as buffer:
-                shutil.copyfileobj(file_data.file, buffer)
-            new_file = bfi.create_file(file_metadata=file_metadata, full_path_to_file=file_location)
-            os.remove(file_location)  # Remove the file after processing
+            embed()
+            new_file = bfi.create_file(file_metadata=file_metadata, file_data=file_data.file, file_name=file_data.filename)
         elif url:
             new_file = bfi.create_file(file_metadata=file_metadata, url=url)
         else:

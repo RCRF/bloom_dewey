@@ -2655,132 +2655,10 @@ class BloomFile(BloomObj):
     def link_file_to_parent(self, child_euid, parent_euid):        
         self.create_generic_instance_lineage_by_euids(child_euid, parent_euid)  
         self.session.commit()
-
-    def add_file_data0(self, euid, file_data=None, file_data_file_name=None, full_path_to_file=None, url=None):
-        file_instance = self.get_by_euid(euid)
-        s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
-        file_properties = {}
-
-        if file_data_file_name is None:
-            if full_path_to_file:
-                file_data_file_name = Path(full_path_to_file).name
-            elif url:
-                file_data_file_name = url.split('/')[-1]
-            else:
-                raise ValueError("file_data_file_name must be provided or inferrable.")
-
-        file_suffix = file_data_file_name.split('.')[-1]
-        s3_key = self._determine_s3_key(euid, data_file_name)
-
-        if self._check_s3_key_exists(s3_bucket_name, s3_key):
-            self.logger.exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
-            raise Exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
-
-        try:
-            if data:
-                file_size = len(data)
-                self.s3_client.put_object(
-                    Bucket=s3_bucket_name, 
-                    Key=s3_key, 
-                    Body=data, 
-                    Tagging=f'creating_service=dewey&original_file_name={data_file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
-                )
-                file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": data_file_name, "name": data_file_name,
-                    "original_file_size_bytes": file_size, "original_file_suffix": file_suffix,
-                    "original_file_data_type": "raw data", "file_type": file_suffix
-                }
-
-            elif full_path_to_file:
-                with open(full_path_to_file, 'rb') as file:
-                    file_data = file.read()
-                file_size = len(file_data)
-                local_path_info = Path(full_path_to_file)
-                local_ip = socket.gethostbyname(socket.gethostname())
-                self.s3_client.put_object(
-                    Bucket=s3_bucket_name, 
-                    Key=s3_key, 
-                    Body=file_data, 
-                    Tagging=f'creating_service=dewey&original_file_name={local_path_info.name}&original_file_path={full_path_to_file}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
-                )
-                file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": local_path_info.name,"name": local_path_info.name,
-                    "original_file_path": full_path_to_file, "original_local_server_name": socket.gethostname(),
-                    "original_server_ip": local_ip, "original_file_size_bytes": file_size, 
-                    "original_file_suffix": file_suffix, "original_file_data_type": "local file",
-                    "file_type": file_suffix
-                }
-
-            elif url:
-                response = requests.get(url)
-                file_size = len(response.content)
-                url_info = url.split('/')[-1]
-                file_suffix = url_info.split('.')[-1]
-                self.s3_client.put_object(
-                    Bucket=s3_bucket_name, 
-                    Key=s3_key, 
-                    Body=response.content, 
-                    Tagging=f'creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
-                )
-                file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": url_info, "name": url_info,
-                    "original_url": url, "original_file_size_bytes": file_size, 
-                    "original_file_suffix": file_suffix, "original_file_data_type": "url",
-                    "file_type": file_suffix
-                }
-
-        except NoCredentialsError:
-            raise Exception("S3 credentials are not available.")
-        except Exception as e:
-            raise Exception(f"An error occurred while uploading the file: {e}")
-
-        _update_recursive(file_instance.json_addl['properties'], file_properties)
-        flag_modified(file_instance, 'json_addl')
-        self.session.commit()
-
-        return file_instance
-
-
-    def create_file0(self, file_metadata={}, data=None, data_file_name=None, full_path_to_file=None, url=None):
-        """_summary_
-
-        Args:
-            file_metadata (dict, optional): _description_. Defaults to {}.
-            data (_type_, optional): _description_. Defaults to None.
-            data_file_name (_type_, optional): _description_. Defaults to None.
-            full_path_to_file (_type_, optional): _description_. Defaults to None.
-            url (_type_, optional): _description_. Defaults to None.
-
-        Returns:
-            _type_: _description_
-            
-        More:
-            The properties dict anticipates the following keys:
-            {
-            "name": "A Generic File",  # specify a name, defaults to orig file name
-            "comments": "",  # any comments
-            "lab_code":"",  # lab code... not used
-            "original_file_name": "",  # original file name, no path
-            "original_file_path": "",  # path for original file
-            "original_file_size_bytes": "",  # size of original file in bytes
-            "original_file_md5": "",  # md5 hash of original file (not implemented yet)
-            "original_server_ip": "",  # ip of server where file was uploaded, if file was local to server
-            "original_local_server_name": "",  # name of server where file was uploaded, if file was local to server
-            "original_file_suffix": "",  # suffix of original file
-            "current_s3_key": "",  # s3 key for file once saved to S3
-            ... below should be modeled differently or in other systems.
-            "current_s3_bucket_name": "",  # s3 bucket name for file. The bucket is associated with the new euid even if no data is yet uploaded.
-            "x_x_rcrf_patient_id": "",  # patient id, this is an oversimplification for now (as indicated with x_x_, I believe file should link to an event, and event link to patient). prob ext system.
-            "x_x_clinician_id": "",  # clinician id, this is an oversimplification for now (as indicated with x_x_, I believe file should link to an event, and event link to clinician). prob ext system.
-            "x_relevant_datetime": "",  # capture the relevant datetime for the file (should be part of the event I think?). prob ext system.
-            "x_health_event_id": "" . # health event id, this is an oversimplification for now, and should be where the health relevant info is stored. prob ext system.
-            }
-
-            However, any arbitrary keys can be added to the properties dict and will be stored and queryable, etc.
-        """
-
+   
+    def create_file(self, file_metadata={}, file_data=None, file_name=None, url=None, full_path_to_file=None):
         file_properties = {"properties": file_metadata}
-        
+
         new_file = self.create_instance(
             self.query_template_by_component_v2("file", "file", "generic", "1.0")[0].euid,
             file_properties
@@ -2790,27 +2668,26 @@ class BloomFile(BloomObj):
         new_file.json_addl['properties']["current_s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
         flag_modified(new_file, 'json_addl')
         self.session.commit()
-        
-        if data or full_path_to_file or url:
-            new_file = self.add_file_data(new_file.euid, data, data_file_name, full_path_to_file, url)
+
+        if file_data or url or full_path_to_file:
+            new_file = self.add_file_data(new_file.euid, file_data, file_name, url, full_path_to_file)
         else:
-            logging.warning(f"No data provided for file creation: {data, full_path_to_file, url}.")
+            logging.warning(f"No data provided for file creation: {file_data, url}")
 
         return new_file
-    
-    
-    def add_file_data(self, euid, file_data=None, file_name=None, full_path_to_file=None, url=None):
+
+    def add_file_data(self, euid, file_data=None, file_name=None, url=None, full_path_to_file=None ):
         file_instance = self.get_by_euid(euid)
         s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
         file_properties = {}
 
         if file_name is None:
-            if full_path_to_file:
-                file_name = Path(full_path_to_file).name
-            elif url:
+            if url:
                 file_name = url.split('/')[-1]
+            elif full_path_to_file:
+                file_name = Path(full_path_to_file).name
             else:
-                raise ValueError("file_name must be provided if raw file data is passed without a filename.")
+                raise ValueError("file_name must be provided if file_data or url is passed without a filename.")
 
         file_suffix = file_name.split('.')[-1]
         s3_key = self._determine_s3_key(euid, file_name)
@@ -2821,13 +2698,13 @@ class BloomFile(BloomObj):
 
         try:
             if file_data:
-                file_data.seek(0)  # Ensure the file-like object is at the beginning
-                file_content = file_data.read()
-                file_size = len(file_content)
+                file_data.seek(0)  # Ensure the file pointer is at the beginning
+                file_size = len(file_data.read())
+                file_data.seek(0)  # Reset the file pointer after reading
                 self.s3_client.put_object(
-                    Bucket=s3_bucket_name, 
-                    Key=s3_key, 
-                    Body=file_content, 
+                    Bucket=s3_bucket_name,
+                    Key=s3_key,
+                    Body=file_data,
                     Tagging=f'creating_service=dewey&original_file_name={file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
                 file_properties = {
@@ -2836,10 +2713,28 @@ class BloomFile(BloomObj):
                     "original_file_data_type": "raw data", "file_type": file_suffix
                 }
 
+            elif url:
+                response = requests.get(url)
+                file_size = len(response.content)
+                url_info = url.split('/')[-1]
+                file_suffix = url_info.split('.')[-1]
+                self.s3_client.put_object(
+                    Bucket=s3_bucket_name,
+                    Key=s3_key,
+                    Body=response.content,
+                    Tagging=f'creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
+                )
+                file_properties = {
+                    "current_s3_key": s3_key, "original_file_name": url_info, "name": url_info,
+                    "original_url": url, "original_file_size_bytes": file_size,
+                    "original_file_suffix": file_suffix, "original_file_data_type": "url",
+                    "file_type": file_suffix
+                }
+            
             elif full_path_to_file:
                 with open(full_path_to_file, 'rb') as file:
                     file_data = file.read()
-                file_size = len(file_data)
+                file_size = os.path.getsize(full_path_to_file)
                 local_path_info = Path(full_path_to_file)
                 local_ip = socket.gethostbyname(socket.gethostname())
                 self.s3_client.put_object(
@@ -2855,24 +2750,9 @@ class BloomFile(BloomObj):
                     "original_file_suffix": file_suffix, "original_file_data_type": "local file",
                     "file_type": file_suffix
                 }
-
-            elif url:
-                response = requests.get(url)
-                file_size = len(response.content)
-                url_info = url.split('/')[-1]
-                file_suffix = url_info.split('.')[-1]
-                self.s3_client.put_object(
-                    Bucket=s3_bucket_name, 
-                    Key=s3_key, 
-                    Body=response.content, 
-                    Tagging=f'creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
-                )
-                file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": url_info, "name": url_info,
-                    "original_url": url, "original_file_size_bytes": file_size, 
-                    "original_file_suffix": file_suffix, "original_file_data_type": "url",
-                    "file_type": file_suffix
-                }
+            else:
+                self.logger.exception("No file data provided.")
+                raise ValueError("No file data provided.")
 
         except NoCredentialsError:
             raise Exception("S3 credentials are not available.")
@@ -2884,40 +2764,8 @@ class BloomFile(BloomObj):
         self.session.commit()
 
         return file_instance
-    
-    def create_file(self, file_metadata={}, file_data=None, file_name=None, full_path_to_file=None, url=None):
-        """
-        Create a file entry and optionally upload file data.
 
-        :param file_metadata: dict containing metadata for the file
-        :param file_data: file-like object (optional)
-        :param file_name: original name of the file (required if file_data is provided)
-        :param full_path_to_file: path to a local file (optional)
-        :param url: URL to the file (optional)
-        :return: file instance
-        """
-        file_properties = {"properties": file_metadata}
-        
-        new_file = self.create_instance(
-            self.query_template_by_component_v2("file", "file", "generic", "1.0")[0].euid,
-            file_properties
-        )
-        self.session.commit()
 
-        new_file.json_addl['properties']["current_s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
-        flag_modified(new_file, 'json_addl')
-        self.session.commit()
-        
-        if file_data:
-            new_file = self.add_file_data(new_file.euid, file_data=file_data, file_name=file_name)
-        elif full_path_to_file:
-            new_file = self.add_file_data(new_file.euid, full_path_to_file=full_path_to_file)
-        elif url:
-            new_file = self.add_file_data(new_file.euid, url=url)
-        else:
-            logging.warning(f"No data provided for file creation: {file_data, full_path_to_file, url}.")
-
-        return new_file
 
     def update_file_metadata(self, euid, file_metadata={}):
         file_instance = self.get_by_euid(euid)
