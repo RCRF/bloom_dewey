@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download File</title>
+    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+</head>
+<body>
+    <h1>Downloading Files...</h1>
+    <script>
+        function downloadFile(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        downloadFile("{{ file_download_path }}");
+
+        {% if metadata_download_path %}
+            downloadFile("{{ metadata_download_path }}");
+        {% endif %}
+    </script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import httpx
 import os
 import json
 import shutil
+from pathlib import Path
 
 from datetime import datetime, timedelta, date
 
@@ -63,7 +64,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from starlette.responses import JSONResponse
@@ -1628,3 +1629,103 @@ async def create_file(
         )
 
         return HTMLResponse(content=content)
+    
+    
+
+@app.post("/download_filea")
+async def download_filea(
+    request: Request,
+    euid: str = Form(...),
+    download_type: str = Form(...),
+    create_metadata_file: str = Form(...)
+):
+    try:
+        bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
+        downloaded_file_path = bfi.download_file( euid=euid, save_pattern=download_type, include_metadata=True if create_metadata_file in ['yes'] else False, save_path='./tmp/')
+
+        # Ensure the file exists
+        if not os.path.exists(downloaded_file_path):
+            return HTMLResponse(f"File with EUID {euid} not found.", status_code=404)
+        
+        metadata_yaml = downloaded_file_path + '.dewey.yaml'
+        if create_metadata_file in ['yes'] and not os.path.exists(metadata_yaml):
+            return HTMLResponse(f"Metadata file with EUID {euid} not found.", status_code=404)
+
+        # Return the file as a downloadable response
+        return FileResponse(downloaded_file_path, filename=Path(downloaded_file_path).name)
+
+    except Exception as e:
+        logging.error(f"Error downloading file: {e}")
+        
+        # Render the error page
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        content = templates.get_template("download_error.html").render(
+            request=request,
+            error=f"An error occurred: {e}",
+            style=style,
+            udat=user_data
+        )
+
+        return HTMLResponse(content=content)
+    
+@app.post("/download_file", response_class=HTMLResponse)
+async def download_file(
+    request: Request,
+    euid: str = Form(...),
+    download_type: str = Form(...),
+    create_metadata_file: str = Form(...)
+):
+    try:
+        bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
+        downloaded_file_path = bfi.download_file(
+            euid=euid, 
+            save_pattern=download_type, 
+            include_metadata=True if create_metadata_file == 'yes' else False, 
+            save_path='./tmp/'
+        )
+
+        # Ensure the file exists
+        if not os.path.exists(downloaded_file_path):
+            return HTMLResponse(f"File with EUID {euid} not found.", status_code=404)
+
+        metadata_yaml_path = None
+        if create_metadata_file == 'yes':
+            metadata_yaml_path = downloaded_file_path + '.dewey.yaml'
+            if not os.path.exists(metadata_yaml_path):
+                return HTMLResponse(f"Metadata file for EUID {euid} not found.", status_code=404)
+
+        # Render the template with download paths
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        content = templates.get_template("trigger_downloads.html").render(
+            request=request,
+            file_download_path=f"/download/{Path(downloaded_file_path).name}",
+            metadata_download_path=f"/download/{Path(metadata_yaml_path).name}" if metadata_yaml_path else None,
+            style=style,
+            udat=user_data
+        )
+
+        return HTMLResponse(content=content)
+
+    except Exception as e:
+        logging.error(f"Error downloading file: {e}")
+        
+        # Render the error page
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        content = templates.get_template("download_error.html").render(
+            request=request,
+            error=f"An error occurred: {e}",
+            style=style,
+            udat=user_data
+        )
+
+        return HTMLResponse(content=content)
+
+@app.get("/download/{filename}")
+async def download(filename: str):
+    file_path = Path("./tmp") / filename
+    if file_path.exists():
+        return FileResponse(file_path, filename=filename)
+    return HTMLResponse(f"File {filename} not found.", status_code=404)
