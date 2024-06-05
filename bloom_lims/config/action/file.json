@@ -1,4 +1,4 @@
-{
+{ 
   "download_file": {
     "1.0": {
       "action_template": {
@@ -9,10 +9,8 @@
         "action_enabled": "1",
         "capture_data": "yes",
         "captured_data": {
-          "_dowload_type": "<select name=&quot;download_type&quot;><option value=&quot;dewey&quot; selected >dewey</option><option value=&quot;hybrid&quot;>hybrid</option><option value=&quot;orig&quot;>orig</option></select>",
-          "_create_metadata_file": "<select name=&quot;create_metadata_file&quot;><option selected value=&quot;yes&quot;>yes</option><option value=&quot;no&quot;>no</option></select>",
-          "metadata_file": "<input type=&quot;file&quot; name=&quot;metadata_file&quot;>",
-          "local_path_for_file": "<input type=&quot;text&quot; name=&quot;local_path_for_file&quot;>"
+          "_dowload_type": "File Creation Mode: <select name=&quot;download_type&quot;><option value=&quot;dewey&quot; selected >dewey</option><option value=&quot;hybrid&quot;>hybrid</option><option value=&quot;orig&quot;>orig</option></select>",
+          "_create_metadata_file": "Generate Metadata yaml:<select name=&quot;create_metadata_file&quot;><option selected value=&quot;yes&quot;>yes</option><option value=&quot;no&quot;>no</option></select>"
         },
         "deactivate_actions_when_executed": [],
         "executed_datetime": [],

@@ -34,6 +34,13 @@
           "actions": {
             "action/core/*/1.0/": {}
           }
+        },
+        "files": {
+          "group_order": "2",
+          "group_name": "File Actions",
+          "actions": {
+            "action/file/*/1.0/": {}
+          }
         }
       },
       "instantiation_layouts": [],

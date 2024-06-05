@@ -3,33 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <title>Create New File</title>
-
-    <meta charset="UTF-8">
-    <title>Object Details</title>
-    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
+    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
     <link rel="stylesheet" type="text/css" href="static/style.css">
     <script src="static/action_buttons.js"></script>
-
 </head>
 <body>
-    <h1>Create New File</h1>
-    <form action="create_file" method="post" enctype="multipart/form-data">
-        <label for="name">File Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        
-        <label for="comments">Comments:</label>
-        <textarea id="comments" name="comments"></textarea><br><br>
+
+    <ul>
+        <h1>File Tools</h1>
+        <hr>
+        <br>
+    <ul>
+    <h2>Create New File</h2>
+    <ul>
+
+        <form action="create_file" method="post" enctype="multipart/form-data">
+        <input type="hidden" value="na" id="name" name="name" ><br><br>
+
+        <label for="file_data">Upload File:</label>
+        <input type="file" id="file_data" name="file_data"><br><br>
+        <b> -- OR -- </b>
+        <br><br>
+        <label for="url">Or Provide URL:</label>
+        <input type="url" id="url" name="url"><br><br>
+
+
+        <hr>
+        <label for="x_x_rcrf_patient_id">RCRF Patient ID:</label>
+        <input type="text" id="x_x_rcrf_patient_id" name="x_x_rcrf_patient_id"><br><br>
+
+        <label for="x_x_clinician_id">Clinician ID:</label>
+        <input type="text" id="x_x_clinician_id" name="x_x_clinician_id"><br><br>
+
+        <label for="x_health_event_id">Health Event:</label>
+        <input type="text" id="x_health_event_id" name="x_health_event_id"><br><br>
 
         <label for="lab_code">Lab Code:</label>
         <input type="text" id="lab_code" name="lab_code"><br><br>
 
-        <label for="file_data">Upload File:</label>
-        <input type="file" id="file_data" name="file_data" required><br><br>
+        <label for="x_relevant_datetime">File Relevant Datetime:</label>
+        <input type="datetime-local" id="x_relevant_datetime" name="x_relevant_datetime"><br><br>
 
-        <label for="url">Or Provide URL:</label>
-        <input type="url" id="url" name="url"><br><br>
+        <label for="comments">Comments:</label>
+        <textarea id="comments" name="comments"></textarea><br><br>
+
+
 
         <button type="submit">Create File</button>
     </form>
+
+    </ul>
+    <hr><hr>
+    
+    <h2>Download File</h2>
+    <ul>
+
+    <form action="download_file" method="post" enctype="multipart/form-data">
+        <label for="euid">File EUID: </label>
+        <input type="text" id="euid" name="euid">
+        <br><br>
+        
+        <label for="download_type">File Creation Mode:</label> 
+        <select name=&quot;download_type&quot;><option value=&quot;dewey&quot; selected >dewey</option><option value=&quot;hybrid&quot;>hybrid</option><option value=&quot;orig&quot;>orig</option></select>
+        <br><br>
+    
+        <label for="create_metadata_file">Generate Metadata yaml:</label>
+        <select name=&quot;create_metadata_file&quot;><option selected value=&quot;yes&quot;>yes</option><option value=&quot;no&quot;>no</option></select>
+        <br><br>
+    
+        <button type="submit">Download File</button>
+    </form>
+</ul></ul>
 </body>
 </html>

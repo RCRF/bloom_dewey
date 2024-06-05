@@ -1584,7 +1584,11 @@ async def create_file(
     comments: str = Form(""),
     lab_code: str = Form(""),
     file_data: UploadFile = File(None),
-    url: str = Form(None)
+    url: str = Form(None),
+    x_x_clinician_id: str = Form(""),
+    x_health_event_id: str = Form(""),
+    x_relevant_datetime: str = Form(""),
+    x_x_rcrf_patient_id: str = Form("")
 ):
     try:
         bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
@@ -1592,10 +1596,13 @@ async def create_file(
             "name": name,
             "comments": comments,
             "lab_code": lab_code,
+            "x_x_clinician_id": x_x_clinician_id,
+            "x_health_event_id": x_health_event_id,
+            "x_relevant_datetime": x_relevant_datetime,
+            "x_x_rcrf_patient_id": x_x_rcrf_patient_id
         }
         new_file = None
         if file_data:
-            embed()
             new_file = bfi.create_file(file_metadata=file_metadata, file_data=file_data.file, file_name=file_data.filename)
         elif url:
             new_file = bfi.create_file(file_metadata=file_metadata, url=url)

@@ -1360,6 +1360,8 @@ class BloomObj:
             r= self.do_action_move_workset_to_another_queue(euid, action_ds)
         elif action_method == "do_stamp_plates_into_plate":
             r=self.do_stamp_plates_into_plate(euid, action_ds)
+        elif action_method == "do_action_download_file":
+            r=self.do_action_download_file(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
@@ -1389,6 +1391,15 @@ class BloomObj:
 
         return plate_wells
     
+    def do_action_download_file(self, euid, action_ds):
+        
+        bf = BloomFile(BLOOMdb3())
+        dl_file = bf.download_file(euid=euid, 
+                                   include_metadata = True if action_ds['captured_data']['create_metadata_file'] in ['yes'] else False, 
+                                   save_path = "./tmp",
+                                   save_pattern = action_ds['captured_data']['download_type'])
+        return dl_file
+
         
     def do_stamp_plates_into_plate(self, euid, action_ds):
         # Taking a stab at moving to a non obsessive commit world
