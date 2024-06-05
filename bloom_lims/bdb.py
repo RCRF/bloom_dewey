@@ -472,6 +472,21 @@ class action_instance_lineage(generic_instance_lineage):
         "polymorphic_identity": "action_instance_lineage",
     }
     
+class health_event_template(generic_template):
+    __mapper_args__ = {
+        "polymorphic_identity": "health_event_template",
+    }
+    
+class health_event_instance(generic_instance):
+    __mapper_args__ = {
+        "polymorphic_identity": "health_event_instance",
+    }
+    
+class health_event_instance_lineage(generic_instance_lineage):
+    __mapper_args__ = {
+        "polymorphic_identity": "health_event_instance_lineage",
+    }
+    
 class file_template(generic_template):
     __mapper_args__ = {
         "polymorphic_identity": "file_template",
@@ -2742,8 +2757,8 @@ class BloomFile(BloomObj):
 
         return file_instance
 
-    def create_file(self, metadata={}, data=None, data_file_name=None, full_path_to_file=None, url=None):
-        file_properties = {"properties": metadata}
+    def create_file(self, file_metadata={}, data=None, data_file_name=None, full_path_to_file=None, url=None):
+        file_properties = {"properties": file_metadata}
         
         new_file = self.create_instance(
             self.query_template_by_component_v2("file", "file", "generic", "1.0")[0].euid,
@@ -2762,12 +2777,42 @@ class BloomFile(BloomObj):
 
         return new_file
 
-    def update_metadata(self, euid, metadata):
+    def update_file_metadata(self, euid, file_metadata={}):
         file_instance = self.get_by_euid(euid)
-        _update_recursive(file_instance.json_addl['properties'], metadata)
+        _update_recursive(file_instance.json_addl['properties'], file_metadata)
         flag_modified(file_instance, 'json_addl')
         self.session.commit()
         return file_instance
 
     def get_file_by_euid(self, euid):
         return self.get_by_euid(euid)
+    
+    def search_files_for_patients(self, patient_euids=[]):
+        pass
+
+    def search_files_for_physicians(self, physician_euids=[]):
+        pass
+    
+    def search_files_addl(self, file_search_criteria={}):
+        """_summary_
+
+        Args:
+            file_search_criteria (dict, optional): _description_. Defaults to {}.
+            {} can be a dict which matches the keys found in each json_addl field.
+            This dict can include a key 'file_metadata' which will be treated as 'properties'.
+
+        Returns:
+            _type_: _description_
+        """
+        query = self.session.query(self.Base.classes.file_instance)
+
+        for key, value in file_search_criteria.items():
+            if key == 'file_metadata':
+                key = 'properties'
+                logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+
+            # Assuming a nested search in json_addl starting from the root or 'properties'
+            query = query.filter(self.Base.classes.file_instance.json_addl[key].astext == value)
+
+        results = query.all()
+        return [result.euid for result in results]
