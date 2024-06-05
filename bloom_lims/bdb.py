@@ -2603,8 +2603,6 @@ class AuditLog(BloomObj):
     def __init__(self, session, base):
         super().__init__(session, base)
 
-
-
 class BloomFile(BloomObj):
     def __init__(self, bdb, bucket_prefix="daylily-dewey-"):
         super().__init__(bdb)
@@ -2650,9 +2648,19 @@ class BloomFile(BloomObj):
         logging.debug(f"Determined folder_prefix: {folder_prefix}")
         return f"{folder_prefix}/{euid}.{data_file_name.split('.')[-1]}"
 
+    def _check_s3_key_exists(self, bucket_name, s3_key):
+        try:
+            self.s3_client.head_object(Bucket=bucket_name, Key=s3_key)
+            return True
+        except self.s3_client.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                return False
+            else:
+                raise e
+
     def add_file_data(self, euid, data=None, data_file_name=None, full_path_to_file=None, url=None):
         file_instance = self.get_by_euid(euid)
-        s3_bucket_name = file_instance.json_addl['properties']['s3_bucket_name']
+        s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
         file_properties = {}
 
         if data_file_name is None:
@@ -2663,10 +2671,12 @@ class BloomFile(BloomObj):
             else:
                 raise ValueError("data_file_name must be provided if raw data is passed without a filename.")
 
+        file_suffix = data_file_name.split('.')[-1]
         s3_key = self._determine_s3_key(euid, data_file_name)
 
-        if 's3_key' in file_instance.json_addl['properties']:
-            raise Exception("Data has already been uploaded for this file.")
+        if self._check_s3_key_exists(s3_bucket_name, s3_key):
+            self.logger.exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
+            raise Exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
 
         try:
             if data:
@@ -2675,9 +2685,13 @@ class BloomFile(BloomObj):
                     Bucket=s3_bucket_name, 
                     Key=s3_key, 
                     Body=data, 
-                    Tagging=f'creating_service=dewey&original_filename={data_file_name}&original_path=N/A&original_filesize_bytes={file_size}&euid={euid}'
+                    Tagging=f'creating_service=dewey&original_file_name={data_file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
-                file_properties = {"s3_key": s3_key, "data_file_name": data_file_name, "file_size": file_size}
+                file_properties = {
+                    "current_s3_key": s3_key, "original_file_name": data_file_name,
+                    "original_file_size_bytes": file_size, "original_file_suffix": file_suffix,
+                    "original_file_data_type": "raw data", "file_type": file_suffix
+                }
 
             elif full_path_to_file:
                 with open(full_path_to_file, 'rb') as file:
@@ -2689,29 +2703,34 @@ class BloomFile(BloomObj):
                     Bucket=s3_bucket_name, 
                     Key=s3_key, 
                     Body=file_data, 
-                    Tagging=f'creating_service=dewey&original_filename={local_path_info.name}&original_path={full_path_to_file}&original_filesize_bytes={file_size}&euid={euid}'
+                    Tagging=f'creating_service=dewey&original_file_name={local_path_info.name}&original_file_path={full_path_to_file}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
                 file_properties = {
-                    "s3_key": s3_key, "data_file_name": local_path_info.name,
-                    "local_path": full_path_to_file, "local_server_name": socket.gethostname(), "local_server_ip": local_ip,
-                    "file_size": file_size
+                    "current_s3_key": s3_key, "original_file_name": local_path_info.name,
+                    "original_file_path": full_path_to_file, "original_local_server_name": socket.gethostname(),
+                    "original_server_ip": local_ip, "original_file_size_bytes": file_size, 
+                    "original_file_suffix": file_suffix, "original_file_data_type": "local file",
+                    "file_type": file_suffix
                 }
 
             elif url:
                 response = requests.get(url)
                 file_size = len(response.content)
                 url_info = url.split('/')[-1]
+                file_suffix = url_info.split('.')[-1]
                 self.s3_client.put_object(
                     Bucket=s3_bucket_name, 
                     Key=s3_key, 
                     Body=response.content, 
-                    Tagging=f'creating_service=dewey&original_filename={url_info}&original_path={url}&original_filesize_bytes={file_size}&euid={euid}'
+                    Tagging=f'creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
                 file_properties = {
-                    "s3_key": s3_key, "data_file_name": url_info,
-                    "url": url, "file_size": file_size
+                    "current_s3_key": s3_key, "original_file_name": url_info,
+                    "original_url": url, "original_file_size_bytes": file_size, 
+                    "original_file_suffix": file_suffix, "original_file_data_type": "url",
+                    "file_type": file_suffix
                 }
-        
+
         except NoCredentialsError:
             raise Exception("S3 credentials are not available.")
         except Exception as e:
@@ -2732,7 +2751,7 @@ class BloomFile(BloomObj):
         )
         self.session.commit()
 
-        new_file.json_addl['properties']["s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
+        new_file.json_addl['properties']["current_s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
         flag_modified(new_file, 'json_addl')
         self.session.commit()
         
@@ -2752,32 +2771,3 @@ class BloomFile(BloomObj):
 
     def get_file_by_euid(self, euid):
         return self.get_by_euid(euid)
-
-    def fetch_file_data(self, euid):
-        file_instance = self.get_by_euid(euid)
-        
-        if 's3_key' in file_instance.json_addl['properties']:
-            s3_key = file_instance.json_addl['properties']['s3_key']
-            try:
-                response = self.s3_client.get_object(Bucket=file_instance.json_addl['properties']['s3_bucket_name'], Key=s3_key)
-                return response['Body'].read()
-            except NoCredentialsError:
-                raise Exception("S3 credentials are not available.")
-        elif 'local_path' in file_instance.json_addl['properties']:
-            local_path = file_instance.json_addl['properties']['local_path']
-            with open(local_path, 'rb') as file:
-                return file.read()
-        elif 'url' in file_instance.json_addl['properties']:
-            url = file_instance.json_addl['properties']['url']
-            response = requests.get(url)
-            return response.content
-        else:
-            raise Exception("File data not found.")
-
-    def search_files_by_metadata(self, search_criteria):
-        query = self.session.query(self.Base.classes.file_instance)
-        for key, value in search_criteria.items():
-            query = query.filter(self.Base.classes.file_instance.json_addl['properties'][key].astext == value)
-        
-        results = query.all()
-        return [result.euid for result in results]

@@ -20,15 +20,8 @@ def s3_bucket():
 
 @pytest.fixture
 def db_session():
-    #engine = get_engine()
-    #Base.metadata.create_all(engine)
-    #Session = sessionmaker(bind=engine)
-    #session = Session()
-    
-    bdb=BLOOMdb3()
-    
+    bdb=BLOOMdb3()    
     yield bdb
-
 
 @pytest.fixture
 def bloom_file_instance(db_session, s3_bucket):

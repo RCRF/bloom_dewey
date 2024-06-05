@@ -3,15 +3,41 @@
     "1.0": {
       "description": "Patient",
       "properties": {
-        "name": "Patient",
-        "state": "",
-        "status": "",
+        "name": "A Patient",
         "comments": "",
-        "NPI": "",
-        "Phone": "",
-        "Fax": "",
-        "Address": "",
+        "phone": "",
+        "fax": "",
+        "address": "",
         "lab_code":""
+      },
+      "expected_inputs": [],
+      "singleton": "0",
+      "expected_outputs": [],
+      "action_groups": {},
+      "action_imports": {
+        "core": {
+          "group_order": "1",
+          "group_name": "Core Actions",
+          "actions": {
+            "action/core/*/1.0/": {}
+          }
+        }
+      },
+      "instantiation_layouts": []
+    }
+  },
+  "rcrf-patient": {
+    "1.0": {
+      "description": "A RCRF Patient",
+      "properties": {
+        "name": "A RCRF Patient",
+        "comments": "",
+        "phone": "",
+        "fax": "",
+        "address": "",
+        "lab_code":"",
+        "rcrf_patient_uid":"",
+        "other_uids":[]
       },
       "expected_inputs": [],
       "singleton": "0",
@@ -34,13 +60,13 @@
       "description": "Clinician",
       "properties": {
         "name": "Clinician",
-        "state": "",
-        "status": "",
         "comments": "",
-        "NPI": "",
-        "Phone": "",
-        "Fax": "",
-        "Address": "","lab_code":""
+        "phone": "",
+        "fax": "",
+        "address": "",
+        "lab_code":"",
+        "rcrf_clinician_uid":"",
+        "other_uids":[]
       },
       "expected_inputs": [],
       "singleton": "0",
