@@ -5,6 +5,7 @@ import sys
 import re
 
 import random
+import yaml
 
 from pathlib import Path
 
@@ -573,6 +574,9 @@ class BLOOMdb3:
             file_template,
             file_instance,
             file_instance_lineage,
+            health_event_template,
+            health_event_instance,
+            health_event_instance_lineage
         ]
         for cls in classes_to_register:
             class_name = cls.__name__
@@ -2584,7 +2588,7 @@ class BloomHealthEvent(BloomObj):
     def create_event(self):
         
         new_event = self.create_instance(
-            self.query_template_by_component_v2("health_event", "generic", "generic", "1.0")[0].euid
+            self.query_template_by_component_v2("health_event", "generic", "health-event", "1.0")[0].euid
         )
         self.session.commit()
 
@@ -2799,12 +2803,6 @@ class BloomFile(BloomObj):
 
     def get_file_by_euid(self, euid):
         return self.get_by_euid(euid)
-    
-    def search_files_for_patients(self, patient_euids=[]):
-        pass
-
-    def search_files_for_physicians(self, physician_euids=[]):
-        pass
 
     def search_files_by_addl_metadata(self, file_search_criteria, search_greedy=True):
         query = self.session.query(self.Base.classes.file_instance)
@@ -2851,3 +2849,81 @@ class BloomFile(BloomObj):
         
         results = query.all()
         return [result.euid for result in results]
+
+
+    def download_file(self, euid, save_pattern='dewey', include_metadata=False, save_path='.'):
+        """
+        Downloads the S3 file locally with different naming patterns and optionally includes metadata in a YAML file.
+
+        :param euid: EUID of the file to download.
+        :param save_pattern: Naming pattern for the saved file. Options: 'dewey', 'orig', 'hybrid'.
+        :param include_metadata: Whether to save metadata in a YAML file. Defaults to False.
+        :param save_path: Directory where the file will be saved. Defaults to the current directory.
+        :return: Path of the saved file.
+        """
+        file_instance = self.get_by_euid(euid)
+        s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
+        s3_key = file_instance.json_addl['properties']['current_s3_key']
+        original_file_name = file_instance.json_addl['properties']['original_file_name']
+        file_suffix = file_instance.json_addl['properties']['original_file_suffix']
+
+        if save_pattern == 'dewey':
+            local_file_name = f"{euid}.{file_suffix}"
+        elif save_pattern == 'orig':
+            local_file_name = original_file_name
+            print("WARNING: Using 'orig' pattern may overwrite existing files!")
+        elif save_pattern == 'hybrid':
+            local_file_name = f"{euid}.{original_file_name}"
+        else:
+            raise ValueError("Invalid save_pattern. Options are: 'dewey', 'orig', 'hybrid'.")
+
+        local_file_path = os.path.join(save_path, local_file_name)
+        
+        if os.path.exists(local_file_path):
+            self.logger.exception(f"File already exists: {local_file_path}")
+            raise Exception(f"File already exists: {local_file_path}")
+
+        # Save metadata as a YAML file if requested
+        if include_metadata:
+            metadata_file_path = f"{local_file_path}.dewey.yaml"
+            if os.path.exists(metadata_file_path):
+                self.logger.exception(f"Metadata file already exists: {metadata_file_path}")
+                raise Exception(f"Metadata file already exists: {metadata_file_path}")
+            
+            with open(metadata_file_path, 'w') as metadata_file:
+                yaml.dump(file_instance.json_addl['properties'], metadata_file)
+            print(f"Metadata saved successfully: {metadata_file_path}")
+            
+        # Download the file from S3
+        try:
+            with open(local_file_path, 'wb') as file:
+                self.s3_client.download_fileobj(s3_bucket_name, s3_key, file)
+            print(f"File downloaded successfully: {local_file_path}")
+        except Exception as e:
+            raise Exception(f"An error occurred while downloading the file: {e}")
+
+        return local_file_path
+
+    def get_s3_uris(self, euids, include_metadata=False):
+        """
+        Returns a dictionary of EUIDs to arrays containing their corresponding S3 URIs and optionally their metadata.
+
+        :param euids: List of EUIDs to retrieve S3 URIs for.
+        :param include_metadata: Boolean indicating whether to include metadata in the result.
+        :return: Dictionary with EUID as key and array [S3 URI, metadata] as value.
+        """
+        euid_to_s3_data = {}
+
+        for euid in euids:
+            try:
+                file_instance = self.get_by_euid(euid)
+                s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
+                s3_key = file_instance.json_addl['properties']['current_s3_key']
+                s3_uri = f"s3://{s3_bucket_name}/{s3_key}"
+                metadata = file_instance.json_addl['properties'] if include_metadata else None
+                euid_to_s3_data[euid] = [s3_uri, metadata]
+            except Exception as e:
+                self.logger.error(f"Error retrieving S3 URI for EUID {euid}: {e}")
+                euid_to_s3_data[euid] = [None, None]  # or handle error as needed
+
+        return euid_to_s3_data
