@@ -16,6 +16,8 @@
         "current_s3_key": "",
         "current_s3_bucket_name": ""
       },
+      "arbitrary_association_strings": [], 
+      "valid_parents": [],
       "file_type": "",
       "expected_inputs": [],
       "expected_outputs": [],
