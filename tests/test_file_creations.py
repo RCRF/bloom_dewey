@@ -1,3 +1,4 @@
+import sys
 import pytest
 import boto3
 import requests_mock
@@ -7,7 +8,9 @@ from sqlalchemy.orm import sessionmaker
 
 from bloom_lims.bdb import BLOOMdb3
 from bloom_lims.bdb import BloomWorkflow, BloomFile
-import sys
+
+from io import BytesIO
+
 
 
 @pytest.fixture
@@ -32,15 +35,22 @@ def test_create_file_no_data(bloom_file_instance):
     assert new_file is not None
     assert new_file.json_addl['properties']['description'] == "No data test"
     assert new_file.json_addl['properties']['current_s3_bucket_name'] == "daylily-dewey-0"
-
+    
 def test_create_file_with_data(bloom_file_instance):
     data_path = Path("tests/test_pdf.pdf")
     with open(data_path, "rb") as f:
-        data = f.read()
-    new_file = bloom_file_instance.create_file(file_metadata={"description": "Data test"}, data=data, data_file_name=data_path.name)
+        file_data = BytesIO(f.read())
+
+    file_name = data_path.name
+    new_file = bloom_file_instance.create_file(
+        file_metadata={"description": "Data test"},
+        file_data=file_data,
+        file_name=file_name
+    )
+
     assert new_file is not None
     assert new_file.json_addl['properties']['description'] == "Data test"
-    assert new_file.json_addl['properties']['original_file_size_bytes'] == len(data)
+    assert new_file.json_addl['properties']['original_file_size_bytes'] == file_data.getbuffer().nbytes
 
 def test_create_file_with_local_path(bloom_file_instance):
     data_path = Path("tests/test_pdf.pdf")

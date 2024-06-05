@@ -3,9 +3,11 @@
     "1.0": {
       "description": "Generic File Set",
       "properties": {
-        "name": "Generic File Set",
+        "name": "A Generic File Set",
         "comments": "",
-        "lab_code":""
+        "lab_code":"",
+        "group_key":"",
+        "group_description":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

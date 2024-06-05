@@ -3,14 +3,13 @@ import jwt
 import httpx
 import os
 import json
+import shutil
 
 from datetime import datetime, timedelta, date
-
 
 # Do the logging thing
 import logging
 from logging.handlers import RotatingFileHandler
-
 
 def get_clean_timestamp():
     # Format: YYYY-MM-DD hh:mm:ss
@@ -45,22 +44,10 @@ def setup_logging():
 
 setup_logging()
 
-
 # The following three lines allow for dropping embed() in to block and present an IPython shell
 from IPython import embed
 import nest_asyncio
 nest_asyncio.apply()
-
-
-UDAT_FILE = './etc/udat.json'
-
-# Create if not exists
-os.makedirs(os.path.dirname(UDAT_FILE), exist_ok=True)
-if not os.path.exists(UDAT_FILE):
-    with open(UDAT_FILE, 'w') as f:
-        json.dump({}, f)
-
-
 
 from fastapi import (
     FastAPI,
@@ -71,6 +58,8 @@ from fastapi import (
     Response,
     Form,
     Query,
+    File,
+    UploadFile
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
@@ -88,9 +77,17 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from bloom_lims.bdb import BLOOMdb3
-from bloom_lims.bdb import BloomObj, BloomWorkflow, BloomWorkflowStep
+from bloom_lims.bdb import BloomObj, BloomWorkflow, BloomWorkflowStep, BloomFile, BloomFileSet
 from auth.supabase.connection import create_supabase_client
 
+
+# local udata prefernces
+UDAT_FILE = './etc/udat.json'
+# Create if not exists
+os.makedirs(os.path.dirname(UDAT_FILE), exist_ok=True)
+if not os.path.exists(UDAT_FILE):
+    with open(UDAT_FILE, 'w') as f:
+        json.dump({}, f)
 
 # Initialize Jinja2 environment
 templates = Environment(loader=FileSystemLoader("templates"))
@@ -98,6 +95,7 @@ templates = Environment(loader=FileSystemLoader("templates"))
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Setup CORS
 app.add_middleware(
@@ -107,7 +105,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.add_middleware(SessionMiddleware, secret_key='your-secret-key')
+
 # Serve static files
 cookie_scheme = APIKeyCookie(name="session")
 SKIP_AUTH = False if len(sys.argv) < 3 else True
@@ -116,8 +116,6 @@ SKIP_AUTH = False if len(sys.argv) < 3 else True
 class AuthenticationRequiredException(HTTPException):
     def __init__(self, detail: str = "Authentication required"):
         super().__init__(status_code=401, detail=detail)
-
-
 
 def proc_udat(email):
     with open(UDAT_FILE, 'r+') as f:
@@ -582,7 +580,7 @@ async def queue_details(request: Request, queue_euid, page=1, _auth=Depends(requ
 async def generic_templates(request: Request, _auth=Depends(require_auth)):
     bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
 
-    templates = (
+    the_templates = (
         bobdb.session.query(bobdb.Base.classes.generic_template)
         .filter_by(is_deleted=False)
         .all()
@@ -590,7 +588,7 @@ async def generic_templates(request: Request, _auth=Depends(require_auth)):
 
     # Group templates by super_type
     grouped_templates = {}
-    for temp in templates:
+    for temp in the_templates:
         if temp.super_type not in grouped_templates:
             grouped_templates[temp.super_type] = []
         grouped_templates[temp.super_type].append(temp)
@@ -638,7 +636,7 @@ async def workflow_summary(request: Request, _auth=Depends(require_auth)):
     )
     return HTMLResponse(content=content)
 
-
+@app.get("/update_object_name", response_class=HTMLResponse)
 async def update_object_name(request: Request, euid, name, _auth=Depends(require_auth)):
     referer = request.headers.get("Referer", "/")
     bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
@@ -648,7 +646,7 @@ async def update_object_name(request: Request, euid, name, _auth=Depends(require
         flag_modified(obj, "name")  # Explicitly mark the object as modified
         bobdb.session.commit()  # Commit the changes to the database
     # Return a RedirectResponse to redirect the user
-    return RedirectResponse(url=referer)
+    return RedirectResponse(url=referer, status_code=303)
 
 
 @app.get("/equipment_overview", response_class=HTMLResponse)
@@ -797,7 +795,7 @@ async def plate_carosel(request: Request, plate_euid: str = Query(...), _auth=De
     )
     return HTMLResponse(content=content)
 
-
+@app.get("/get_related_plates", response_class=HTMLResponse)
 async def get_related_plates(request: Request, main_plate, _auth=Depends(require_auth)):
     bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
     related_plates = []
@@ -834,7 +832,7 @@ async def get_related_plates(request: Request, main_plate, _auth=Depends(require
     return related_plates
 
 
-@app.get("/plate_visualization")
+@app.get("/plate_visualization", response_class=HTMLResponse)
 async def plate_visualization(request: Request, plate_euid, _auth=Depends(require_auth)):
     bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
     # Fetch the plate and its wells
@@ -994,7 +992,7 @@ async def un_delete_by_uuid(request: Request, uuid: str = None, euid: str = None
     del_obj.is_deleted = False
     bobdb.session.commit()
 
-    return RedirectResponse(url=referer)
+    return RedirectResponse(url=referer, status_code=303)
 
 
 @app.get("/bloom_schema_report", response_class=HTMLResponse)
@@ -1021,7 +1019,7 @@ async def bloom_schema_report(request: Request, _auth=Depends(require_auth)):
     )
     return HTMLResponse(content=content)
 
-
+@app.get("/delete_by_euid", response_class=HTMLResponse)
 def delete_by_euid(request: Request, euid, _auth=Depends(require_auth)):
     referer = request.headers.get("Referer", "/")
 
@@ -1030,7 +1028,7 @@ def delete_by_euid(request: Request, euid, _auth=Depends(require_auth)):
     bobdb.session.flush()
     bobdb.session.commit()
 
-    return RedirectResponse(url=referer)
+    return RedirectResponse(url=referer, status_code=303)
 
 
 @app.get("/delete_object")
@@ -1131,6 +1129,7 @@ async def update_obj_json_addl_properties(
     Returns:
         cherrypy.HTTPRedirect: to referrer
     """
+    
     referer = request.headers.get("Referer", "/default_page")
 
     # Parse form data manually
@@ -1562,5 +1561,66 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
     return {"status": "success", "message": "Edge deleted successfully."}
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=58080, reload=True)
+## BloomFile
+
+@app.get("/create_file_form", response_class=HTMLResponse)
+async def create_file_form(request: Request):
+
+    accordion_states = dict(request.session)
+    user_data = request.session.get('user_data', {})
+    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    content = templates.get_template("create_file.html").render(
+        request=request,
+        accordion_states=accordion_states,
+        style=style,
+        udat=user_data)
+
+    return HTMLResponse(content=content)
+
+@app.post("/create_file")
+async def create_file(
+    request: Request,
+    name: str = Form(...),
+    comments: str = Form(""),
+    lab_code: str = Form(""),
+    file_data: UploadFile = File(None),
+    url: str = Form(None)
+):
+    try:
+        bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
+        file_metadata = {
+            "name": name,
+            "comments": comments,
+            "lab_code": lab_code,
+        }
+        new_file = None
+        if file_data:
+            file_location = f"uploads/{file_data.filename}"
+            with open(file_location, "wb") as buffer:
+                shutil.copyfileobj(file_data.file, buffer)
+            new_file = bfi.create_file(file_metadata=file_metadata, full_path_to_file=file_location)
+            os.remove(file_location)  # Remove the file after processing
+        elif url:
+            new_file = bfi.create_file(file_metadata=file_metadata, url=url)
+        else:
+            return templates.TemplateResponse("create_file.html", {
+                "request": request,
+                "error": "Please provide either a file or a URL."
+            })
+
+        return RedirectResponse(url=f"euid_details?euid={new_file.euid}", status_code=303)
+    except Exception as e:
+        logging.error(f"Error creating file: {e}")
+
+        accordion_states = dict(request.session)
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        content = templates.get_template("create_file.html").render(
+            request=request,
+            error=f"An error occurred: {e}",
+            accordion_states=accordion_states,
+            style=style,
+            udat=user_data
+        )
+
+        return HTMLResponse(content=content)

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create New File</title>
+
+    <meta charset="UTF-8">
+    <title>Object Details</title>
+    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <script src="static/action_buttons.js"></script>
+
+</head>
+<body>
+    <h1>Create New File</h1>
+    <form action="create_file" method="post" enctype="multipart/form-data">
+        <label for="name">File Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        
+        <label for="comments">Comments:</label>
+        <textarea id="comments" name="comments"></textarea><br><br>
+
+        <label for="lab_code">Lab Code:</label>
+        <input type="text" id="lab_code" name="lab_code"><br><br>
+
+        <label for="file_data">Upload File:</label>
+        <input type="file" id="file_data" name="file_data" required><br><br>
+
+        <label for="url">Or Provide URL:</label>
+        <input type="url" id="url" name="url"><br><br>
+
+        <button type="submit">Create File</button>
+    </form>
+</body>
+</html>
