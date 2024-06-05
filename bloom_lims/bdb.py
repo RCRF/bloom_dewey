@@ -2631,8 +2631,15 @@ class BloomFile(BloomObj):
         bucket_name = self._derive_bucket_name(euid)
         euid_numeric_part = int(re.sub('[^0-9]', '', euid))
         response = self.s3_client.list_objects_v2(Bucket=bucket_name, Prefix='', Delimiter='/')
+
+        logging.debug(f"ListObjectsV2 Response: {response}")
         folders = sorted([int(content['Prefix'].rstrip('/')) for content in response.get('CommonPrefixes', [])])
-        
+
+        if not folders:
+            # If no folders are found, create a '0' folder
+            self.s3_client.put_object(Bucket=bucket_name, Key='0/')
+            folders = [0]
+
         for i in range(len(folders) - 1):
             if folders[i] <= euid_numeric_part < folders[i + 1]:
                 folder_prefix = folders[i]
@@ -2640,6 +2647,7 @@ class BloomFile(BloomObj):
         else:
             folder_prefix = folders[-1] if euid_numeric_part >= folders[-1] else 0
 
+        logging.debug(f"Determined folder_prefix: {folder_prefix}")
         return f"{folder_prefix}/{euid}.{data_file_name.split('.')[-1]}"
 
     def add_file_data(self, euid, data=None, data_file_name=None, full_path_to_file=None, url=None):

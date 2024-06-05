@@ -37,4 +37,6 @@ dependencies:
     - boto3
     - socket
     - botocore
+    - requests_mock
+    - moto
 prefix: /Users/daylily/miniconda/envs/BLOOM
