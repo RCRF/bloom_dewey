@@ -2638,6 +2638,10 @@ class BloomFile(BloomObj):
             else:
                 raise e
 
+    def link_file_to_parent(self, child_euid, parent_euid):        
+        self.create_generic_instance_lineage_by_euids(child_euid, parent_euid)
+
+
     def add_file_data(self, euid, data=None, data_file_name=None, full_path_to_file=None, url=None):
         file_instance = self.get_by_euid(euid)
         s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
@@ -2668,7 +2672,7 @@ class BloomFile(BloomObj):
                     Tagging=f'creating_service=dewey&original_file_name={data_file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": data_file_name,
+                    "current_s3_key": s3_key, "original_file_name": data_file_name, "name": data_file_name,
                     "original_file_size_bytes": file_size, "original_file_suffix": file_suffix,
                     "original_file_data_type": "raw data", "file_type": file_suffix
                 }
@@ -2686,7 +2690,7 @@ class BloomFile(BloomObj):
                     Tagging=f'creating_service=dewey&original_file_name={local_path_info.name}&original_file_path={full_path_to_file}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": local_path_info.name,
+                    "current_s3_key": s3_key, "original_file_name": local_path_info.name,"name": local_path_info.name,
                     "original_file_path": full_path_to_file, "original_local_server_name": socket.gethostname(),
                     "original_server_ip": local_ip, "original_file_size_bytes": file_size, 
                     "original_file_suffix": file_suffix, "original_file_data_type": "local file",
@@ -2705,7 +2709,7 @@ class BloomFile(BloomObj):
                     Tagging=f'creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": url_info,
+                    "current_s3_key": s3_key, "original_file_name": url_info, "name": url_info,
                     "original_url": url, "original_file_size_bytes": file_size, 
                     "original_file_suffix": file_suffix, "original_file_data_type": "url",
                     "file_type": file_suffix
@@ -2723,6 +2727,43 @@ class BloomFile(BloomObj):
         return file_instance
 
     def create_file(self, file_metadata={}, data=None, data_file_name=None, full_path_to_file=None, url=None):
+        """_summary_
+
+        Args:
+            file_metadata (dict, optional): _description_. Defaults to {}.
+            data (_type_, optional): _description_. Defaults to None.
+            data_file_name (_type_, optional): _description_. Defaults to None.
+            full_path_to_file (_type_, optional): _description_. Defaults to None.
+            url (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: _description_
+            
+        More:
+            The properties dict anticipates the following keys:
+            {
+            "name": "A Generic File",  # specify a name, defaults to orig file name
+            "comments": "",  # any comments
+            "lab_code":"",  # lab code... not used
+            "original_file_name": "",  # original file name, no path
+            "original_file_path": "",  # path for original file
+            "original_file_size_bytes": "",  # size of original file in bytes
+            "original_file_md5": "",  # md5 hash of original file (not implemented yet)
+            "original_server_ip": "",  # ip of server where file was uploaded, if file was local to server
+            "original_local_server_name": "",  # name of server where file was uploaded, if file was local to server
+            "original_file_suffix": "",  # suffix of original file
+            "current_s3_key": "",  # s3 key for file once saved to S3
+            ... below should be modeled differently or in other systems.
+            "current_s3_bucket_name": "",  # s3 bucket name for file. The bucket is associated with the new euid even if no data is yet uploaded.
+            "x_x_rcrf_patient_id": "",  # patient id, this is an oversimplification for now (as indicated with x_x_, I believe file should link to an event, and event link to patient). prob ext system.
+            "x_x_clinician_id": "",  # clinician id, this is an oversimplification for now (as indicated with x_x_, I believe file should link to an event, and event link to clinician). prob ext system.
+            "x_relevant_datetime": "",  # capture the relevant datetime for the file (should be part of the event I think?). prob ext system.
+            "x_health_event_id": "" . # health event id, this is an oversimplification for now, and should be where the health relevant info is stored. prob ext system.
+            }
+
+            However, any arbitrary keys can be added to the properties dict and will be stored and queryable, etc.
+        """
+
         file_properties = {"properties": file_metadata}
         
         new_file = self.create_instance(

@@ -14,7 +14,11 @@
         "original_local_server_name": "",
         "original_file_suffix": "",
         "current_s3_key": "",
-        "current_s3_bucket_name": ""
+        "current_s3_bucket_name": "",
+        "x_x_rcrf_patient_id": "",
+        "x_x_clinician_id": "",
+        "x_relevant_datetime": "",
+        "x_health_event_id": ""
       },
       "arbitrary_association_strings": [], 
       "valid_parents": [],
