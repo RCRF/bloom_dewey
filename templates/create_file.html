@@ -73,6 +73,48 @@
     
         <button type="submit">Download File</button>
     </form>
+
+
+</ul>
+<hr><hr>
+
+<h2>Search Files</h2>
+<ul>
+
+    <form action="search_files" method="post" enctype="multipart/form-data">
+        
+        <input type="hidden" value="" id="euid" name="euid"> </input>
+
+        <label for="is_greedy">Greedy Search: </label>
+        <select name=is_greedy><option value=yes selected>yes</option><option value=no>no</option></select>
+
+        <br>
+        CRUDE ATM. Manually set key and key value to search, up to 3 pairs.
+        <br>
+        <label for="key_1">Key 1: </label>
+        <input type="text" id="key_1" name="key_1"> </input>
+
+        <label for="value_1">Value 1: </label>
+        <input type="text" id="value_1" name="value_1"> </input>
+
+        <br>
+
+        <label for="key_2">Key 2: </label>
+        <input type="text" id="key_2" name="key_2"> </input>
+
+        <label for="value_2">Value 2: </label>
+        <input type="text" id="value_2" name="value_2"> </input>
+
+        <br>
+        <label for="key_3">Key 3: </label>
+        <input type="text" id="key_3" name="key_3"> </input>
+
+        <label for="value_3">Value 3: </label>
+        <input type="text" id="value_3" name="value_3"> </input>
+        <br>
+        <input type=submit value="Search Files">
+    </form>
+
 </ul></ul>
 </body>
 </html>

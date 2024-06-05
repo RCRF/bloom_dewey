@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <script src="static/action_buttons.js"></script>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                <th>{{ column }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table_data %}
+            <tr>
+                {% for column in columns %}
+                <td>
+                    {% if column == 'EUID' %}
+                    <a target=euid_detail href="euid_details?euid={{ row[column] }}">{{ row[column] }}</a> .. <small><form action=download_file method=post><input type=hidden name=download_type value=dewey><input type=hidden name=create_metadata_file value=yes><input type=hidden name=euid value="{{ row[column] }}"><input type=submit name=download></form></small>
+                    {% elif column == 'File URL' %}
+                    {% else %}
+                    {{ row[column] }}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <a href="/create_file_form">Go Back</a>
+</body>
+</html>

@@ -1631,9 +1631,6 @@ async def create_file(
 
         return HTMLResponse(content=content)
     
-    
-
-
 @app.post("/download_file", response_class=HTMLResponse)
 async def download_file(
     request: Request,
@@ -1717,3 +1714,82 @@ async def delete_temp_file(request: Request, filename: str, background_tasks: Ba
         background_tasks.add_task(delete_file, file_path)
         background_tasks.add_task(delete_file, file_path_yaml)
     return RedirectResponse(url="/create_file_form", status_code=303)
+
+
+@app.post("/search_files", response_class=HTMLResponse)
+async def search_files(
+    request: Request,
+    euid: str = Form(None),
+    is_greedy: str = Form(...),
+    key_1: str = Form(None),
+    value_1: str = Form(None),
+    key_2: str = Form(None),
+    value_2: str = Form(None),
+    key_3: str = Form(None),
+    value_3: str = Form(None),
+):
+
+    search_criteria = {}
+
+    greedy = True
+    if is_greedy != "yes":
+        greedy = False
+
+    properties = {}
+    if key_1 and value_1:
+        properties[key_1] = value_1
+    if key_2 and value_2:
+        properties[key_2] = value_2
+    if key_3 and value_3:
+        properties[key_3] = value_3
+
+    if properties:
+        search_criteria["properties"] = properties
+
+    try:
+        bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
+        euid_results = bfi.search_files_by_addl_metadata(search_criteria, greedy)
+
+        # Fetch details for each EUID
+        detailed_results = [bfi.get_by_euid(euid) for euid in euid_results]
+
+        # Create a list of columns for the table
+        columns = ["EUID", "Date Created", "Status"]
+        if detailed_results and detailed_results[0].json_addl.get('properties'):
+            columns += list(detailed_results[0].json_addl['properties'].keys())
+
+        # Prepare the data for the template
+        table_data = []
+        for result in detailed_results:
+            row = {
+                "EUID": result.euid,
+                "Date Created": result.created_dt.strftime("%Y-%m-%d %H:%M:%S"),
+                "Status": result.bstatus,
+            }
+            for key in columns[3:]:
+                row[key] = result.json_addl['properties'].get(key, "N/A")
+            table_data.append(row)
+
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+
+        content = templates.get_template("search_results.html").render(
+            request=request,
+            columns=columns,
+            table_data=table_data,
+            style=style,
+            udat=user_data
+        )
+        return HTMLResponse(content=content)
+
+    except Exception as e:
+        logging.error(f"Error searching files: {e}")
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        content = templates.get_template("search_error.html").render(
+            request=request,
+            error=f"An error occurred: {e}",
+            style=style,
+            udat=user_data
+        )
+        return HTMLResponse(content=content)
