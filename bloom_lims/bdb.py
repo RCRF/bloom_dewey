@@ -1972,56 +1972,7 @@ class BloomWorkflow(BloomObj):
 
     def do_action_create_package_and_first_workflow_step(self, wf_euid, action_ds={}):
         raise Exception("This is GARBAGE?")
-
-        wf = self.get_by_euid(wf_euid)
-        # 1001897582860000245100773464327825
-        fx_opsmd = {}
-
-        try:
-            fx_opsmd = self.track_fedex.get_fedex_ops_meta_ds(
-                action_ds["captured_data"]["Tracking Number"]
-            )
-        except Exception as e:
-            self.logger.exception(f"ERROR: {e}")
-
-        action_ds["captured_data"]["Fedex Tracking Data"] = fx_opsmd
-
-        wfs = ""
-        for layout_str in action_ds["child_workflow_step_obj"]:
-            wfs = self.create_instance_by_code(
-                layout_str, action_ds["child_workflow_step_obj"][layout_str]
-            )
-            # wfs.workflow_instance_uuid = wf.uuid
-            self.create_generic_instance_lineage_by_euids(wf.euid, wfs.euid)
-
-            ##self.session.flush()
-            self.session.commit()
-
-        package = ""
-        for layout_str in action_ds["new_container_obj"]:
-            for cv_k in action_ds["captured_data"]:
-                action_ds["new_container_obj"][layout_str]["json_addl"]["properties"][
-                    "fedex_tracking_data"
-                ] = fx_opsmd
-                action_ds["new_container_obj"][layout_str]["json_addl"]["properties"][
-                    cv_k
-                ] = action_ds["captured_data"][cv_k]
-
-            package = self.create_instance_by_code(
-                layout_str, action_ds["new_container_obj"][layout_str]
-            )
-            ##self.session.flush()
-            self.session.commit()
-            # wfs.json_addl["properties"]["actual_output_euid"].append(package.euid)
-        wf.bstatus = "in_progress"
-        flag_modified(wf, "bstatus")
-        ##self.session.flush()
-        self.session.commit()
-
-        self.create_generic_instance_lineage_by_euids(wfs.euid, package.euid)
-        self.session.commit()
-        return wfs
-
+        # DELETED A BUNCH OF STUFF... if needed, revert to previous commit
 
 class BloomWorkflowStep(BloomObj):
     def __init__(self, bdb):
@@ -2617,7 +2568,21 @@ class BloomObjectSet(BloomObj):
 class AuditLog(BloomObj):
     def __init__(self, session, base):
         super().__init__(session, base)
+    
+        
+class BloomHealthEvent(BloomObj):
+    def __init__(self, bdb):
+        super().__init__(bdb)
 
+    def create_event(self):
+        
+        new_event = self.create_instance(
+            self.query_template_by_component_v2("health_event", "generic", "generic", "1.0")[0].euid
+        )
+        self.session.commit()
+
+        return new_event
+    
 class BloomFile(BloomObj):
     def __init__(self, bdb, bucket_prefix="daylily-dewey-"):
         super().__init__(bdb)
