@@ -21,7 +21,6 @@ import boto3
 import requests
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
-
 from sqlalchemy import (
     and_,
     create_engine,
@@ -41,8 +40,12 @@ from sqlalchemy import (
     DateTime,
     Boolean,
     ForeignKey,
+    or_, 
+    and_
 )
+
 from sqlalchemy.ext.automap import automap_base
+
 from sqlalchemy.orm import (
     sessionmaker,
     Query,
@@ -52,8 +55,12 @@ from sqlalchemy.orm import (
     foreign,
     backref,
 )
+
+from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
+
 import sqlalchemy.orm as sqla_orm
 
 import zebra_day.print_mgr as zdpm
@@ -2639,8 +2646,8 @@ class BloomFile(BloomObj):
                 raise e
 
     def link_file_to_parent(self, child_euid, parent_euid):        
-        self.create_generic_instance_lineage_by_euids(child_euid, parent_euid)
-
+        self.create_generic_instance_lineage_by_euids(child_euid, parent_euid)  
+        self.session.commit()
 
     def add_file_data(self, euid, data=None, data_file_name=None, full_path_to_file=None, url=None):
         file_instance = self.get_by_euid(euid)
@@ -2798,27 +2805,49 @@ class BloomFile(BloomObj):
 
     def search_files_for_physicians(self, physician_euids=[]):
         pass
-    
-    def search_files_addl(self, file_search_criteria={}):
-        """_summary_
 
-        Args:
-            file_search_criteria (dict, optional): _description_. Defaults to {}.
-            {} can be a dict which matches the keys found in each json_addl field.
-            This dict can include a key 'file_metadata' which will be treated as 'properties'.
-
-        Returns:
-            _type_: _description_
-        """
+    def search_files_by_addl_metadata(self, file_search_criteria, search_greedy=True):
         query = self.session.query(self.Base.classes.file_instance)
+        
+        if search_greedy:
+            # Greedy search: matching any of the provided search keys
+            or_conditions = []
+            for key, value in file_search_criteria.items():
+                if key == 'file_metadata':
+                    key = 'properties'
+                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
 
-        for key, value in file_search_criteria.items():
-            if key == 'file_metadata':
-                key = 'properties'
-                logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+                # Create conditions for JSONB key-value pairs
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        jsonb_filter = {key: {sub_key: sub_value}}
+                        or_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
+                else:
+                    jsonb_filter = {key: value}
+                    or_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
+            
+            if or_conditions:
+                query = query.filter(or_(*or_conditions))
+        else:
+            # Non-greedy search: matching all specified search terms
+            and_conditions = []
+            for key, value in file_search_criteria.items():
+                if key == 'file_metadata':
+                    key = 'properties'
+                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
 
-            # Assuming a nested search in json_addl starting from the root or 'properties'
-            query = query.filter(self.Base.classes.file_instance.json_addl[key].astext == value)
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        jsonb_filter = {key: {sub_key: sub_value}}
+                        and_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
+                else:
+                    jsonb_filter = {key: value}
+                    and_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
 
+            if and_conditions:
+                query = query.filter(and_(*and_conditions))
+        
+        logging.info(f"Generated SQL: {str(query.statement)}")
+        
         results = query.all()
         return [result.euid for result in results]

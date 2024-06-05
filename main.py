@@ -1113,7 +1113,12 @@ async def workflow_step_action(request: Request, _auth=Depends(require_auth)):
     return {"status": "success", "message": f" {action} performed for EUID {euid}"}
 
 
-def update_obj_json_addl_properties(request: Request, obj_euid, _auth=Depends(require_auth), **properties):
+@app.post("/update_obj_json_addl_properties", response_class=HTMLResponse)
+async def update_obj_json_addl_properties(
+    request: Request,
+    obj_euid: str = Form(None),
+    _auth=Depends(require_auth),
+):
     """Update the json_addl['properties'] field of an object.  Was originally for just wfs...
 
     Args:
@@ -1127,6 +1132,10 @@ def update_obj_json_addl_properties(request: Request, obj_euid, _auth=Depends(re
         cherrypy.HTTPRedirect: to referrer
     """
     referer = request.headers.get("Referer", "/default_page")
+
+    # Parse form data manually
+    form = await request.form()
+    properties = {key: value for key, value in form.items() if key != "obj_euid"}
 
     bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
     step = bobdb.get_by_euid(obj_euid)
@@ -1164,8 +1173,7 @@ def update_obj_json_addl_properties(request: Request, obj_euid, _auth=Depends(re
     except Exception as e:
         raise Exception("Error updating step properties:", e)
 
-    return RedirectResponse(url=referer)
-
+    return RedirectResponse(url=referer, status_code=303)
 
 @app.get("/dindex2", response_class=HTMLResponse)
 async def dindex2(request: Request, globalFilterLevel=6, globalZoom=0, globalStartNodeEUID=None,
