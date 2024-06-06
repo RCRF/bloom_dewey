@@ -1362,12 +1362,26 @@ class BloomObj:
             r=self.do_stamp_plates_into_plate(euid, action_ds)
         elif action_method == "do_action_download_file":
             r=self.do_action_download_file(euid, action_ds)
+        elif action_method == "do_action_add_file_to_file_set":
+            r=self.do_action_add_file_to_file_set(euid, action_ds)
+        elif action_method == "do_action_remove_file_from_file_set":
+            r=self.do_action_remove_file_from_file_set(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
         self._do_action_base(euid, action, action_group, action_ds, now_dt)
         return r
+    
+    
+    def do_action_add_file_to_file_set(self, file_set_euid, action_ds):
+        bfs = BloomFileSet(BLOOMdb3())
+        bfs.add_files_to_file_set(euid=file_set_euid, file_euid=[action_ds['captured_data']['file_euid']])
+    
+    def do_action_remove_file_from_file_set(self, file_set_euid, action_ds):
+        bfs = BloomFileSet(BLOOMdb3())
+        bfs.remove_files_from_file_set(euid=file_set_euid, file_euid=[action_ds['captured_data']['file_euid']])
 
+ 
     def ret_plate_wells_dict(self, plate):
         plate_wells = {}
         for lin in plate.parent_of_lineages:
@@ -2999,23 +3013,22 @@ class BloomFileSet(BloomObj):
         self.session.commit()
 
         return file_set
-    
-    def add_files_to_file_set(self, file_set_euid, file_uids=[]):
+
+    def add_files_to_file_set(self, file_set_euid, file_euids=[]):
         file_set = self.get_by_euid(file_set_euid)
-        for file_euid in file_uids:
+        for file_euid in file_euids:
             self.create_generic_instance_lineage_by_euids(file_set_euid, file_euid)
-        self.session.commit()
-        
+        self.session.commit()        
         return file_set
     
     def get_file_set_by_euid(self, euid):
         return self.get_by_euid(euid)
     
-    def delete_files_from_file_set(self, file_set_euid, file_uids=[]):
+    def remove_files_from_file_set(self, file_set_euid, file_euids=[]):
         file_set = self.get_by_euid(file_set_euid)
         
         # delete the lineage for each file to this file set
-        for file_euid in file_uids:
+        for file_euid in file_euids:
             for i in file_set.child_of_lineages:
                 if i.child_instance.euid == file_euid:
                     self.delete_obj(i)

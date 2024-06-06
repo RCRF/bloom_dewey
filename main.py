@@ -1226,143 +1226,6 @@ async def get_node_info(request: Request, euid, _auth=Depends(require_auth)):
     else:
         return {"error": "Node not found"}
 
-
-async def generate_dag_json_from_all_objects(request: Request, _output_file="dag.json", _auth=Depends(require_auth)):
-    BO = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
-    last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
-    request.session["user_data"]["dag_fn"] = f"./dags/{str(request.session)}_dag.json"
-    output_file = request.session["user_data"]["dag_fn"]
-    if (
-            "schema_mod_dt" not in request.session
-            or request.session["schema_mod_dt"] != last_schema_edit_dt.changed_at
-    ):
-        print(
-            f"Dag WILL BE Regenerated, Schema Has Changed. {output_file} being generated."
-        )
-    else:
-        print(
-            f"Dag Not Regenerated, Schema Has Not Changed. {output_file} unchanged."
-        )
-        return
-    request.session["schema_mod_dt"] = last_schema_edit_dt.changed_at
-
-    colors = {
-        "container": "#372568",
-        "content": "#4560D5",
-        "workflow": "#2CB6F0",
-        "workflow_step": "#93FE45",
-        "equipment": "#7B0403",
-        "object_set": "#FE9B2D",
-        "actor": "#FEDC45",
-        "test_requisition": "#FDDC45",
-        "data": "#FCDC45",
-        "generic": "pink",
-        "action": "#FEDC25",
-    }
-    sub_colors = {"well": "#70658c"}
-
-    # SQL query to fetch instances
-    instance_query = text("""
-        SELECT euid, name, super_type, btype, b_sub_type, version
-        FROM generic_instance
-        WHERE is_deleted = False;
-            """)
-
-    # SQL query to fetch lineages
-    lineage_query = text("""
-    SELECT 
-        lineage.euid AS lineage_euid,
-        parent.euid AS parent_euid,
-        child.euid AS child_euid
-    FROM 
-        generic_instance_lineage AS lineage
-    JOIN 
-        generic_instance AS parent ON lineage.parent_instance_uuid = parent.uuid
-    JOIN 
-        generic_instance AS child ON lineage.child_instance_uuid = child.uuid
-    WHERE 
-        lineage.is_deleted = False;
-
-            """)
-
-    # Execute queries
-    instance_result = BO.session.execute(instance_query).fetchall()
-    lineage_result = BO.session.execute(lineage_query).fetchall()
-
-    # Construct nodes and edges
-    nodes = []
-    edges = []
-
-    for instance in instance_result:
-        node = {
-            "data": {
-                "id": str(instance.euid),
-                "type": "instance",
-                "euid": str(instance.euid),
-                "name": instance.name,
-                "btype": instance.btype,
-                "super_type": instance.super_type,
-                "b_sub_type": instance.super_type + "." + instance.btype + "." + instance.b_sub_type,
-                "version": instance.version,
-                "color": colors.get(instance.super_type, "pink"),
-            },
-            "position": {"x": 0, "y": 0},
-            "group": "nodes",
-        }
-        nodes.append(node)
-
-    for lineage in lineage_result:
-        edge = {
-            "data": {
-                "source": str(lineage.parent_euid),
-                "target": str(lineage.child_euid),
-                "id": str(lineage.lineage_euid),
-            },
-            "group": "edges",
-        }
-        edges.append(edge)
-
-    # Construct JSON structure
-
-    dag_json = {
-        "elements": {"nodes": nodes, "edges": edges},
-        "style": [
-            {
-                "selector": "node",
-                "style": {"background-color": "data(color)", "label": "data(name)"},
-            },
-            {
-                "selector": "edge",
-                "style": {
-                    "width": "3px",
-                    "line-color": "rgb(204,204,204)",
-                    "source-arrow-color": "rgb(204,204,204)",
-                    "source-arrow-shape": "triangle",
-                    "curve-style": "bezier",
-                    "control-point-step-size": "40px",
-                },
-            },
-        ],
-        "data": {},
-        "zoomingEnabled": True,
-        "userZoomingEnabled": True,
-        "zoom": 1.8745865634962724,
-        "minZoom": 1e-50,
-        "maxZoom": 1e50,
-        "panningEnabled": True,
-        "userPanningEnabled": True,
-        "pan": {"x": 180.7595665772659, "y": 52.4950387619553},
-        "boxSelectionEnabled": True,
-        "renderer": {"name": "canvas"},
-    }
-
-    # Write to file
-    with open(output_file, "w") as f:
-        json.dump(dag_json, f, indent=4)
-
-    print(f"All DAG JSON saved to {output_file}")
-
-
 def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6, _auth=Depends(require_auth)):
     # Default values and setup
     if euid in [None, '', 'None']:
@@ -1390,19 +1253,25 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
     request.session["user_data"]["dag_fnv2"] = output_file
 
     colors = {
-        "container": "#372568",
-        "content": "#4560D5",
-        "workflow": "#2CB6F0",
-        "workflow_step": "#93FE45",
-        "equipment": "#7B0403",
-        "object_set": "#FE9B2D",
-        "actor": "#FEDC45",
-        "test_requisition": "#FDDC45",
-        "data": "#FCDC45",
-        "generic": "pink",
-        "action": "#FEDC25",
+    "container": "#8B00FF",         # Electric Purple
+    "content": "#00BFFF",           # Deep Sky Blue
+    "workflow": "#00FF7F",          # Spring Green
+    "workflow_step": "#ADFF2F",     # Green Yellow
+    "equipment": "#FF4500",         # Orange Red
+    "object_set": "#FF6347",        # Tomato
+    "actor": "#FFD700",             # Gold
+    "test_requisition": "#FFA500",  # Orange
+    "data": "#FFFF00",              # Yellow
+    "generic": "#FF1493",           # Deep Pink
+    "action": "#FF8C00",            # Dark Orange
+    "file": "#00FF00",              # Lime
     }
-    sub_colors = {"well": "#70658c"}
+
+    sub_colors = {
+        "well": "#70658c",     
+        "file_set": "#228080",
+        "generic": "#008080",
+        }
 
     #instance_result = []
     instance_result = {}
@@ -1439,7 +1308,7 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
                 "super_type": instance['super_type'],
                 "b_sub_type": instance['super_type'] + "." + instance['btype'] + "." + instance['b_sub_type'],
                 "version": instance['version'],
-                "color": colors.get(instance['super_type'], "pink"),
+                "color": colors.get(instance['super_type'], "pink") if instance['btype'] not in ["well", "file_set"] else sub_colors.get(instance['b_sub_type'], "white"),
             },
             "position": {"x": 0, "y": 0},
             "group": "nodes",
