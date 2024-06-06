@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Download Files</title>
-
-    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
-    <link rel="stylesheet" type="text/css" href="static/style.css">
-    <script src="static/action_buttons.js"></script>
 </head>
 <body>
     <h1>Downloading your files...</h1>
+    <div id="debug-output"></div>
+
     <script type="text/javascript">
         function triggerDownload(url) {
             return new Promise((resolve) => {
@@ -24,14 +22,24 @@
         }
 
         async function downloadFiles() {
+            const debugOutput = document.getElementById('debug-output');
+            let debugHtml = '<p>Download Links:</p><ul>';
+
             // Trigger file download
-            await triggerDownload("{{ file_download_path }}");
-            
+            const fileDownloadPath = "{{ file_download_path }}";
+            debugHtml += `<li><a href="${fileDownloadPath}" download>${fileDownloadPath}</a></li>`;
+            await triggerDownload(fileDownloadPath);
+
             {% if metadata_download_path %}
             // Trigger metadata file download
-            await triggerDownload("{{ metadata_download_path }}");
+            const metadataDownloadPath = "{{ metadata_download_path }}";
+            debugHtml += `<li><a href="${metadataDownloadPath}" download>${metadataDownloadPath}</a></li>`;
+            await triggerDownload(metadataDownloadPath);
             {% endif %}
-            
+
+            debugHtml += '</ul>';
+            debugOutput.innerHTML = debugHtml;
+
             // After downloads are triggered, redirect to the create file form
             window.location.href = "/create_file_form";
         }

@@ -100,6 +100,8 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/tmp", StaticFiles(directory="tmp"), name="tmp")
+
 
 # Setup CORS
 app.add_middleware(
@@ -1727,7 +1729,8 @@ async def download_file(
     request: Request,
     euid: str = Form(...),
     download_type: str = Form(...),
-    create_metadata_file: str = Form(...)
+    create_metadata_file: str = Form(...),
+    ret_json: str = Form(None)
 ):
     try:
         bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
@@ -1748,13 +1751,20 @@ async def download_file(
             if not os.path.exists(metadata_yaml_path):
                 return HTMLResponse(f"Metadata file for EUID {euid} not found.", status_code=404)
 
+        if ret_json:
+            return JSONResponse(content={
+                "file_download_path": downloaded_file_path,
+                "metadata_download_path": metadata_yaml_path
+            })
+
+
         # Render the template with download paths
         user_data = request.session.get('user_data', {})
         style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
         content = templates.get_template("trigger_downloads.html").render(
             request=request,
-            file_download_path=f"/download/{Path(downloaded_file_path).name}",
-            metadata_download_path=f"/download/{Path(metadata_yaml_path).name}" if metadata_yaml_path else None,
+            file_download_path=downloaded_file_path,
+            metadata_download_path=metadata_yaml_path,
             style=style,
             udat=user_data
         )
