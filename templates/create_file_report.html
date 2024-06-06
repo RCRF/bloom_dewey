@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create File Report</title>
+    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script src="static/action_buttons.js"></script>
+</head>
+<body>
+    <h1>Create File Report</h1>
+    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>Status</th>
+                <th>Original File Name/URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td><a target=newxx href="euid_details?euid={{ result.identifier }}">{{ result.identifier }}</a></td>
+                <td>{{ result.status }}</td>
+                <td>{{ result.original }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <hr>
+    <a href="/create_file_form">Back to Create File Form</a>
+</body>
+</html>

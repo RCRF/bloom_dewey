@@ -2667,7 +2667,29 @@ class BloomFile(BloomObj):
         self.create_generic_instance_lineage_by_euids(child_euid, parent_euid)  
         self.session.commit()
    
-    def create_file(self, file_metadata={}, file_data=None, file_name=None, url=None, full_path_to_file=None):
+   
+    
+    def create_file(self, file_metadata={}, file_data=None, file_name=None, url=None, full_path_to_file=None, s3_uri=None):
+        file_properties = {"properties": file_metadata}
+
+        new_file = self.create_instance(
+            self.query_template_by_component_v2("file", "file", "generic", "1.0")[0].euid,
+            file_properties
+        )
+        self.session.commit()
+
+        new_file.json_addl['properties']["current_s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
+        flag_modified(new_file, 'json_addl')
+        self.session.commit()
+
+        if file_data or url or full_path_to_file or s3_uri:
+            new_file = self.add_file_data(new_file.euid, file_data, file_name, url, full_path_to_file, s3_uri)
+        else:
+            logging.warning(f"No data provided for file creation: {file_data, url}")
+
+        return new_file
+    
+    def create_filex(self, file_metadata={}, file_data=None, file_name=None, url=None, full_path_to_file=None):
         file_properties = {"properties": file_metadata}
 
         new_file = self.create_instance(
@@ -2687,7 +2709,7 @@ class BloomFile(BloomObj):
 
         return new_file
 
-    def add_file_data(self, euid, file_data=None, file_name=None, url=None, full_path_to_file=None ):
+    def add_file_data(self, euid, file_data=None, file_name=None, url=None, full_path_to_file=None, s3_uri=None):
         file_instance = self.get_by_euid(euid)
         s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
         file_properties = {}
@@ -2695,6 +2717,8 @@ class BloomFile(BloomObj):
         if file_name is None:
             if url:
                 file_name = url.split('/')[-1]
+            elif s3_uri:
+                file_name = s3_uri.split('/')[-1]
             elif full_path_to_file:
                 file_name = Path(full_path_to_file).name
             else:
@@ -2761,9 +2785,45 @@ class BloomFile(BloomObj):
                     "original_file_suffix": file_suffix, "original_file_data_type": "local file",
                     "file_type": file_suffix
                 }
+                
+            
+            elif s3_uri:
+                # Validate and move the file from the provided s3_uri
+                s3_parsed_uri = re.match(r's3://([^/]+)/(.+)', s3_uri)
+                if not s3_parsed_uri:
+                    raise ValueError("Invalid s3_uri format. Expected format: s3://bucket_name/key")
+
+                source_bucket, source_key = s3_parsed_uri.groups()
+                try:
+                    self.s3_client.head_object(Bucket=source_bucket, Key=source_key)
+                except self.s3_client.exceptions.NoSuchKey:
+                    raise ValueError(f"The s3_uri {s3_uri} does not exist or is not accessible with the provided credentials.")
+
+                copy_source = {'Bucket': source_bucket, 'Key': source_key}
+                self.s3_client.copy(copy_source, s3_bucket_name, s3_key)
+                file_size = self.s3_client.head_object(Bucket=s3_bucket_name, Key=s3_key)['ContentLength']
+
+                file_properties = {
+                    "current_s3_key": s3_key, "original_file_name": file_name, "name": file_name,
+                    "original_s3_uri": s3_uri, "original_file_size_bytes": file_size,
+                    "original_file_suffix": file_suffix, "original_file_data_type": "s3_uri",
+                    "file_type": file_suffix
+                }
+
+                # Delete the old file and create a marker file
+                self.s3_client.delete_object(Bucket=source_bucket, Key=source_key)
+                marker_key = f"{source_key}.dewey.moved"
+                self.s3_client.put_object(
+                    Bucket=source_bucket,
+                    Key=marker_key,
+                    Body=b'',
+                    Tagging=f'euid={euid}&original_s3_uri={s3_uri}'
+                )
+
             else:
                 self.logger.exception("No file data provided.")
                 raise ValueError("No file data provided.")
+
 
         except NoCredentialsError:
             raise Exception("S3 credentials are not available.")
@@ -2929,7 +2989,7 @@ class BloomFile(BloomObj):
             self.logger.error(f"Error deleting file {euid}: {e}")
             self.session.rollback()
             return False
-       
+        
 class BloomFileSet(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)
@@ -2966,3 +3026,5 @@ class BloomFileSet(BloomObj):
                     
         self.session.commit()
         return file_set
+    
+    

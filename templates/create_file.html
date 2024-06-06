@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Create New File</title>
-    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
+    <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
     <link rel="stylesheet" type="text/css" href="static/style.css">
     <script src="static/action_buttons.js"></script>
     
@@ -14,8 +14,8 @@
             right: 20px;
             /* Add more styling as needed */
         }
-
     </style>
+
 </head>
 <body>
 
@@ -27,59 +27,62 @@
     <button class="accordion">Create New File</button>
     <div class="accordion-content">
         <ul>
-        <form action="create_file" method="post" enctype="multipart/form-data">
+        <form id="createFileForm" action="create_file" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="upload_group_key" value="{{ upload_group_key }}">
             <table>
                 <tr><td>
             <input type="hidden" value="na" id="name" name="name"><br><br>
-
-            <h3>Choose File (local, or URL)</h3>
+            <h3>Enter: A File (and|or) A Directory Of Files (and|or) A List Of URLs (and|or) A List Of S3 URIs</h3>
             <ul>
-            <label for="file_data">Upload File:</label>
+            <label for="file_data">A Local File:</label>
             <input type="file" id="file_data" name="file_data"><br><br>
-            <b> -- OR -- </b>
+            <label for="directory">A Directory Of Files <br>(all files will be processed, no recursion):</label>
+            <input type="file" id="directory" name="directory" webkitdirectory directory multiple><br><br>
+
             <br><br>
-            <label for="url">Or Provide URL:</label>
-            <input type="url" id="url" name="url"><br><br>
+            <label for="urls">Public URLs To Files (one per line):</label>
+            <textarea id="urls" name="urls" rows="10" cols="30"></textarea><br><br>
+            </ul>
+
+            <br><br>
+            <label for="s3_uris">S3 URIs (which must be visible w/our credentials & one per line):</label>
+            <textarea id="s3_uris" name="s3_uris" rows="10" cols="30"></textarea><br><br>
             </ul>
 
                 </td><td> </td>
                 <td>
                     <h3>Add Metadata</h3>
                     <ul>
+                    <small>upload group key: <code>{{ upload_group_key }}</code></small>
+                    <br>
+<br>
             <label for="x_x_rcrf_patient_id">RCRF Patient ID:</label>
             <input type="text" id="x_x_rcrf_patient_id" name="x_x_rcrf_patient_id"><br><br>
-
             <label for="x_x_clinician_id">Clinician ID:</label>
             <input type="text" id="x_x_clinician_id" name="x_x_clinician_id"><br><br>
-
             <label for="x_health_event_id">Health Event:</label>
             <input type="text" id="x_health_event_id" name="x_health_event_id"><br><br>
-
             <label for="lab_code">Lab Code:</label>
             <input type="text" id="lab_code" name="lab_code"><br><br>
-
             <label for="x_relevant_datetime">File Relevant Datetime:</label>
             <input type="datetime-local" id="x_relevant_datetime" name="x_relevant_datetime"><br><br>
-
             <label for="comments">Comments:</label>
             <textarea id="comments" name="comments"></textarea><br><br>
         </td></tr>
         <tr><td> </td>
             <td>
-            <button type="submit">Create File</button>
+            <button type="submit">Create</button>
             </td><td> </td></tr></table>
                     </ul>
                 </td></tr></table>
         </form>
-    
     </div>
-
     <hr><hr>
 
     <button class="accordion">Download File</button>
     <div class="accordion-content">
         <ul><ul>
-        <form action="download_file" method="post" enctype="multipart/form-data">
+        <form id="downloadFileForm" action="download_file" method="post" enctype="multipart/form-data">
             <label for="euid">File EUID: </label>
             <input type="text" id="euid" name="euid"><br><br>
             
@@ -121,7 +124,7 @@
             <h3>Search Files via Metadata</h3><ul>
             <table>
                 <tr><td style="align:top;">
-        <form action="search_files" method="post" enctype="multipart/form-data">
+        <form id="searchFileForm" action="search_files" method="post" enctype="multipart/form-data">
             <input type="hidden" value="" id="euid" name="euid"><br>
 
             <label for="is_greedy">Greedy Search: </label>
@@ -146,7 +149,7 @@
             <label for="key_2">Key 2: </label>
             <input type="text" id="key_2" name="key_2"><br>
 
-            <label for="value_2">Value 2: </label>
+            <label for="value_2">Value 2">Value 2: </label>
             <input type="text" id="value_2" name="value_2"><br><br>
 
             <label for="key_3">Key 3: </label>
@@ -184,5 +187,33 @@
     </ul></ul>
     </div>
 </ul>
+
+<hr>
+
+<div>
+    <button class="floating-button2 floating-button-logout2" onclick="location.href='/admin?dest=skin'">🎨</button>
+    
+    {% if user_logged_in %} <!-- You'll need to replace this with actual server-side code -->
+        <button class="floating-button2 floating-button-skin2" onclick="location.href='/logout'"  >🏃‍♂️</button>
+    {% else %}
+        <button class="floating-button2 floating-button-skin2" onclick="location.href='/login'" >🔑</button>
+    {% endif %}
+        </div>
+
+    <script>
+        function resetForms() {
+            document.getElementById('createFileForm').reset();
+            document.getElementById('downloadFileForm').reset();
+            document.getElementById('searchFileForm').reset();
+        }
+
+        window.onload = resetForms;
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                resetForms();
+            }
+        });
+    </script>
 </body>
 </html>

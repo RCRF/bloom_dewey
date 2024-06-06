@@ -4,7 +4,9 @@ import httpx
 import os
 import json
 import shutil
+from typing import List
 from pathlib import Path
+import random
 
 from datetime import datetime, timedelta, date
 
@@ -1565,19 +1567,57 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
 
 ## BloomFile
 
+
+pantone_colors = [
+    "Living Coral", "Classic Blue", "Greenery", "Rose Quartz", "Serenity",
+    "Marsala", "Radiant Orchid", "Emerald", "Tangerine Tango", "Honeysuckle",
+    "Turquoise", "Mimosa", "Blue Iris", "Chili Pepper", "Sand Dollar",
+    "Blue Turquoise", "Tigerlily", "Aqua Sky", "True Red", "Fuchsia Rose",
+    "Cerulean", "Amethyst Orchid", "Ultra Violet", "Palace Blue", "Lime Punch",
+    "Pink Lavender", "Crocus Petal", "Spring Crocus", "Meadowlark", "Cherry Tomato",
+    "Chili Oil", "Blooming Dahlia", "Little Boy Blue", "Arcadia", "Ultra Violet",
+    "Emperador", "Almost Mauve", "Spring Crocus", "Sailor Blue", "Harbor Mist",
+    "Warm Sand", "Coconut Milk", "Soybean", "Mellow Yellow", "Fiery Red",
+    "Biscay Green", "Coral Pink", "Grape Compote", "Storm Gray", "Illuminating"
+]
+
+marine_invertebrates = [
+    "Aplysia", "Asterias", "Aurelia", "Balanus", "Branchiostoma",
+    "Ciona", "Daphnia", "Dugesia", "Echinaster", "Eisenia",
+    "Fasciola", "Gammarus", "Glycera", "Haliclystus", "Hydra",
+    "Littorina", "Loligo", "Metridium", "Mytilus", "Nereis",
+    "Obelia", "Octopus", "Patella", "Perophora", "Physalia",
+    "Pleurobrachia", "Polyclinum", "Porphyra", "Sertularia", "Spongia",
+    "Squilla", "Styela", "Synapta", "Terebella", "Tethya",
+    "Thalassiosira", "Tubifex", "Turbo", "Urticina", "Velella",
+    "Vorticella", "Watasenia", "Xenoturbella", "Yoldia", "Zostera",
+    "Zygocotyle", "Zoanthus", "Zoothamnium", "Zooxanthella", "Zygnema"
+]
+
+def generate_unique_upload_key():
+    color = random.choice(pantone_colors)
+    invertebrate = random.choice(marine_invertebrates)
+    number = random.randint(0, 1000)
+    return f"{color.replace(' ','_')}_{invertebrate.replace(' ','_')}_{number}"
+
+
 @app.get("/create_file_form", response_class=HTMLResponse)
 async def create_file_form(request: Request):
+    request.session.pop('form_data', None)
 
     accordion_states = dict(request.session)
     user_data = request.session.get('user_data', {})
     style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    upload_group_key = generate_unique_upload_key()
     content = templates.get_template("create_file.html").render(
         request=request,
         accordion_states=accordion_states,
         style=style,
+        upload_group_key=upload_group_key,
         udat=user_data)
 
     return HTMLResponse(content=content)
+
 
 @app.post("/create_file")
 async def create_file(
@@ -1585,12 +1625,15 @@ async def create_file(
     name: str = Form(...),
     comments: str = Form(""),
     lab_code: str = Form(""),
-    file_data: UploadFile = File(None),
-    url: str = Form(None),
+    file_data: List[UploadFile] = File(None),
+    directory: List[UploadFile] = File(None),
+    urls: str = Form(None),
+    s3_uris: str = Form(None),
     x_x_clinician_id: str = Form(""),
     x_health_event_id: str = Form(""),
     x_relevant_datetime: str = Form(""),
-    x_x_rcrf_patient_id: str = Form("")
+    x_x_rcrf_patient_id: str = Form(""),
+    upload_group_key: str = Form("")
 ):
     try:
         bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
@@ -1601,20 +1644,68 @@ async def create_file(
             "x_x_clinician_id": x_x_clinician_id,
             "x_health_event_id": x_health_event_id,
             "x_relevant_datetime": x_relevant_datetime,
-            "x_x_rcrf_patient_id": x_x_rcrf_patient_id
+            "x_x_rcrf_patient_id": x_x_rcrf_patient_id,
+            "upload_ui_user": request.session['user_data']['email'],
+            "upload_group_key": upload_group_key
         }
-        new_file = None
-        if file_data:
-            new_file = bfi.create_file(file_metadata=file_metadata, file_data=file_data.file, file_name=file_data.filename)
-        elif url:
-            new_file = bfi.create_file(file_metadata=file_metadata, url=url)
-        else:
-            return templates.TemplateResponse("create_file.html", {
-                "request": request,
-                "error": "Please provide either a file or a URL."
-            })
 
-        return RedirectResponse(url=f"euid_details?euid={new_file.euid}", status_code=303)
+        results = []
+
+        if file_data:
+            for file in file_data:
+                if file.filename:  # Ensure that there is a valid filename
+                    try:
+                        new_file = bfi.create_file(file_metadata=file_metadata, file_data=file.file, file_name=file.filename)
+                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url})
+                    except Exception as e:
+                        results.append({"identifier": file.filename, "status": f"Failed: {str(e)}", "original": file.filename if file else url})
+                else:
+                    logging.warning(f"Skipping file with no filename: {file}")
+
+        if directory:
+            for file in directory:
+                if len(file.filename) > 0:
+                    try:
+                        new_file = bfi.create_file(file_metadata=file_metadata, file_data=file.file, file_name=file.filename)
+                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url})
+                    except Exception as e:
+                        results.append({"identifier": file.filename, "status": f"Failed: {str(e)}","original": file.filename if file else url})
+
+        if urls:
+            url_list = urls.split('\n')
+            for url in url_list:
+                if url.strip():
+                    try:
+                        new_file = bfi.create_file(file_metadata=file_metadata, url=url.strip())
+                        results.append({"identifier": new_file.euid, "status": "Success"})
+                    except Exception as e:
+                        results.append({"identifier": url.strip(), "status": f"Failed: {str(e)}"})
+        if s3_uris:
+            s3_uri_list = s3_uris.split('\n')
+            for s3_uri in s3_uri_list:
+                if s3_uri.strip():
+                    try:
+                        new_file = bfi.create_file(file_metadata=file_metadata, s3_uri=s3_uri.strip())
+                        results.append({"identifier": new_file.euid, "status": "Success"})
+                    except Exception as e:
+                        results.append({"identifier": s3_uri.strip(), "status": f"Failed: {str(e)}"})
+
+        # Render the report
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        content = templates.get_template("create_file_report.html").render(
+            request=request,
+            results=results,
+            style=style,
+            udat=user_data
+        )
+
+        return HTMLResponse(content=content)
+
+    except ValueError as ve:
+        logging.error(f"Input error: {ve}")
+        return HTMLResponse(content=f"<html><body><h2>{ve}</h2></body></html>", status_code=400)
+
     except Exception as e:
         logging.error(f"Error creating file: {e}")
 
@@ -1630,7 +1721,7 @@ async def create_file(
         )
 
         return HTMLResponse(content=content)
-    
+
 @app.post("/download_file", response_class=HTMLResponse)
 async def download_file(
     request: Request,
