@@ -1763,3 +1763,52 @@ async def search_files(
             udat=user_data
         )
         return HTMLResponse(content=content)
+
+@app.get("/get_node_property")
+async def get_node_property(request: Request, euid: str, key: str):
+    bo = BloomObj(BLOOMdb3(app_username=""))
+
+    try:
+        boi = bo.get_by_euid(euid)
+        if boi is None:
+            return JSONResponse({"error": "Node not found"}, status_code=404)
+        
+        property_value = boi.json_addl.get('properties', {}).get(key, 'Property Not Found')
+        return JSONResponse({key: property_value})
+    except Exception as e:
+        logging.error(f"Error retrieving node property: {e}")
+        return JSONResponse({"error": f"Error retrieving node property: {e}"}, status_code=500)
+    
+@app.post("/create_file_set")
+async def create_file_set(
+    request: Request,
+    file_set_name: str = Form(...),
+    file_set_description: str = Form(...),
+    file_set_tag: str = Form(...),
+    comments: str = Form(None),
+    file_euids: str = Form(...)
+):
+    try:
+        bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
+
+        file_set_metadata = {
+            "properties": {
+                "name": file_set_name,
+                "description": file_set_description,
+                "tag": file_set_tag,
+                "comments": comments,
+            }
+        }
+
+        # Create the file set
+        new_file_set = bfs.create_file_set(file_set_metadata=file_set_metadata)
+
+        # Add files to the file set
+        file_euids_list = [euid.strip() for euid in file_euids.split()]
+        bfs.add_files_to_file_set(file_set_euid=new_file_set.euid, file_euids=file_euids_list)
+
+        return RedirectResponse(url=f"/euid_details?euid={new_file_set.euid}", status_code=303)
+
+    except Exception as e:
+        raise(e)
+        #    return RedirectResponse(url="/create_file_form", status_code=303)

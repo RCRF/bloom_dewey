@@ -311,6 +311,7 @@ class generic_instance_lineage(bloom_core):
 
     parent_type = Column(Text, nullable=True)
     child_type = Column(Text, nullable=True)
+    relationship_type = Column(Text, nullable=True)
 
     parent_instance_uuid = Column(
         UUID, ForeignKey("generic_instance.uuid"), nullable=False
@@ -848,7 +849,7 @@ class BloomObj:
         return ret_objs
 
     def create_generic_instance_lineage_by_euids(
-        self, parent_instance_euid, child_instance_euid
+        self, parent_instance_euid, child_instance_euid, relationship_type="generic"
     ):
         parent_instance = self.get_by_euid(parent_instance_euid)
         child_instance = self.get_by_euid(child_instance_euid)
@@ -865,6 +866,7 @@ class BloomObj:
             parent_type=f"{parent_instance.super_type}:{parent_instance.btype}:{parent_instance.b_sub_type}:{parent_instance.version}",
             child_type=f"{child_instance.super_type}:{child_instance.btype}:{child_instance.b_sub_type}:{child_instance.version}",
             polymorphic_discriminator=f"generic_instance_lineage",
+            relationship_type=relationship_type
         )
         self.session.add(lineage_record)
         self.session.flush()
@@ -1366,6 +1368,8 @@ class BloomObj:
             r=self.do_action_add_file_to_file_set(euid, action_ds)
         elif action_method == "do_action_remove_file_from_file_set":
             r=self.do_action_remove_file_from_file_set(euid, action_ds)
+        elif action_method == "do_action_add_relationships":
+            r=self.do_action_add_relationships(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
@@ -1381,6 +1385,26 @@ class BloomObj:
         bfs = BloomFileSet(BLOOMdb3())
         bfs.remove_files_from_file_set(euid=file_set_euid, file_euid=[action_ds['captured_data']['file_euid']])
 
+    def do_action_add_relationships(self, euid, action_ds):
+        
+        euid_obj = self.get_by_euid(euid) 
+        lineage_to_create = action_ds['captured_data']['lineage_type_to_create']
+        relationship_type = action_ds['captured_data']['relationship_type']
+        euids = action_ds['captured_data']['euids']
+        
+        #euids is the text from a textareas, process each and assign lineage
+        for a_euid in euids.split('\n'):
+            if a_euid != "":
+                if lineage_to_create == "parent":
+                    self.create_generic_instance_lineage_by_euids(a_euid, euid, relationship_type)
+                elif lineage_to_create == "child":
+                    self.create_generic_instance_lineage_by_euids(euid, a_euid, relationship_type)
+                else:    
+                   self.logger.exception(f"Unknown lineage type {lineage_to_create}, requires 'parent' or 'child'")
+                   raise Exception(f"Unknown lineage type {lineage_to_create}, requires 'parent' or 'child'") 
+
+        return euid_obj
+        
  
     def ret_plate_wells_dict(self, plate):
         plate_wells = {}

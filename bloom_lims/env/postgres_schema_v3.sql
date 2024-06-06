@@ -220,7 +220,8 @@ CREATE TABLE generic_instance_lineage (
     version TEXT,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     modified_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    is_singleton BOOLEAN NOT NULL DEFAULT FALSE
+    is_singleton BOOLEAN NOT NULL DEFAULT FALSE,
+    relationship_type TEXT
 );
 
 CREATE INDEX idx_generic_instance_lineage_euid ON generic_instance_lineage(euid);
@@ -230,6 +231,7 @@ CREATE INDEX idx_generic_instance_lineage_child_uuid ON generic_instance_lineage
 CREATE INDEX idx_generic_instance_lineage_mod_dt ON generic_instance_lineage(modified_dt);
 CREATE INDEX idx_generic_instance_lineage_polymorphic_discriminator ON generic_instance_lineage(polymorphic_discriminator);
 CREATE INDEX idx_generic_instance_lineage_json_addl_gin ON generic_instance_lineage USING GIN (json_addl);
+CREATE INDEX idx_generic_instance_lineage_relationship_type ON generic_instance_lineage(relationship_type);
 
 CREATE OR REPLACE TRIGGER generic_instance_lineage_soft_delete
 BEFORE DELETE ON generic_instance_lineage

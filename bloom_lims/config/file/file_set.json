@@ -6,8 +6,8 @@
         "name": "A Generic File Set",
         "comments": "",
         "lab_code":"",
-        "group_key":"",
-        "group_description":""
+        "tag":"",
+        "description":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

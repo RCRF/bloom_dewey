@@ -45,7 +45,14 @@
           "actions": {
             "action/file/*/1.0/": {}
           }
-        }
+        },
+        "relationships": {
+          "group_order": "3",
+          "group_name": "Create Relationships",
+          "actions": {
+            "action/relationship/*/1.0/": {}
+          }
+        } 
       },
       "instantiation_layouts": [],
       "cogs" : {
