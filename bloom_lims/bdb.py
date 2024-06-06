@@ -2783,10 +2783,9 @@ class BloomFile(BloomObj):
                     "original_file_path": full_path_to_file, "original_local_server_name": socket.gethostname(),
                     "original_server_ip": local_ip, "original_file_size_bytes": file_size, 
                     "original_file_suffix": file_suffix, "original_file_data_type": "local file",
-                    "file_type": file_suffix
+                    "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
                 }
                 
-            
             elif s3_uri:
                 # Validate and move the file from the provided s3_uri
                 s3_parsed_uri = re.match(r's3://([^/]+)/(.+)', s3_uri)
@@ -2824,7 +2823,6 @@ class BloomFile(BloomObj):
                 self.logger.exception("No file data provided.")
                 raise ValueError("No file data provided.")
 
-
         except NoCredentialsError:
             raise Exception("S3 credentials are not available.")
         except Exception as e:
@@ -2835,8 +2833,6 @@ class BloomFile(BloomObj):
         self.session.commit()
 
         return file_instance
-
-
 
     def update_file_metadata(self, euid, file_metadata={}):
         file_instance = self.get_by_euid(euid)
