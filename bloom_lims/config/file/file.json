@@ -17,11 +17,12 @@
         "current_s3_key": "",
         "current_s3_bucket_name": "",
         "current_s3_uri": "",
-        "x_x_rcrf_patient_id": "",
+        "x_x_rcrf_patient_uid": "",
         "x_x_clinician_id": "",
         "x_relevant_datetime": "",
         "x_health_event_id": "",
         "x_external_ids": [],
+        "x_study_id": "",
         "upload_group_key": ""
       },
       "arbitrary_association_strings": [], 

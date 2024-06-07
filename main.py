@@ -1044,7 +1044,7 @@ def delete_by_euid(request: Request, euid, _auth=Depends(require_auth)):
     return RedirectResponse(url=referer, status_code=303)
 
 
-@app.get("/delete_object")
+@app.post("/delete_object")
 async def delete_object(request: Request, _auth=Depends(require_auth)):
     data = await request.json()
     euid = data.get("euid")
@@ -1411,14 +1411,27 @@ async def update_dag(request: Request, _auth=Depends(require_auth)):
     return {"status": "success", "filename": filename}
 
 
+@app.post("/delete_object")
+async def delete_object(request: Request, _auth=Depends(require_auth)):
+    data = await request.json()
+    euid = data.get("euid")
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+
+    bobdb.delete(bobdb.get_by_euid(euid))
+    bobdb.session.flush()
+    bobdb.session.commit()
+    
+    
+@app.post("/add_new_edge")
 async def add_new_edge(request: Request, _auth=Depends(require_auth)):
-    BO = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
     input_data = await request.json()  # Corrected call to request.json()
     parent_euid = input_data["parent_uuid"]
     child_euid = input_data["child_uuid"]
+    BO = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
     # Assuming the method returns the new edge object, you might need to adjust this part
     new_edge = BO.create_generic_instance_lineage_by_euids(parent_euid, child_euid)
-
+    BO.session.flush()
+    BO.session.commit()
     return {"euid": str(new_edge.euid)}
 
 
@@ -1517,7 +1530,7 @@ async def create_file(
     x_x_clinician_id: str = Form(""),
     x_health_event_id: str = Form(""),
     x_relevant_datetime: str = Form(""),
-    x_x_rcrf_patient_id: str = Form(""),
+    x_x_rcrf_patient_uid: str = Form(""),
     upload_group_key: str = Form("")
 ):
     
@@ -1537,7 +1550,7 @@ async def create_file(
             "x_x_clinician_id": x_x_clinician_id,
             "x_health_event_id": x_health_event_id,
             "x_relevant_datetime": x_relevant_datetime,
-            "x_x_rcrf_patient_id": x_x_rcrf_patient_id,
+            "x_x_rcrf_patient_uid": x_x_rcrf_patient_uid,
             "upload_ui_user": request.session['user_data']['email'],
             "upload_group_key": upload_group_key
         }
@@ -1741,7 +1754,7 @@ async def search_files(
 
     try:
         bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
-        euid_results = bfi.search_files_by_addl_metadata(search_criteria, greedy, 'file')
+        euid_results = bfi.search_objs_by_addl_metadata(search_criteria, greedy, 'file')
 
         # Fetch details for each EUID
         detailed_results = [bfi.get_by_euid(euid) for euid in euid_results]
@@ -1834,34 +1847,6 @@ async def create_file_set(
         raise(e)
         #    return RedirectResponse(url="/create_file_form", status_code=303)
 
-
-
-# Define the new endpoint
-@app.post("/create_file_set2")
-async def create_file_set2(request: Request, euids: List[str], name: str, description: str, tag: str, comments: str):
-    try:
-        bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
-
-        file_set_metadata = {
-            "properties": {
-                "name": file_set_request.name,
-                "description": file_set_request.description,
-                "tag": file_set_request.tag,
-                "comments": file_set_request.comments,
-            }
-        }
-
-        # Create the file set
-        new_file_set = bfs.create_file_set(file_set_metadata=file_set_metadata)
-
-        # Add files to the file set
-        file_euids_list = file_set_request.euids
-        bfs.add_files_to_file_set(file_set_euid=new_file_set.euid, file_euids=file_euids_list)
-
-        return {"status": "success", "file_set_euid": new_file_set.euid}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 # The following is very redundant to the file_search and <s>probably</s> should be refactored
 @app.post("/search_file_sets", response_class=HTMLResponse)
 async def search_file_sets(
@@ -1890,8 +1875,8 @@ async def search_file_sets(
     greedy = is_greedy == "yes"
 
     try:
-        bfs = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
-        file_sets = bfs.search_files_by_addl_metadata(q_ds, greedy, 'file_set')
+        bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
+        file_sets = bfs.search_objs_by_addl_metadata(q_ds, greedy, 'file_set')
 
         # Fetch details for each EUID
         detailed_results = [bfs.get_by_euid(euid) for euid in file_sets]

@@ -1835,6 +1835,62 @@ class BloomObj:
         else:
             return 0
 
+
+    def search_objs_by_addl_metadata(self, file_search_criteria, search_greedy=True, btype=None, b_sub_type=None, super_type=None):
+        query = self.session.query(self.Base.classes.generic_instance)
+        
+        if search_greedy:
+            # Greedy search: matching any of the provided search keys
+            or_conditions = []
+            for key, value in file_search_criteria.items():
+                if key == 'file_metadata':
+                    key = 'properties'
+                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+
+                # Create conditions for JSONB key-value pairs
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        jsonb_filter = {key: {sub_key: sub_value}}
+                        or_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
+                else:
+                    jsonb_filter = {key: value}
+                    or_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
+            
+            if or_conditions:
+                query = query.filter(or_(*or_conditions))
+        else:
+            # Non-greedy search: matching all specified search terms
+            and_conditions = []
+            for key, value in file_search_criteria.items():
+                if key == 'file_metadata':
+                    key = 'properties'
+                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        jsonb_filter = {key: {sub_key: sub_value}}
+                        and_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
+                else:
+                    jsonb_filter = {key: value}
+                    and_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
+
+            if and_conditions:
+                query = query.filter(and_(*and_conditions))
+
+        if btype is not None:
+            query = query.filter(self.Base.classes.generic_instance.btype == btype)
+            
+        if b_sub_type is not None:
+            query = query.filter(self.Base.classes.generic_instance.b_sub_type == b_sub_type)
+        
+        if super_type is not None:
+            query = query.filter(self.Base.classes.generic_instance.super_type == super_type)
+
+        logging.info(f"Generated SQL: {str(query.statement)}")
+        
+        results = query.all()
+        return [result.euid for result in results]
+
 class BloomContainer(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)
@@ -2719,6 +2775,30 @@ class BloomFile(BloomObj):
         )
         self.session.commit()
 
+       
+        # Special handling for x_x_rcrf_patient_uid
+        if 'x_x_rcrf_patient_uid' in file_metadata:
+            patient_id = file_metadata['x_x_rcrf_patient_uid']
+            search_criteria = {'properties': {'rcrf_patient_uid': patient_id}}
+            existing_euids = self.search_objs_by_addl_metadata(search_criteria, True, 
+                                                                 super_type='actor', 
+                                                                 btype='generic', 
+                                                                 b_sub_type='rcrf-patient')
+
+            if existing_euids:
+                # Create child relationships to existing objects
+                for euid in existing_euids:
+                    self.create_generic_instance_lineage_by_euids(euid, new_file.euid)
+            else:
+                # Create a new actor/generic/rcrf-patient object
+                new_patient = self.create_instance(
+                    self.query_template_by_component_v2("actor", "generic", "rcrf-patient", "1.0")[0].euid,
+                    {"properties": {"rcrf_patient_uid": patient_id}}
+                )
+                self.session.commit()
+                self.create_generic_instance_lineage_by_euids( new_patient.euid, new_file.euid)
+        
+
         new_file.json_addl['properties']["current_s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
         flag_modified(new_file, 'json_addl')
         self.session.commit()
@@ -2891,58 +2971,6 @@ class BloomFile(BloomObj):
 
     def get_file_by_euid(self, euid):
         return self.get_by_euid(euid)
-
-    def search_files_by_addl_metadata(self, file_search_criteria, search_greedy=True, btype=None, b_sub_type=None):
-        query = self.session.query(self.Base.classes.file_instance)
-        
-        if search_greedy:
-            # Greedy search: matching any of the provided search keys
-            or_conditions = []
-            for key, value in file_search_criteria.items():
-                if key == 'file_metadata':
-                    key = 'properties'
-                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
-
-                # Create conditions for JSONB key-value pairs
-                if isinstance(value, dict):
-                    for sub_key, sub_value in value.items():
-                        jsonb_filter = {key: {sub_key: sub_value}}
-                        or_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
-                else:
-                    jsonb_filter = {key: value}
-                    or_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
-            
-            if or_conditions:
-                query = query.filter(or_(*or_conditions))
-        else:
-            # Non-greedy search: matching all specified search terms
-            and_conditions = []
-            for key, value in file_search_criteria.items():
-                if key == 'file_metadata':
-                    key = 'properties'
-                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
-
-                if isinstance(value, dict):
-                    for sub_key, sub_value in value.items():
-                        jsonb_filter = {key: {sub_key: sub_value}}
-                        and_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
-                else:
-                    jsonb_filter = {key: value}
-                    and_conditions.append(self.Base.classes.file_instance.json_addl.op('@>')(jsonb_filter))
-
-            if and_conditions:
-                query = query.filter(and_(*and_conditions))
-
-        if btype is not None:
-            query = query.filter(self.Base.classes.file_instance.btype == btype)
-            
-        if b_sub_type is not None:
-            query = query.filter(self.Base.classes.file_instance.b_sub_type == b_sub_type)
-
-        logging.info(f"Generated SQL: {str(query.statement)}")
-        
-        results = query.all()
-        return [result.euid for result in results]
 
     def download_file(self, euid, save_pattern='dewey', include_metadata=False, save_path='.', delete_if_exists=False):
         """

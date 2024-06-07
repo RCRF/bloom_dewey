@@ -97,8 +97,8 @@
                     <small>upload group key: <code>{{ upload_group_key }}</code></small>
                     <br>
 <br>
-            <label for="x_x_rcrf_patient_id">RCRF Patient ID:</label>
-            <input type="text" id="x_x_rcrf_patient_id" name="x_x_rcrf_patient_id"><br><br>
+            <label for="x_x_rcrf_patient_uid">RCRF Patient ID:</label>
+            <input type="text" id="x_x_rcrf_patient_uid" name="x_x_rcrf_patient_uid"><br><br>
             <label for="x_x_clinician_id">Clinician ID:</label>
             <input type="text" id="x_x_clinician_id" name="x_x_clinician_id"><br><br>
             <label for="x_health_event_id">Health Event:</label>
@@ -158,11 +158,10 @@
     </div>
 
     <hr><hr>
-
-    <button class="accordion" style="width: -webkit-fill-available;">Simple File Search</button>
+    <button class="accordion" style="width: -webkit-fill-available;">File Search (bulk d/l & create file sets)</button>
     <div class="accordion-content">
         <ul>
-            <h3>Search Files via Metadata</h3><ul>
+            <h3>Search Files</h3><ul>
             <table>
                 <tr><td style="align:top;">
         <form id="searchFileForm" action="search_files" method="post" enctype="multipart/form-data">
@@ -217,7 +216,7 @@
             "original_file_suffix": "",
             "current_s3_key": "",
             "current_s3_bucket_name": "",
-            "x_x_rcrf_patient_id": "",
+            "x_x_rcrf_patient_uid": "",
             "x_x_clinician_id": "",
             "x_relevant_datetime": "",
             "x_health_event_id": ""
@@ -261,21 +260,21 @@
     <button class="accordion" style="width: -webkit-fill-available;">Search File Sets</button>
     <div class="accordion-content">
         <ul>
-            <h3>Search File Sets via Metadata</h3>
+            <h3>Search File Sets By</h3>
             <form id="searchFileSetForm" action="search_file_sets" method="post" enctype="multipart/form-data">
-                <label for="file_set_name">File Set Name: </label>
+                <label for="file_set_name">Name: </label>
                 <input type="text" id="file_set_name" name="file_set_name" value=""><br><br>
 
-                <label for="file_set_description">File Set Description: </label>
+                <label for="file_set_description">Description: </label>
                 <input type="text" id="file_set_description" name="file_set_description" value=""><br><br>
 
-                <label for="file_set_tag">File Set Tag: </label>
+                <label for="file_set_tag">Tag: </label>
                 <input type="text" id="file_set_tag" name="file_set_tag" value=""><br><br>
 
                 <label for="comments">Comments: </label>
                 <input type="text" id="comments" name="comments" value=""><br><br>
 
-                <label for="file_euids">File EUIDs: </label>
+                <label for="file_euids">File EUIDs (not working presentle): </label>
                 <input type="text" id="file_euids" name="file_euids" value=""><br><br>
 
                 <label for="is_greedy">Greedy Search: </label>
