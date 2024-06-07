@@ -544,8 +544,7 @@ async def assays(request: Request, show_type: str = "all", _auth=Depends(require
 @app.get("/calculate_cogs_children")
 async def Acalculate_cogs_children(euid, request: Request, _auth=Depends(require_auth)):
     try:
-
-        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]))
+        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]['email']))
         cogs_value = round(bobdb.get_cost_of_euid_children(euid), 2)
         return json.dumps({"success": True, "cogs_value": cogs_value})
     except Exception as e:
@@ -1790,8 +1789,11 @@ async def create_file(
                     logging.warning(f"Skipping file with no filename: {file}")
 
         if directory:
-            for file in directory:
-                if len(file.filename) > 0:
+            directory_files = [file for file in directory if not file.filename.startswith('.')]
+
+            for file in directory_files:
+              
+                if len(file.filename) > 0 and len(file.filename.lstrip('.').lstrip('/').split('/')) < 3:
                     try:
                         new_file = bfi.create_file(
                             file_metadata=file_metadata,

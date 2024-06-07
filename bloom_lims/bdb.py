@@ -3121,6 +3121,18 @@ class BloomFile(BloomObj):
 
         return new_file
 
+
+    def sanitize_tag(self,value):
+        """Sanitize the tag value to conform to AWS tag requirements."""
+        # Remove any invalid characters
+        sanitized_value = re.sub(r'[^a-zA-Z0-9\s\+\=._\-]', '', value)
+        # Replace spaces with underscores
+        sanitized_value = sanitized_value.replace(' ', '_')
+        # Trim the string to the maximum allowed length (256 characters for tag values)
+        sanitized_value = "SAN:"+sanitized_value[:252]
+
+        return value #sanitized_value if sanitized_value != value else value
+
     def add_file_data(
         self,
         euid,
@@ -3172,7 +3184,7 @@ class BloomFile(BloomObj):
                     Bucket=s3_bucket_name,
                     Key=s3_key,
                     Body=file_data,
-                    Tagging=f"creating_service=dewey&original_file_name={file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}",
+                    Tagging=f"creating_service=dewey&original_file_name={self.sanitize_tag(file_name)}&original_file_path=N/A&original_file_size_bytes={self.sanitize_tag(str(file_size))}&original_file_suffix={self.sanitize_tag(file_suffix)}&euid={euid}",
                 )
                 odirectory, ofilename = os.path.split(file_name)
 
@@ -3197,7 +3209,7 @@ class BloomFile(BloomObj):
                     Bucket=s3_bucket_name,
                     Key=s3_key,
                     Body=response.content,
-                    Tagging=f"creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}",
+                    Tagging=f"creating_service=dewey&original_file_name={self.sanitize_tag(url_info)}&original_url={self.sanitize_tag(url)}&original_file_size_bytes={self.sanitize_tag(str(file_size))}&original_file_suffix={self.sanitize_tag(file_suffix)}&euid={euid}",
                 )
                 file_properties = {
                     "current_s3_key": s3_key,
@@ -3221,7 +3233,7 @@ class BloomFile(BloomObj):
                     Bucket=s3_bucket_name,
                     Key=s3_key,
                     Body=file_data,
-                    Tagging=f"creating_service=dewey&original_file_name={local_path_info.name}&original_file_path={full_path_to_file}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}",
+                    Tagging=f"creating_service=dewey&original_file_name={self.sanitize_tag(local_path_info.name)}&original_file_path={self.sanitize_tag(full_path_to_file)}&original_file_size_bytes={self.sanitize_tag(str(file_size))}&original_file_suffix={self.sanitize_tag(file_suffix)}&euid={euid}",
                 )
                 file_properties = {
                     "current_s3_key": s3_key,
@@ -3285,10 +3297,15 @@ class BloomFile(BloomObj):
                 self.logger.exception("No file data provided.")
                 raise ValueError("No file data provided.")
 
-        except NoCredentialsError:
-            raise Exception("S3 credentials are not available.")
         except Exception as e:
-            raise Exception(f"An error occurred while uploading the file: {e}")
+            logging.exception(f"An error occurred while uploading the file: {e}")
+            file_instance.bstatus = "error"
+            file_instance.json_addl["properties"]["comments"] = str(e) + f" FILENAM == {file_name}"
+            flag_modified(file_instance, "json_addl")
+            flag_modified(file_instance, "bstatus")
+            self.session.flush()
+            self.session.commit()
+            raise(e)
 
         _update_recursive(file_instance.json_addl["properties"], file_properties)
         flag_modified(file_instance, "json_addl")
@@ -3423,7 +3440,23 @@ class BloomFile(BloomObj):
             self.logger.error(f"Error deleting file {euid}: {e}")
             self.session.rollback()
             return False
-
+ 
+    def get_s3_object_stream(self, euid):
+        file_instance = self.get_file_by_euid(euid)
+        s3_bucket_name = file_instance.json_addl["properties"]["current_s3_bucket_name"]
+        s3_key = file_instance.json_addl["properties"]["current_s3_key"]
+        
+        try:
+            response = self.s3_client.get_object(Bucket=s3_bucket_name, Key=s3_key)
+            content_type = response['ContentType']
+            return response['Body'], content_type
+        except self.s3_client.exceptions.NoSuchKey:
+            raise Exception("File not found")
+        except NoCredentialsError:
+            raise Exception("Credentials not available")
+        except Exception as e:
+            raise Exception(e)
+ 
 
 class BloomFileSet(BloomObj):
     def __init__(self, bdb):
