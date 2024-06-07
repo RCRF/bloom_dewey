@@ -44,3 +44,5 @@ boto3
 botocore
 requests_mock
 moto
+pandas
+matplotlib

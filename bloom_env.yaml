@@ -38,4 +38,6 @@ dependencies:
     - botocore
     - requests_mock
     - moto
+    - pandas
+    - matplotlib
 prefix: /Users/daylily/miniconda/envs/BLOOM

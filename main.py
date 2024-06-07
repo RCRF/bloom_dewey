@@ -8,6 +8,9 @@ from typing import List
 from pathlib import Path
 import random
 
+import pandas as pd
+import matplotlib.pyplot as plt
+
 from datetime import datetime, timedelta, date
 
 # Do the logging thing
@@ -1504,6 +1507,7 @@ async def create_file(
     directory: List[UploadFile] = File(None),
     urls: str = Form(None),
     s3_uris: str = Form(None),
+    x_study_id: str = Form(""),
     x_x_clinician_id: str = Form(""),
     x_health_event_id: str = Form(""),
     x_relevant_datetime: str = Form(""),
@@ -1529,7 +1533,8 @@ async def create_file(
             "x_relevant_datetime": x_relevant_datetime,
             "x_x_rcrf_patient_uid": x_x_rcrf_patient_uid,
             "upload_ui_user": request.session['user_data']['email'],
-            "upload_group_key": upload_group_key
+            "upload_group_key": upload_group_key,
+            "x_study_id": x_study_id
         }
 
         results = []
@@ -1853,7 +1858,7 @@ async def search_file_sets(
 
     try:
         bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
-        file_sets = bfs.search_objs_by_addl_metadata(q_ds, greedy, 'file_set')
+        file_sets = bfs.search_objs_by_addl_metadata(q_ds, greedy, 'file_set', super_type='file')
 
         # Fetch details for each EUID
         detailed_results = [bfs.get_by_euid(euid) for euid in file_sets]
@@ -1901,3 +1906,52 @@ async def search_file_sets(
             udat=user_data
         )
         return HTMLResponse(content=content)
+    
+    
+
+@app.get("/visual_report", response_class=HTMLResponse)
+async def visual_report(request: Request):
+    import io
+    import base64
+    # Read the TSV file
+    file_path = '~/Downloads/dewey_search.tsv'
+    data = pd.read_csv(file_path, sep='\t')
+
+    # Analyze the Data
+    file_types = data['file_type'].value_counts()
+    file_sizes = data['original_file_size_bytes'].dropna()
+    upload_users = data['upload_ui_user'].value_counts()
+
+    # Generate Visualizations
+    plots = []
+
+    def create_plot(series, title, xlabel, ylabel, plot_type='bar'):
+        fig, ax = plt.subplots()
+        if plot_type == 'bar':
+            series.plot(kind='bar', ax=ax)
+        elif plot_type == 'hist':
+            series.plot(kind='hist', ax=ax, bins=30)
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        figfile = io.BytesIO()
+        plt.savefig(figfile, format='png')
+        figfile.seek(0)
+        return base64.b64encode(figfile.getvalue()).decode('utf8')
+
+    file_types_img = create_plot(file_types, 'Distribution of File Types', 'File Type', 'Count', 'bar')
+    file_sizes_img = create_plot(file_sizes, 'Distribution of File Sizes', 'File Size (bytes)', 'Frequency', 'hist')
+    upload_users_img = create_plot(upload_users, 'Files Uploaded by User', 'User', 'Number of Files', 'bar')
+
+    plots.append(file_types_img)
+    plots.append(file_sizes_img)
+    plots.append(upload_users_img)
+
+    # Render the HTML template with the plots
+    template = templates.get_template("visual_report.html")
+    context = {
+        "request": request,
+        "plots": plots
+    }
+
+    return HTMLResponse(content=template.render(context), status_code=200)
