@@ -14,17 +14,58 @@
             right: 20px;
             /* Add more styling as needed */
         }
+        th {
+            cursor: pointer;
+        }
     </style>
-
+    <script>
+        function sortTable(n, tableId) {
+            const table = document.getElementById(tableId);
+            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            switching = true;
+            dir = "asc";
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    if (dir === "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir === "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount === 0 && dir === "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 <body>
+    {% include 'dewey_header.html' %}
 
     <h1>File Tools</h1>
     <hr>
     <ul>
     <br>
 
-    <button class="accordion">Create New File</button>
+    <button class="accordion" style="width: -webkit-fill-available;">Create New File(s)</button>
     <div class="accordion-content">
         <ul>
         <form id="createFileForm" action="create_file" method="post" enctype="multipart/form-data">
@@ -36,18 +77,18 @@
             <ul>
             <label for="file_data">A Local File:</label>
             <input type="file" id="file_data" name="file_data"><br><br>
-            <label for="directory">A Directory Of Files <br>(all files will be processed, no recursion):</label>
+            <label for="directory">A Directory Of Files <br>(RECURSIVE, max 1k files):</label>
             <input type="file" id="directory" name="directory" webkitdirectory directory multiple><br><br>
 
             <br><br>
             <label for="urls">Public URLs To Files (one per line):</label>
-            <textarea id="urls" name="urls" rows="10" cols="30"></textarea><br><br>
-            </ul>
+            <textarea id="urls" name="urls" rows="5" cols="25"></textarea><br><br>
 
             <br><br>
-            <label for="s3_uris">S3 URIs (which must be visible w/our credentials & one per line):</label>
-            <textarea id="s3_uris" name="s3_uris" rows="10" cols="30"></textarea><br><br>
+            <label for="s3_uris">S3 URIs (accessible to dewey):</label>
+            <textarea id="s3_uris" name="s3_uris" rows="5" cols="28"></textarea><br><br>
             </ul>
+        </ul>
 
                 </td><td> </td>
                 <td>
@@ -79,7 +120,7 @@
     </div>
     <hr><hr>
 
-    <button class="accordion">Download File</button>
+    <button class="accordion" style="width: -webkit-fill-available;">Download File</button>
     <div class="accordion-content">
         <ul><ul>
         <form id="downloadFileForm" action="download_file" method="post" enctype="multipart/form-data">
@@ -118,7 +159,7 @@
 
     <hr><hr>
 
-    <button class="accordion">Simple File Search</button>
+    <button class="accordion" style="width: -webkit-fill-available;">Simple File Search</button>
     <div class="accordion-content">
         <ul>
             <h3>Search Files via Metadata</h3><ul>
@@ -149,7 +190,7 @@
             <label for="key_2">Key 2: </label>
             <input type="text" id="key_2" name="key_2"><br>
 
-            <label for="value_2">Value 2">Value 2: </label>
+            <label for="value_2">Value 2: </label>
             <input type="text" id="value_2" name="value_2"><br><br>
 
             <label for="key_3">Key 3: </label>
@@ -189,7 +230,7 @@
 
     <hr><hr>
 
-    <button class="accordion">Create File Sets</button>
+    <button class="accordion" style="width: -webkit-fill-available;">Create File Set</button>
     <div class="accordion-content">
 
         <ul>
@@ -209,32 +250,51 @@
             <input type="text" id="comments" name="comments"><br><br>
     
             <label for="file_euids">File EUIDs :</label>
-            <textarea id="file_euids" name="file_euids" required> </textarea>
+            <textarea id="file_euids" name="file_euids" required></textarea>
             <br><br>
-            <button type="submit">Create File Set</button
+            <button type="submit">Create File Set</button>
         </form>
     </div>
-</ul>
-</ul>
-</ul>
 
-<hr>
+    <hr><hr>
 
-<div>
-    <button class="floating-button2 floating-button-logout2" onclick="location.href='/admin?dest=skin'">🎨</button>
-    
-    {% if user_logged_in %} <!-- You'll need to replace this with actual server-side code -->
-        <button class="floating-button2 floating-button-skin2" onclick="location.href='/logout'"  >🏃‍♂️</button>
-    {% else %}
-        <button class="floating-button2 floating-button-skin2" onclick="location.href='/login'" >🔑</button>
-    {% endif %}
-        </div>
+    <button class="accordion" style="width: -webkit-fill-available;">Search File Sets</button>
+    <div class="accordion-content">
+        <ul>
+            <h3>Search File Sets via Metadata</h3>
+            <form id="searchFileSetForm" action="search_file_sets" method="post" enctype="multipart/form-data">
+                <label for="file_set_name">File Set Name: </label>
+                <input type="text" id="file_set_name" name="file_set_name" value=""><br><br>
+
+                <label for="file_set_description">File Set Description: </label>
+                <input type="text" id="file_set_description" name="file_set_description" value=""><br><br>
+
+                <label for="file_set_tag">File Set Tag: </label>
+                <input type="text" id="file_set_tag" name="file_set_tag" value=""><br><br>
+
+                <label for="comments">Comments: </label>
+                <input type="text" id="comments" name="comments" value=""><br><br>
+
+                <label for="file_euids">File EUIDs: </label>
+                <input type="text" id="file_euids" name="file_euids" value=""><br><br>
+
+                <label for="is_greedy">Greedy Search: </label>
+                <select name="is_greedy">
+                    <option value="yes" selected>yes</option>
+                    <option value="no">no</option>
+                </select><br><br>
+
+                <button type="submit">Search File Sets</button>
+            </form>
+        </ul>
+    </div>
 
     <script>
         function resetForms() {
             document.getElementById('createFileForm').reset();
             document.getElementById('downloadFileForm').reset();
             document.getElementById('searchFileForm').reset();
+            document.getElementById('searchFileSetForm').reset();
         }
 
         window.onload = resetForms;
@@ -245,5 +305,7 @@
             }
         });
     </script>
+    {% include 'pre_body_close.html' %}
+
 </body>
 </html>

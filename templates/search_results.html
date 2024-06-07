@@ -53,23 +53,72 @@
 
             document.getElementById('fileSetForm').submit();
         }
+
+        function downloadTableAsTSV() {
+            const table = document.querySelector('table');
+            if (!table) {
+                alert('No table found!');
+                return;
+            }
+
+            let tsv = [];
+            const rows = table.querySelectorAll('tr');
+
+            for (const row of rows) {
+                const cols = row.querySelectorAll('td, th');
+                const rowData = [];
+                for (const col of cols) {
+                    rowData.push(col.innerText);
+                }
+                tsv.push(rowData.join('\t'));
+            }
+
+            const tsvFile = new Blob([tsv.join('\n')], { type: 'text/tsv' });
+            const downloadLink = document.createElement('a');
+            const now = new Date();
+            const timestamp = now.getFullYear() + "-" +
+                              (now.getMonth() + 1).toString().padStart(2, '0') + "-" +
+                              now.getDate().toString().padStart(2, '0') + "_" +
+                              now.getHours().toString().padStart(2, '0') + "-" +
+                              now.getMinutes().toString().padStart(2, '0') + "-" +
+                              now.getSeconds().toString().padStart(2, '0');
+            downloadLink.download = `dewey_search_${timestamp}.tsv`;
+            downloadLink.href = window.URL.createObjectURL(tsvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
     </script>
     <style>
         .floating-button {
             position: fixed;
-            bottom: 10px;
             padding: 10px;
             z-index: 1000;
+            background-color: #008CBA; /* Blue background */
+            color: white; /* White text */
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .floating-button.download-tsv {
+            top: 20px;
+            right: 20px;
         }
 
         .floating-button.create-set {
+            bottom: 10px;
             right: 10px;
-            background-color: var(--primary-color);
         }
 
         .floating-button.download {
+            bottom: 10px;
             left: 10px;
-            background-color: var(--primary-color);
         }
 
         .form-section {
@@ -106,6 +155,8 @@
     </style>
 </head>
 <body>
+    {% include 'dewey_header.html' %}
+
     <h1>Search Results</h1>
     <form id="fileSetForm" action="/create_file_set" method="post">
         <div style="display: flex;">
@@ -185,6 +236,8 @@
     </table>
 
     <a href="/create_file_form">Go Back</a>
+
+    <button class="floating-button download-tsv" onclick="downloadTableAsTSV()">⬇️</button>
 
     <div class="floating-button create-set">
         <button onclick="createFileSet(event)">Create File Set</button>

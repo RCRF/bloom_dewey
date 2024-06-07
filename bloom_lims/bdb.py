@@ -2777,11 +2777,6 @@ class BloomFile(BloomObj):
             self.logger.exception(f"A file with PREFIX EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}.")
             raise Exception(f"A file with EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}.")
 
-
-        #if self._check_s3_key_exists(s3_bucket_name, s3_key):
-        #    self.logger.exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
-        #    raise Exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
-
         try:
             if file_data:
                 file_data.seek(0)  # Ensure the file pointer is at the beginning
@@ -2897,7 +2892,7 @@ class BloomFile(BloomObj):
     def get_file_by_euid(self, euid):
         return self.get_by_euid(euid)
 
-    def search_files_by_addl_metadata(self, file_search_criteria, search_greedy=True):
+    def search_files_by_addl_metadata(self, file_search_criteria, search_greedy=True, btype=None, b_sub_type=None):
         query = self.session.query(self.Base.classes.file_instance)
         
         if search_greedy:
@@ -2937,14 +2932,19 @@ class BloomFile(BloomObj):
 
             if and_conditions:
                 query = query.filter(and_(*and_conditions))
-        
+
+        if btype is not None:
+            query = query.filter(self.Base.classes.file_instance.btype == btype)
+            
+        if b_sub_type is not None:
+            query = query.filter(self.Base.classes.file_instance.b_sub_type == b_sub_type)
+
         logging.info(f"Generated SQL: {str(query.statement)}")
         
         results = query.all()
         return [result.euid for result in results]
 
-
-    def download_file(self, euid, save_pattern='dewey', include_metadata=False, save_path='.'):
+    def download_file(self, euid, save_pattern='dewey', include_metadata=False, save_path='.', delete_if_exists=False):
         """
         Downloads the S3 file locally with different naming patterns and optionally includes metadata in a YAML file.
 
@@ -2974,14 +2974,21 @@ class BloomFile(BloomObj):
         
         if os.path.exists(local_file_path):
             self.logger.exception(f"File already exists: {local_file_path}")
-            raise Exception(f"File already exists: {local_file_path}")
+            if delete_if_exists:
+                os.remove(local_file_path)  # Delete the existing file
+            else:
+                raise Exception(f"File already exists: {local_file_path}")
 
         # Save metadata as a YAML file if requested
         if include_metadata:
             metadata_file_path = f"{local_file_path}.dewey.yaml"
             if os.path.exists(metadata_file_path):
                 self.logger.exception(f"Metadata file already exists: {metadata_file_path}")
-                raise Exception(f"Metadata file already exists: {metadata_file_path}")
+
+                if delete_if_exists:
+                    os.remove(metadata_file_path)
+                else:
+                    raise Exception(f"Metadata file already exists: {metadata_file_path}")
             
             with open(metadata_file_path, 'w') as metadata_file:
                 yaml.dump(file_instance.json_addl['properties'], metadata_file)
@@ -3073,6 +3080,58 @@ class BloomFileSet(BloomObj):
                     self.delete_obj(i)
                     
         self.session.commit()
-        return file_set
-    
-    
+        return file_set    
+
+    def search_file_sets_by_metadata(self, search_criteria, greedy=True):
+        """
+        Search for file sets based on additional metadata.
+
+        :param search_criteria: Dictionary containing the metadata to search for.
+        :param greedy: Boolean indicating whether to perform a greedy search (matching any criteria) or not (matching all criteria).
+        :return: List of EUIDs of matching file sets.
+        """
+
+        query = self.session.query(self.Base.classes.file_instance)
+
+        if greedy:
+            # Greedy search: matching any of the provided search keys
+            or_conditions = []
+            for key, value in search_criteria.items():
+                if key == 'file_metadata':
+                    key = 'properties'
+                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+
+                # Create conditions for JSONB key-value pairs
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        jsonb_filter = {key: {sub_key: sub_value}}
+                        or_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+                else:
+                    jsonb_filter = {key: value}
+                    or_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+
+            if or_conditions:
+                query = query.filter(or_(*or_conditions))
+        else:
+            # Non-greedy search: matching all specified search terms
+            and_conditions = []
+            for key, value in search_criteria.items():
+                if key == 'file_metadata':
+                    key = 'properties'
+                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        jsonb_filter = {key: {sub_key: sub_value}}
+                        and_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+                else:
+                    jsonb_filter = {key: value}
+                    and_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+
+            if and_conditions:
+                query = query.filter(and_(*and_conditions))
+
+        logging.info(f"Generated SQL: {str(query.statement)}")
+
+        results = query.all()
+        return [result.euid for result in results]

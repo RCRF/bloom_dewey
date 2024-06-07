@@ -526,6 +526,7 @@ async def admin(request: Request, _auth=Depends(require_auth), dest='na'):
         user_data=user_data,
         printer_info=printer_info,
         dest_section=dest_section,
+        udat=request.session['user_data']
     )
     
     return HTMLResponse(content=content)
@@ -979,7 +980,7 @@ async def euid_details(
         style=style,
         relationships=relationship_data,
         audit_logs=audit_logs,
-        oobj=obj,
+        oobj=obj,udat=request.session['user_data']
     )
     return HTMLResponse(content=content)
 
@@ -1486,7 +1487,7 @@ def generate_unique_upload_key():
 
 
 @app.get("/create_file_form", response_class=HTMLResponse)
-async def create_file_form(request: Request):
+async def create_file_form(request: Request,_auth=Depends(require_auth)):
     request.session.pop('form_data', None)
 
     accordion_states = dict(request.session)
@@ -1519,6 +1520,14 @@ async def create_file(
     x_x_rcrf_patient_id: str = Form(""),
     upload_group_key: str = Form("")
 ):
+    
+    if directory and len(directory) > 1000:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Too many files. Maximum number of files is 1000."}
+        )
+        raise
+    
     try:
         bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
         file_metadata = {
@@ -1540,7 +1549,7 @@ async def create_file(
                 if file.filename:  # Ensure that there is a valid filename
                     try:
                         new_file = bfi.create_file(file_metadata=file_metadata, file_data=file.file, file_name=file.filename)
-                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url})
+                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url, "current_s3_uri": new_file.json_addl['properties']['current_s3_uri'] })
                     except Exception as e:
                         results.append({"identifier": file.filename, "status": f"Failed: {str(e)}", "original": file.filename if file else url})
                 else:
@@ -1551,7 +1560,7 @@ async def create_file(
                 if len(file.filename) > 0:
                     try:
                         new_file = bfi.create_file(file_metadata=file_metadata, file_data=file.file, file_name=file.filename)
-                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url})
+                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url, "current_s3_uri": new_file.json_addl['properties']['current_s3_uri']})
                     except Exception as e:
                         results.append({"identifier": file.filename, "status": f"Failed: {str(e)}","original": file.filename if file else url})
 
@@ -1561,7 +1570,7 @@ async def create_file(
                 if url.strip():
                     try:
                         new_file = bfi.create_file(file_metadata=file_metadata, url=url.strip())
-                        results.append({"identifier": new_file.euid, "status": "Success"})
+                        results.append({"identifier": new_file.euid, "status": "Success", "original":url, "current_s3_uri": new_file.json_addl['properties']['current_s3_uri']})
                     except Exception as e:
                         results.append({"identifier": url.strip(), "status": f"Failed: {str(e)}"})
         if s3_uris:
@@ -1570,7 +1579,7 @@ async def create_file(
                 if s3_uri.strip():
                     try:
                         new_file = bfi.create_file(file_metadata=file_metadata, s3_uri=s3_uri.strip())
-                        results.append({"identifier": new_file.euid, "status": "Success"})
+                        results.append({"identifier": new_file.euid, "status": "Success", "original":s3_uri,"current_s3_uri": new_file.json_addl['properties']['current_s3_uri']})
                     except Exception as e:
                         results.append({"identifier": s3_uri.strip(), "status": f"Failed: {str(e)}"})
 
@@ -1620,7 +1629,8 @@ async def download_file(
             euid=euid, 
             save_pattern=download_type, 
             include_metadata=True if create_metadata_file == 'yes' else False, 
-            save_path='./tmp/'
+            save_path='./tmp/',
+            delete_if_exists=True
         )
 
         # Ensure the file exists
@@ -1731,7 +1741,7 @@ async def search_files(
 
     try:
         bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
-        euid_results = bfi.search_files_by_addl_metadata(search_criteria, greedy)
+        euid_results = bfi.search_files_by_addl_metadata(search_criteria, greedy, 'file')
 
         # Fetch details for each EUID
         detailed_results = [bfi.get_by_euid(euid) for euid in euid_results]
@@ -1804,15 +1814,13 @@ async def create_file_set(
     try:
         bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
 
-        file_set_metadata = {
-            "properties": {
+        file_set_metadata = {        
                 "name": file_set_name,
                 "description": file_set_description,
                 "tag": file_set_tag,
                 "comments": comments,
             }
-        }
-
+        
         # Create the file set
         new_file_set = bfs.create_file_set(file_set_metadata=file_set_metadata)
 
@@ -1853,3 +1861,81 @@ async def create_file_set2(request: Request, euids: List[str], name: str, descri
         return {"status": "success", "file_set_euid": new_file_set.euid}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# The following is very redundant to the file_search and <s>probably</s> should be refactored
+@app.post("/search_file_sets", response_class=HTMLResponse)
+async def search_file_sets(
+    request: Request,
+    file_set_name: str = Form(None),
+    file_set_description: str = Form(None),
+    file_set_tag: str = Form(None),
+    comments: str = Form(None),
+    file_euids: str = Form(None),
+    is_greedy: str = Form("yes")
+):
+    search_criteria = {}
+
+    if file_set_name:
+        search_criteria["name"] = file_set_name
+    if file_set_description:
+        search_criteria["description"] = file_set_description
+    if file_set_tag:
+        search_criteria["tag"] = file_set_tag
+    if comments:
+        search_criteria["comments"] = comments
+  
+
+    q_ds = {'properties': search_criteria}
+    
+    greedy = is_greedy == "yes"
+
+    try:
+        bfs = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
+        file_sets = bfs.search_files_by_addl_metadata(q_ds, greedy, 'file_set')
+
+        # Fetch details for each EUID
+        detailed_results = [bfs.get_by_euid(euid) for euid in file_sets]
+
+        # Create a list of columns for the table
+        columns = ["EUID", "Date Created", "Status"]
+        if detailed_results and detailed_results[0].json_addl.get('properties'):
+            columns += list(detailed_results[0].json_addl['properties'].keys())
+        columns.append("File EUIDs")
+        # Prepare the data for the template
+        table_data = []
+        for result in detailed_results:
+            row = {
+                "EUID": result.euid,
+                "Date Created": result.created_dt.strftime("%Y-%m-%d %H:%M:%S"),
+                "Status": result.bstatus,
+            }
+            for key in columns[3:]:
+                row[key] = result.json_addl['properties'].get(key, "N/A")
+            file_euids = [elem.child_instance.euid for elem in result.parent_of_lineages.all()]
+            euid_links = [f'<a href="euid_details?euid={euid}">{euid}</a>' for euid in file_euids]
+            row["File EUIDs"] = euid_links
+            table_data.append(row)
+
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+
+        content = templates.get_template("file_set_search_results.html").render(
+            request=request,
+            table_data=table_data,
+            columns=columns,
+            style=style,
+            udat=user_data
+        )
+        return HTMLResponse(content=content)
+
+    except Exception as e:
+        logging.error(f"Error searching file sets: {e}")
+        user_data = request.session.get('user_data', {})
+        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        content = templates.get_template("search_error.html").render(
+            request=request,
+            error=f"An error occurred: {e}",
+            style=style,
+            udat=user_data
+        )
+        return HTMLResponse(content=content)
