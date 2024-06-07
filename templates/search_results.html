@@ -52,15 +52,7 @@
                 <td>
                     {% if column == 'EUID' %}
                     <a target=euid_detail href="euid_details?euid={{ row[column] }}">{{ row[column] }}</a> .. 
-                    <small>
-                        <form action="/download_file" method="post">
-                            <input type="hidden" name="download_type" value="dewey">
-                            <input type="hidden" name="create_metadata_file" value="yes">
-                            <input type="hidden" name="euid" value="{{ row[column] }}">
-                            <input type="hidden" name="ret_json" value="True">
-                            <input type="submit" value="download">
-                        </form>
-                    </small>
+                   
                     {% elif column == 'File URL' %}
                     {% else %}
                     {{ row[column] }}

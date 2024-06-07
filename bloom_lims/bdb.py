@@ -1237,7 +1237,8 @@ class BloomObj:
                     0 AS depth,
                     NULL::text AS lineage_euid,
                     NULL::text AS lineage_parent_euid,
-                    NULL::text AS lineage_child_euid
+                    NULL::text AS lineage_child_euid,
+                    NULL::text AS relationship_type
                 FROM 
                     generic_instance gi
                 WHERE 
@@ -1256,7 +1257,8 @@ class BloomObj:
                     gd.depth + 1,
                     gil.euid AS lineage_euid,
                     parent_instance.euid AS lineage_parent_euid,
-                    child_instance.euid as lineage_child_euid
+                    child_instance.euid as lineage_child_euid,
+                    gil.relationship_type
                 FROM 
                     generic_instance_lineage gil
                 JOIN 

@@ -300,8 +300,9 @@
                         "selector": "edge",
                         "style": {
                             "width": 3,
-                            "line-color": "#357b95",
-                            "source-arrow-color": "#357b95",
+                            "line-color": function(ele) {
+                                return ele.data('color') || '#357b95'; // Use the 'color' property from the edge's data
+                            },                            "source-arrow-color": "#357b95",
                             "target-arrow-color": "#357b95",
                             "source-arrow-shape": "triangle",   
                             "curve-style": "bezier",

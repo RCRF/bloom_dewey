@@ -206,6 +206,12 @@ class RequireAuthException(HTTPException):
     def __init__(self, detail: str):
         super().__init__(status_code=403, detail=detail)
 
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    file_path = os.path.join('static', 'favicon.ico')
+    return FileResponse(file_path)
+
 @app.exception_handler(AuthenticationRequiredException)
 async def authentication_required_exception_handler(request: Request, exc: AuthenticationRequiredException):
     return RedirectResponse(url="/login")
@@ -1273,6 +1279,11 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
         "generic": "#008080",
         }
 
+    edge_relationship_type_colors = {
+        "generic": "#ADD8E6",
+        "index": "#4CAF50"
+    }
+
     #instance_result = []
     instance_result = {}
     lineage_result = {}
@@ -1289,7 +1300,7 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
             if r[8] in [None, '', 'None']:
                 pass
             else:
-                lin_edge = {'parent_euid': r[9], 'child_euid': r[10], 'lineage_euid': r[8]}
+                lin_edge = {'parent_euid': r[9], 'child_euid': r[10], 'lineage_euid': r[8], 'relationship_type': r[11]}
                 lineage_result[r[8]] = lin_edge
 
     # Construct nodes and edges
@@ -1323,6 +1334,8 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
                 "source": str(lineage['parent_euid']),
                 "target": str(lineage['child_euid']),
                 "id": str(lineage['lineage_euid']),
+                "relationship_type": str(lineage['relationship_type']),
+                "color": edge_relationship_type_colors.get(lineage['relationship_type'], "lightgreen"),
             },
             "group": "edges",
         }
