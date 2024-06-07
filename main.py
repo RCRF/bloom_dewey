@@ -17,11 +17,14 @@ from datetime import datetime, timedelta, date
 import logging
 from logging.handlers import RotatingFileHandler
 
+
 def get_clean_timestamp():
     # Format: YYYY-MM-DD hh:mm:ss
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-os.makedirs('logs', exist_ok=True)
+
+os.makedirs("logs", exist_ok=True)
+
 
 def setup_logging():
     # uvicorn to capture logs from all libs
@@ -33,14 +36,16 @@ def setup_logging():
 
     # Stream handler (to console)
     c_handler = logging.StreamHandler()
-    c_handler.setLevel(logging.INFO)  
+    c_handler.setLevel(logging.INFO)
 
     # File handler (to file, with rotation)
     f_handler = RotatingFileHandler(log_filename, maxBytes=10485760, backupCount=5)
-    f_handler.setLevel(logging.INFO)  
+    f_handler.setLevel(logging.INFO)
 
     # Common log format
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     c_handler.setFormatter(formatter)
     f_handler.setFormatter(formatter)
 
@@ -48,11 +53,13 @@ def setup_logging():
     logger.addHandler(c_handler)
     logger.addHandler(f_handler)
 
+
 setup_logging()
 
 # The following three lines allow for dropping embed() in to block and present an IPython shell
 from IPython import embed
 import nest_asyncio
+
 nest_asyncio.apply()
 
 from fastapi import (
@@ -66,7 +73,7 @@ from fastapi import (
     Query,
     File,
     UploadFile,
-    BackgroundTasks
+    BackgroundTasks,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyCookie
@@ -84,16 +91,22 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from bloom_lims.bdb import BLOOMdb3
-from bloom_lims.bdb import BloomObj, BloomWorkflow, BloomWorkflowStep, BloomFile, BloomFileSet
+from bloom_lims.bdb import (
+    BloomObj,
+    BloomWorkflow,
+    BloomWorkflowStep,
+    BloomFile,
+    BloomFileSet,
+)
 from auth.supabase.connection import create_supabase_client
 
 
 # local udata prefernces
-UDAT_FILE = './etc/udat.json'
+UDAT_FILE = "./etc/udat.json"
 # Create if not exists
 os.makedirs(os.path.dirname(UDAT_FILE), exist_ok=True)
 if not os.path.exists(UDAT_FILE):
-    with open(UDAT_FILE, 'w') as f:
+    with open(UDAT_FILE, "w") as f:
         json.dump({}, f)
 
 # Initialize Jinja2 environment
@@ -115,7 +128,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(SessionMiddleware, secret_key='your-secret-key')
+app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
 # Serve static files
 cookie_scheme = APIKeyCookie(name="session")
@@ -126,19 +139,19 @@ class AuthenticationRequiredException(HTTPException):
     def __init__(self, detail: str = "Authentication required"):
         super().__init__(status_code=401, detail=detail)
 
+
 def proc_udat(email):
-    with open(UDAT_FILE, 'r+') as f:
+    with open(UDAT_FILE, "r+") as f:
         user_data = json.load(f)
         if email not in user_data:
-            user_data[email] = {"style_css": "static/skins/bloom.css",
-                                "email": email
-            }
-        
+            user_data[email] = {"style_css": "static/skins/bloom.css", "email": email}
+
             f.seek(0)
             json.dump(user_data, f, indent=4)
             f.truncate()
 
     return user_data[email]
+
 
 async def DELis_instance(value, type_name):
     return isinstance(value, eval(type_name))
@@ -165,12 +178,16 @@ async def get_relationship_data(obj):
         if relationship.uselist:  # If it's a list of items
             relationship_data[relationship.key] = [
                 {
-                    "child_instance_euid": rel_obj.child_instance.euid
-                    if hasattr(rel_obj, "child_instance")
-                    else [],
-                    "parent_instance_euid": rel_obj.parent_instance.euid
-                    if hasattr(rel_obj, "parent_instance")
-                    else [],
+                    "child_instance_euid": (
+                        rel_obj.child_instance.euid
+                        if hasattr(rel_obj, "child_instance")
+                        else []
+                    ),
+                    "parent_instance_euid": (
+                        rel_obj.parent_instance.euid
+                        if hasattr(rel_obj, "parent_instance")
+                        else []
+                    ),
                     "euid": rel_obj.euid,
                     "uuid": rel_obj.uuid,
                     "polymorphic_discriminator": rel_obj.polymorphic_discriminator,
@@ -184,23 +201,29 @@ async def get_relationship_data(obj):
         else:  # If it's a single item
             rel_obj = getattr(obj, relationship.key)
             relationship_data[relationship.key] = [
-                {
-                    "child_instance_euid": rel_obj.child_instance.euid
-                    if hasattr(rel_obj, "child_instance")
-                    else [],
-                    "parent_instance_euid": rel_obj.parent_instance.euid
-                    if hasattr(rel_obj, "parent_instance")
-                    else [],
-                    "euid": rel_obj.euid,
-                    "uuid": rel_obj.uuid,
-                    "polymorphic_discriminator": rel_obj.polymorphic_discriminator,
-                    "super_type": rel_obj.super_type,
-                    "btype": rel_obj.btype,
-                    "b_sub_type": rel_obj.b_sub_type,
-                    "version": rel_obj.version,
-                }
-                if rel_obj
-                else {}
+                (
+                    {
+                        "child_instance_euid": (
+                            rel_obj.child_instance.euid
+                            if hasattr(rel_obj, "child_instance")
+                            else []
+                        ),
+                        "parent_instance_euid": (
+                            rel_obj.parent_instance.euid
+                            if hasattr(rel_obj, "parent_instance")
+                            else []
+                        ),
+                        "euid": rel_obj.euid,
+                        "uuid": rel_obj.uuid,
+                        "polymorphic_discriminator": rel_obj.polymorphic_discriminator,
+                        "super_type": rel_obj.super_type,
+                        "btype": rel_obj.btype,
+                        "b_sub_type": rel_obj.b_sub_type,
+                        "version": rel_obj.version,
+                    }
+                    if rel_obj
+                    else {}
+                )
             ]
     return relationship_data
 
@@ -212,22 +235,28 @@ class RequireAuthException(HTTPException):
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    file_path = os.path.join('static', 'favicon.ico')
+    file_path = os.path.join("static", "favicon.ico")
     return FileResponse(file_path)
 
+
 @app.exception_handler(AuthenticationRequiredException)
-async def authentication_required_exception_handler(request: Request, exc: AuthenticationRequiredException):
+async def authentication_required_exception_handler(
+    request: Request, exc: AuthenticationRequiredException
+):
     return RedirectResponse(url="/login")
+
 
 async def require_auth(request: Request):
     # Bypass auth check for the home page
 
-    if request.url.path == '/':
-        return {"email": "anonymous@user.com"}  # Return a default user or any placeholder
+    if request.url.path == "/":
+        return {
+            "email": "anonymous@user.com"
+        }  # Return a default user or any placeholder
 
-    if 'user_data' not in request.session:
+    if "user_data" not in request.session:
         raise AuthenticationRequiredException()
-    return request.session['user_data']
+    return request.session["user_data"]
 
 
 @app.exception_handler(RequireAuthException)
@@ -238,13 +267,13 @@ async def auth_exception_handler(_request: Request, _exc: RequireAuthException):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, _=Depends(require_auth)):
-    count = request.session.get('count', 0)
+    count = request.session.get("count", 0)
     count += 1
-    request.session['count'] = count
-    
+    request.session["count"] = count
+
     template = templates.get_template("index.html")
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
     context = {"request": request, "style": style}
 
     return HTMLResponse(content=template.render(context), status_code=200)
@@ -252,8 +281,8 @@ async def read_root(request: Request, _=Depends(require_auth)):
 
 @app.get("/login", include_in_schema=False)
 async def get_login_page(request: Request):
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     # Ensure you have this function defined, and it returns the expected style information
     template = templates.get_template("login.html")
@@ -265,14 +294,14 @@ async def get_login_page(request: Request):
 @app.post("/oauth_callback")
 async def oauth_callback(request: Request):
     body = await request.json()
-    access_token = body.get('accessToken')
+    access_token = body.get("accessToken")
 
     if not access_token:
         return "No access token provided."
     # Attempt to decode the JWT to get email
     try:
         decoded_token = jwt.decode(access_token, options={"verify_signature": False})
-        primary_email = decoded_token.get('email')
+        primary_email = decoded_token.get("email")
     except jwt.DecodeError:
         primary_email = None
 
@@ -280,20 +309,30 @@ async def oauth_callback(request: Request):
     if not primary_email:
         async with httpx.AsyncClient() as client:
             headers = {"Authorization": f"Bearer {access_token}"}
-            response = await client.get('https://api.github.com/user/emails', headers=headers)
+            response = await client.get(
+                "https://api.github.com/user/emails", headers=headers
+            )
             if response.status_code == 200:
                 emails = response.json()
-                primary_email = next((email['email'] for email in emails if email.get('primary')), None)
+                primary_email = next(
+                    (email["email"] for email in emails if email.get("primary")), None
+                )
             else:
-                raise HTTPException(status_code=400, detail="Failed to retrieve user email from GitHub")
+                raise HTTPException(
+                    status_code=400, detail="Failed to retrieve user email from GitHub"
+                )
 
-    request.session['user_data'] =  proc_udat( primary_email )  # {"email": primary_email, "style_css": "static/skins/bloom.css"}
+    request.session["user_data"] = proc_udat(
+        primary_email
+    )  # {"email": primary_email, "style_css": "static/skins/bloom.css"}
 
     # Redirect to home page or dashboard
     return RedirectResponse(url="/", status_code=303)
 
 
-@app.get("/logout")  # Using a GET request for simplicity, but POST is more secure for logout operations
+@app.get(
+    "/logout"
+)  # Using a GET request for simplicity, but POST is more secure for logout operations
 async def logout(request: Request, response: Response):
     # Clear the session data
     request.session.clear()
@@ -307,13 +346,20 @@ async def logout(request: Request, response: Response):
 
 
 @app.post("/login", include_in_schema=False)
-async def login_without_network(request: Request, response: Response, email: str = Form(...)):
+async def login_without_network(
+    request: Request, response: Response, email: str = Form(...)
+):
     if not email:
-        return JSONResponse(content={"message": "Email is required"}, status_code=status.HTTP_400_BAD_REQUEST)
+        return JSONResponse(
+            content={"message": "Email is required"},
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     # Set session cookie after successful login, with a 60-minute expiration
-    response.set_cookie(key="session", value="user_session_token", httponly=True, max_age=3600, path="/")
-    request.session['user_data'] = proc_udat( email )
+    response.set_cookie(
+        key="session", value="user_session_token", httponly=True, max_age=3600, path="/"
+    )
+    request.session["user_data"] = proc_udat(email)
     print(request.session)
 
     # Redirect to the root path ("/") after successful login
@@ -328,31 +374,44 @@ async def login(request: Request, response: Response, email: str = Form(...)):
     supabase = create_supabase_client()
 
     if not email:
-        return JSONResponse(content={"message": "Email is required"}, status_code=status.HTTP_400_BAD_REQUEST)
+        return JSONResponse(
+            content={"message": "Email is required"},
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
-    with open(UDAT_FILE, 'r+') as f:
+    with open(UDAT_FILE, "r+") as f:
         user_data = json.load(f)
         if email not in user_data:
             # The email is not in udat.json, attempt to sign up the user
-            auth_response = supabase.auth.sign_up({"email": email, "password": password})
-            if 'error' in auth_response and auth_response['error']:
+            auth_response = supabase.auth.sign_up(
+                {"email": email, "password": password}
+            )
+            if "error" in auth_response and auth_response["error"]:
                 # Handle signup error
-                return JSONResponse(content={"message": auth_response['error']['message']},
-                                    status_code=status.HTTP_400_BAD_REQUEST)
+                return JSONResponse(
+                    content={"message": auth_response["error"]["message"]},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
             else:
                 pass
 
         else:
             # The email exists in udat.json, attempt to sign in the user
-            auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if 'error' in auth_response and auth_response['error']:
+            auth_response = supabase.auth.sign_in_with_password(
+                {"email": email, "password": password}
+            )
+            if "error" in auth_response and auth_response["error"]:
                 # Handle sign-in error
-                return JSONResponse(content={"message": auth_response['error']['message']},
-                                    status_code=status.HTTP_400_BAD_REQUEST)
+                return JSONResponse(
+                    content={"message": auth_response["error"]["message"]},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
 
     # Set session cookie after successful authentication, with a 60-minute expiration
-    response.set_cookie(key="session", value="user_session_token", httponly=True, max_age=3600, path="/")
-    request.session['user_data'] = proc_udat( email )
+    response.set_cookie(
+        key="session", value="user_session_token", httponly=True, max_age=3600, path="/"
+    )
+    request.session["user_data"] = proc_udat(email)
     # Redirect to the root path ("/") after successful login/signup
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     # Add this line at the end of the /login endpoint
@@ -362,64 +421,71 @@ async def login(request: Request, response: Response, email: str = Form(...)):
 
 
 @app.get("/assays", response_class=HTMLResponse)
-async def assays(request: Request, show_type: str = 'all', _auth=Depends(require_auth)):
+async def assays(request: Request, show_type: str = "all", _auth=Depends(require_auth)):
     # Check if user is logged in
-    if 'user_data' not in request.session or 'email' not in request.session['user_data']:
+    if (
+        "user_data" not in request.session
+        or "email" not in request.session["user_data"]
+    ):
         # If not logged in, redirect to the login page
         return RedirectResponse(url="/login")
 
-    user_email = request.session['user_data']['email']
-    user_data = request.session.get('user_data', {})
+    user_email = request.session["user_data"]["email"]
+    user_data = request.session.get("user_data", {})
 
     # Initialize your database object with the user's email
     bobdb = BloomObj(BLOOMdb3(app_username=user_email))
     ay_ds = {}
-    print('\n\n\nAAAAAAAA\n\n\n')
+    print("\n\n\nAAAAAAAA\n\n\n")
     for i in (
-            bobdb.session.query(bobdb.Base.classes.workflow_instance)
-                    .filter_by(is_deleted=False, is_singleton=True)
-                    .all()
+        bobdb.session.query(bobdb.Base.classes.workflow_instance)
+        .filter_by(is_deleted=False, is_singleton=True)
+        .all()
     ):
-        if show_type == 'all' or i.json_addl.get('assay_type', 'all') == show_type:
+        if show_type == "all" or i.json_addl.get("assay_type", "all") == show_type:
             ay_ds[i.euid] = i
 
-    print('\n\n\n\n\nBBBBBB\n\n\n\n')
+    print("\n\n\n\n\nBBBBBB\n\n\n\n")
     assays = []
     ay_dss = {}
     atype = {}
 
-    if show_type == 'assay':
-        atype['type'] = 'Assays'
-    elif show_type == 'accessioning':
-        atype['type'] = 'Accessioning'
+    if show_type == "assay":
+        atype["type"] = "Assays"
+    elif show_type == "accessioning":
+        atype["type"] = "Accessioning"
     else:
-        atype['type'] = 'All Assays, etc'
+        atype["type"] = "All Assays, etc"
 
     for i in sorted(ay_ds.keys()):
         assays.append(ay_ds[i])
-        ay_dss[i] = {"Instantaneous COGS": 0}  # round(bobdb.get_cost_of_euid_children(i),2)}
-        ay_dss[i]['tot'] = 0
-        ay_dss[i]['tit_s'] = 0
-        ay_dss[i]['tot_fx'] = 0
+        ay_dss[i] = {
+            "Instantaneous COGS": 0
+        }  # round(bobdb.get_cost_of_euid_children(i),2)}
+        ay_dss[i]["tot"] = 0
+        ay_dss[i]["tit_s"] = 0
+        ay_dss[i]["tot_fx"] = 0
 
         for q in ay_ds[i].parent_of_lineages:
-            if show_type == 'accessioning':
-                for fex_tup in bobdb.query_all_fedex_transit_times_by_ay_euid(q.child_instance.euid):
+            if show_type == "accessioning":
+                for fex_tup in bobdb.query_all_fedex_transit_times_by_ay_euid(
+                    q.child_instance.euid
+                ):
                     try:
-                        ay_dss[i]['tit_s'] += float(fex_tup[1])
-                        ay_dss[i]['tot_fx'] += 1
+                        ay_dss[i]["tit_s"] += float(fex_tup[1])
+                        ay_dss[i]["tot_fx"] += 1
                     except Exception as e:
                         print(e)
-            wset = ''
-            n = q.child_instance.json_addl['properties']['name']
-            if n.startswith('In'):
-                wset = 'inprog'
-            elif n.startswith('Comple'):
-                wset = 'complete'
-            elif n.startswith('Exception'):
-                wset = 'exception'
-            elif n.startswith('Ready'):
-                wset = 'avail'
+            wset = ""
+            n = q.child_instance.json_addl["properties"]["name"]
+            if n.startswith("In"):
+                wset = "inprog"
+            elif n.startswith("Comple"):
+                wset = "complete"
+            elif n.startswith("Exception"):
+                wset = "exception"
+            elif n.startswith("Ready"):
+                wset = "avail"
             lins = q.child_instance.parent_of_lineages.all()
             ay_dss[i][wset] = len(lins)
             lctr = 0
@@ -429,24 +495,38 @@ async def assays(request: Request, show_type: str = 'all', _auth=Depends(require
                     break
                 else:
                     ay_dss[i]["Instantaneous COGS"] += round(
-                        bobdb.get_cost_of_euid_children(llin.child_instance.euid), 2)
-                    ay_dss[i]['tot'] += 1
+                        bobdb.get_cost_of_euid_children(llin.child_instance.euid), 2
+                    )
+                    ay_dss[i]["tot"] += 1
                 lctr += 1
 
         try:
-            ay_dss[i]['avg_d_fx'] = round(
-                float(ay_dss[i]['tit_s']) / 60.0 / 60.0 / 24.0 / float(ay_dss[i]['tot_fx']), 2)
+            ay_dss[i]["avg_d_fx"] = round(
+                float(ay_dss[i]["tit_s"])
+                / 60.0
+                / 60.0
+                / 24.0
+                / float(ay_dss[i]["tot_fx"]),
+                2,
+            )
         except Exception as e:
-            ay_dss[i]['avg_d_fx'] = 'na'
+            ay_dss[i]["avg_d_fx"] = "na"
 
-        ay_dss[i]['conv'] = round(
-            float(ay_dss[i]['complete']) / float(ay_dss[i]['complete'] + ay_dss[i]['exception']), 2) if ay_dss[i][
-                                                                                                            'complete'] + \
-                                                                                                        ay_dss[i][
-                                                                                                            'exception'] > 0 else 'na'
-        ay_dss[i]['wsetp'] = round(float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]['tot']), 2) if \
-            ay_dss[i]['tot'] > 0 else 'na'
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        ay_dss[i]["conv"] = (
+            round(
+                float(ay_dss[i]["complete"])
+                / float(ay_dss[i]["complete"] + ay_dss[i]["exception"]),
+                2,
+            )
+            if ay_dss[i]["complete"] + ay_dss[i]["exception"] > 0
+            else "na"
+        )
+        ay_dss[i]["wsetp"] = (
+            round(float(ay_dss[i]["Instantaneous COGS"]) / float(ay_dss[i]["tot"]), 2)
+            if ay_dss[i]["tot"] > 0
+            else "na"
+        )
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     # Rendering the template with the dynamic content
     content = templates.get_template("assay.html").render(
@@ -455,7 +535,7 @@ async def assays(request: Request, show_type: str = 'all', _auth=Depends(require
         assays_data=ay_ds,
         atype=atype,
         workflow_instances=assays,  # Assuming this is needed based on your template logic
-        ay_stats=ay_dss  # Assuming this is needed based on your template logic
+        ay_stats=ay_dss,  # Assuming this is needed based on your template logic
     )
 
     return HTMLResponse(content=content)
@@ -465,7 +545,7 @@ async def assays(request: Request, show_type: str = 'all', _auth=Depends(require
 async def Acalculate_cogs_children(euid, request: Request, _auth=Depends(require_auth)):
     try:
 
-        bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']))
+        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]))
         cogs_value = round(bobdb.get_cost_of_euid_children(euid), 2)
         return json.dumps({"success": True, "cogs_value": cogs_value})
     except Exception as e:
@@ -474,53 +554,56 @@ async def Acalculate_cogs_children(euid, request: Request, _auth=Depends(require
 
 async def calculate_cogs_parents(euid, request: Request, _auth=Depends(require_auth)):
     try:
-        bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']))
+        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]))
         cogs_value = round(bobdb.get_cogs_to_produce_euid(euid), 2)
         return json.dumps({"success": True, "cogs_value": cogs_value})
     except Exception as e:
         return json.dumps({"success": False, "message": str(e)})
 
+
 @app.get("/set_filter")
-async def set_filter(request: Request, _auth=Depends(require_auth), curr_val='off'):
-    if curr_val == 'off':
-        request.session['user_data']['wf_filter'] = 'on'
+async def set_filter(request: Request, _auth=Depends(require_auth), curr_val="off"):
+    if curr_val == "off":
+        request.session["user_data"]["wf_filter"] = "on"
     else:
-        request.session['user_data']['wf_filter'] = 'off'
+        request.session["user_data"]["wf_filter"] = "off"
 
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin(request: Request, _auth=Depends(require_auth), dest='na'):
+async def admin(request: Request, _auth=Depends(require_auth), dest="na"):
 
     os.makedirs(os.path.dirname(UDAT_FILE), exist_ok=True)
     if not os.path.exists(UDAT_FILE):
-        with open(UDAT_FILE, 'w') as f:
+        with open(UDAT_FILE, "w") as f:
             json.dump({}, f)
 
-    dest_section = {'section': dest}
+    dest_section = {"section": dest}
 
-    user_data = request.session.get('user_data', {})
+    user_data = request.session.get("user_data", {})
 
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     # Mock or real printer_info data
 
-    if 'print_lab' in user_data:
-        bobdb.get_lab_printers(user_data['print_lab'])
+    if "print_lab" in user_data:
+        bobdb.get_lab_printers(user_data["print_lab"])
 
     csss = []
-    for css in sorted(os.popen('ls -1 static/skins/*css').readlines()):
+    for css in sorted(os.popen("ls -1 static/skins/*css").readlines()):
         csss.append(css.rstrip())
 
     printer_info = {
-        'print_lab': bobdb.printer_labs,
-        'printer_name': bobdb.site_printers,
-        'label_zpl_style': bobdb.zpl_label_styles,
-        'style_css': csss
+        "print_lab": bobdb.printer_labs,
+        "printer_name": bobdb.site_printers,
+        "label_zpl_style": bobdb.zpl_label_styles,
+        "style_css": csss,
     }
-    csss = ["static/skins/"+os.path.basename(css) for css in csss]  # Get just the file names
+    csss = [
+        "static/skins/" + os.path.basename(css) for css in csss
+    ]  # Get just the file names
 
-    printer_info['style_css'] = csss
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    printer_info["style_css"] = csss
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     # Rendering the template with the dynamic content
     content = templates.get_template("admin.html").render(
@@ -529,9 +612,9 @@ async def admin(request: Request, _auth=Depends(require_auth), dest='na'):
         user_data=user_data,
         printer_info=printer_info,
         dest_section=dest_section,
-        udat=request.session['user_data']
+        udat=request.session["user_data"],
     )
-    
+
     return HTMLResponse(content=content)
 
 
@@ -539,48 +622,53 @@ async def admin(request: Request, _auth=Depends(require_auth), dest='na'):
 @app.post("/update_preference")
 async def update_preference(request: Request, auth: dict = Depends(require_auth)):
     # Early return if auth is None or doesn't contain 'email'
-    if not auth or 'email' not in auth:
-        return {'status': 'error', 'message': 'Authentication failed or user data missing'}
+    if not auth or "email" not in auth:
+        return {
+            "status": "error",
+            "message": "Authentication failed or user data missing",
+        }
 
     data = await request.json()
-    key = data.get('key')
-    value = data.get('value')
+    key = data.get("key")
+    value = data.get("value")
 
     if not os.path.exists(UDAT_FILE):
-        return {'status': 'error', 'message': 'User data file not found'}
+        return {"status": "error", "message": "User data file not found"}
 
-    with open(UDAT_FILE, 'r') as f:
+    with open(UDAT_FILE, "r") as f:
         user_data = json.load(f)
 
-    email = request.session.get('user_data', {}).get('email')
+    email = request.session.get("user_data", {}).get("email")
     if email in user_data:
         user_data[email][key] = value
-        with open(UDAT_FILE, 'w') as f:
+        with open(UDAT_FILE, "w") as f:
             json.dump(user_data, f)
 
-        request.session['user_data'][key] = value
-        return {'status': 'success', 'message': 'User preference updated'}
+        request.session["user_data"][key] = value
+        return {"status": "success", "message": "User preference updated"}
     else:
-        return {'status': 'error', 'message': 'User not found in user data'}
+        return {"status": "error", "message": "User not found in user data"}
 
 
 @app.get("/queue_details", response_class=HTMLResponse)
-async def queue_details(request: Request, queue_euid, page=1, _auth=Depends(require_auth)):
+async def queue_details(
+    request: Request, queue_euid, page=1, _auth=Depends(require_auth)
+):
     page = int(page)
     if page < 1:
         page = 1
     per_page = 500  # Items per page
-    user_logged_in = True if 'user_data' in request.session else False
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    user_logged_in = True if "user_data" in request.session else False
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     queue = bobdb.get_by_euid(queue_euid)
     qm = []
     for i in queue.parent_of_lineages:
         qm.append(i.child_instance)
     queue_details = queue.sort_by_euid(qm)
-    queue_details = queue_details[(page - 1) * per_page:page * per_page]
-    pagination = {'next': page + 1, 'prev': page - 1, 'euid': queue_euid}
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    queue_details = queue_details[(page - 1) * per_page : page * per_page]
+    pagination = {"next": page + 1, "prev": page - 1, "euid": queue_euid}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("queue_details.html").render(
         style=style,
@@ -594,7 +682,7 @@ async def queue_details(request: Request, queue_euid, page=1, _auth=Depends(requ
 
 @app.post("/generic_templates")
 async def generic_templates(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     the_templates = (
         bobdb.session.query(bobdb.Base.classes.generic_template)
@@ -613,7 +701,7 @@ async def generic_templates(request: Request, _auth=Depends(require_auth)):
 
 @app.get("/workflow_summary", response_class=HTMLResponse)
 async def workflow_summary(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     workflows = (
         bobdb.session.query(bobdb.Base.classes.workflow_instance)
         .filter_by(is_deleted=False)
@@ -641,8 +729,8 @@ async def workflow_summary(request: Request, _auth=Depends(require_auth)):
     workflow_statistics = {k: dict(v) for k, v in workflow_statistics.items()}
     unique_workflow_types = list(workflow_statistics.keys())
 
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("workflow_summary.html").render(
         style=style,
@@ -652,10 +740,11 @@ async def workflow_summary(request: Request, _auth=Depends(require_auth)):
     )
     return HTMLResponse(content=content)
 
+
 @app.get("/update_object_name", response_class=HTMLResponse)
 async def update_object_name(request: Request, euid, name, _auth=Depends(require_auth)):
     referer = request.headers.get("Referer", "/")
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     obj = bobdb.get_by_euid(euid)
     if obj:
         obj.name = name  # Update the name
@@ -667,7 +756,7 @@ async def update_object_name(request: Request, euid, name, _auth=Depends(require
 
 @app.get("/equipment_overview", response_class=HTMLResponse)
 async def equipment_overview(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     # Fetch equipment instances and templates
     equipment_instances = (
@@ -680,13 +769,13 @@ async def equipment_overview(request: Request, _auth=Depends(require_auth)):
         .filter_by(is_deleted=False)
         .all()
     )
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("equipment_overview.html").render(
         style=style,
         equipment_list=equipment_instances,
-        template_list=equipment_templates
+        template_list=equipment_templates,
     )
     return HTMLResponse(content=content)
 
@@ -704,7 +793,7 @@ async def get_print_labs(_request: Request, _auth=Depends(require_auth)):
 
 @app.get("/reagent_overview", response_class=HTMLResponse)
 async def reagent_overview(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     # Fetch equipment instances and templates
     reagent_instances = (
@@ -717,8 +806,8 @@ async def reagent_overview(request: Request, _auth=Depends(require_auth)):
         .filter_by(is_deleted=False, btype="reagent")
         .all()
     )
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("reagent_overview.html").render(
         style=style,
@@ -730,7 +819,7 @@ async def reagent_overview(request: Request, _auth=Depends(require_auth)):
 
 @app.get("/control_overview", response_class=HTMLResponse)
 async def control_overview(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     # Fetch equipment instances and templates
     control_instances = (
@@ -743,53 +832,56 @@ async def control_overview(request: Request, _auth=Depends(require_auth)):
         .filter_by(is_deleted=False, btype="control")
         .all()
     )
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("control_overview.html").render(
-        style=style,
-        instance_list=control_instances,
-        template_list=control_templates
+        style=style, instance_list=control_instances, template_list=control_templates
     )
     return HTMLResponse(content=content)
 
 
 @app.post("/create_from_template", response_class=HTMLResponse)
 @app.get("/create_from_template", response_class=HTMLResponse)
-async def create_from_template(request: Request, euid: str = None, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+async def create_from_template(
+    request: Request, euid: str = None, _auth=Depends(require_auth)
+):
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     template = bobdb.create_instances(euid)
 
     if template:
-        return RedirectResponse(url=f"/euid_details?euid={template[0][0].euid}", status_code=303)
+        return RedirectResponse(
+            url=f"/euid_details?euid={template[0][0].euid}", status_code=303
+        )
     else:
         return RedirectResponse(url="/equipment_overview", status_code=303)
 
 
 @app.get("/uuid_details", response_class=HTMLResponse)
 async def uuid_details(request: Request, uuid: str, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     obj = bobdb.get(uuid)
     return RedirectResponse(url=f"/euid_details?euid={obj.euid}")
 
 
 @app.get("/vertical_exp", response_class=HTMLResponse)
 async def vertical_exp(request: Request, euid=None, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     instance = bobdb.get_by_euid(euid)
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("vertical_exp.html").render(
-        style=style,
-        instance=instance
+        style=style, instance=instance
     )
     return HTMLResponse(content=content)
 
 
 @app.get("/plate_carosel2", response_class=HTMLResponse)
-async def plate_carosel(request: Request, plate_euid: str = Query(...), _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+async def plate_carosel(
+    request: Request, plate_euid: str = Query(...), _auth=Depends(require_auth)
+):
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     # Fetch the main plate and its wells
     main_plate = bobdb.get_by_euid(plate_euid)
@@ -801,19 +893,18 @@ async def plate_carosel(request: Request, plate_euid: str = Query(...), _auth=De
     related_plates = await get_related_plates(main_plate)
     related_plates.append(main_plate)
     # Render the template with the main plate and related plates data
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("vertical_exp.html").render(
-        style=style,
-        main_plate=main_plate,
-        related_plates=related_plates
+        style=style, main_plate=main_plate, related_plates=related_plates
     )
     return HTMLResponse(content=content)
 
+
 @app.get("/get_related_plates", response_class=HTMLResponse)
 async def get_related_plates(request: Request, main_plate, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     related_plates = []
 
     # Fetching ancestor plates through parent_of_lineages
@@ -835,8 +926,8 @@ async def get_related_plates(request: Request, main_plate, _auth=Depends(require
         num_cols = 0
         for lineage in plate.parent_of_lineages:
             if (
-                    lineage.parent_instance.euid == plate.euid
-                    and lineage.child_instance.btype == "well"
+                lineage.parent_instance.euid == plate.euid
+                and lineage.child_instance.btype == "well"
             ):
                 cd = lineage.child_instance.json_addl.get("cont_address", {})
                 num_rows = max(num_rows, int(cd.get("row_idx", 0)))
@@ -849,8 +940,10 @@ async def get_related_plates(request: Request, main_plate, _auth=Depends(require
 
 
 @app.get("/plate_visualization", response_class=HTMLResponse)
-async def plate_visualization(request: Request, plate_euid, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+async def plate_visualization(
+    request: Request, plate_euid, _auth=Depends(require_auth)
+):
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     # Fetch the plate and its wells
     plate = bobdb.get_by_euid(plate_euid)
 
@@ -858,10 +951,7 @@ async def plate_visualization(request: Request, plate_euid, _auth=Depends(requir
     num_cols = 0
 
     for i in plate.parent_of_lineages:
-        if (
-                i.parent_instance.euid == plate.euid
-                and i.child_instance.btype == "well"
-        ):
+        if i.parent_instance.euid == plate.euid and i.child_instance.btype == "well":
             cd = i.child_instance.json_addl["cont_address"]
             if int(cd["row_idx"]) > num_rows:
                 num_rows = int(cd["row_idx"])
@@ -874,14 +964,12 @@ async def plate_visualization(request: Request, plate_euid, _auth=Depends(requir
     if not plate:
         return "Plate not found."
         # Render the template with the plate data
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("plate_display.html").render(
-        style=style,
-        plate=plate,
-        get_well_color=get_well_color
-        )
+        style=style, plate=plate, get_well_color=get_well_color
+    )
     return HTMLResponse(content=content)
 
     # What is the correct path for {style.skin.css}?
@@ -889,7 +977,7 @@ async def plate_visualization(request: Request, plate_euid, _auth=Depends(requir
 
 @app.get("/database_statistics", response_class=HTMLResponse)
 async def database_statistics(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     async def get_stats(days):
         cutoff_date = datetime.now() - timedelta(days=days)
@@ -911,20 +999,22 @@ async def database_statistics(request: Request, _auth=Depends(require_auth)):
     stats_7d = await get_stats(7)
     stats_30d = await get_stats(30)
 
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("database_statistics.html").render(
         request=request,
-        stats_1d=stats_1d, stats_7d=stats_7d, stats_30d=stats_30d,
-        style=style
+        stats_1d=stats_1d,
+        stats_7d=stats_7d,
+        stats_30d=stats_30d,
+        style=style,
     )
     return HTMLResponse(content=content)
 
 
 @app.get("/object_templates_summary", response_class=HTMLResponse)
 async def object_templates_summary(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     # Fetch all generic templates
     generic_templates = (
@@ -937,27 +1027,26 @@ async def object_templates_summary(request: Request, _auth=Depends(require_auth)
     unique_discriminators = sorted(
         set(t.polymorphic_discriminator for t in generic_templates)
     )
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("object_templates_summary.html").render(
         request=request,
         generic_templates=generic_templates,
         unique_discriminators=unique_discriminators,
-        style=style
-
+        style=style,
     )
     return HTMLResponse(content=content)
 
 
 @app.get("/euid_details")
 async def euid_details(
-        request: Request,
-        euid: str = Query(..., description="The EUID to fetch details for"),
-        _uuid: str = Query(None, description="Optional UUID parameter"),
-        _auth=Depends(require_auth)
+    request: Request,
+    euid: str = Query(..., description="The EUID to fetch details for"),
+    _uuid: str = Query(None, description="Optional UUID parameter"),
+    _auth=Depends(require_auth),
 ):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     # Fetch the object using euid
     obj = bobdb.get_by_euid(euid)
@@ -972,10 +1061,12 @@ async def euid_details(
         for column in obj.__table__.columns
         if hasattr(obj, column.key)
     }
-    obj_dict['parent_template_euid'] = obj.parent_template.euid if hasattr(obj, 'parent_template') else ""
+    obj_dict["parent_template_euid"] = (
+        obj.parent_template.euid if hasattr(obj, "parent_template") else ""
+    )
     audit_logs = bobdb.query_audit_log_by_euid(euid)
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("euid_details.html").render(
         request=request,
@@ -983,23 +1074,26 @@ async def euid_details(
         style=style,
         relationships=relationship_data,
         audit_logs=audit_logs,
-        oobj=obj,udat=request.session['user_data']
+        oobj=obj,
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
 
 @app.get("/un-delete")
-async def un_delete_by_uuid(request: Request, uuid: str = None, euid: str = None, _auth=Depends(require_auth)):
+async def un_delete_by_uuid(
+    request: Request, uuid: str = None, euid: str = None, _auth=Depends(require_auth)
+):
     referer = request.headers.get("Referer", "/default_page")
 
     if uuid is None or euid is None:
         # Consider using an HTTPException for error handling
         return HTMLResponse(
             content=f"Error: uuid or euid not provided && both are required. {uuid} {euid}",
-            status_code=400
+            status_code=400,
         )
 
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     del_obj = bobdb.get(uuid)
     if not del_obj:
         # Handling the case where the object does not exist
@@ -1013,33 +1107,30 @@ async def un_delete_by_uuid(request: Request, uuid: str = None, euid: str = None
 
 @app.get("/bloom_schema_report", response_class=HTMLResponse)
 async def bloom_schema_report(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     a_stat = bobdb.query_generic_instance_and_lin_stats()
     b_stats = bobdb.query_generic_template_stats()
     reports = [[a_stat[0]], [a_stat[1]], b_stats]
     nrows = 0
     for i in b_stats:
-        nrows += int(i['Total_Templates'])
+        nrows += int(i["Total_Templates"])
     for ii in a_stat:
-        nrows += int(ii['Total_Instances'])
+        nrows += int(ii["Total_Instances"])
 
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("bloom_schema_report.html").render(
-        request=request,
-        reports=reports,
-        nrows=nrows,
-        style=style
-
+        request=request, reports=reports, nrows=nrows, style=style
     )
     return HTMLResponse(content=content)
+
 
 @app.get("/delete_by_euid", response_class=HTMLResponse)
 def delete_by_euid(request: Request, euid, _auth=Depends(require_auth)):
     referer = request.headers.get("Referer", "/")
 
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     bobdb.delete(bobdb.get_by_euid(euid))
     bobdb.session.flush()
     bobdb.session.commit()
@@ -1051,7 +1142,7 @@ def delete_by_euid(request: Request, euid, _auth=Depends(require_auth)):
 async def delete_object(request: Request, _auth=Depends(require_auth)):
     data = await request.json()
     euid = data.get("euid")
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     bobdb.delete(bobdb.get_by_euid(euid))
     bobdb.session.flush()
@@ -1064,19 +1155,22 @@ async def delete_object(request: Request, _auth=Depends(require_auth)):
 
 
 @app.get("/workflow_details", response_class=HTMLResponse)
-async def workflow_details(request: Request, workflow_euid, _auth=Depends(require_auth)):
-    bwfdb = BloomWorkflow(BLOOMdb3(app_username=request.session['user_data']['email']))
+async def workflow_details(
+    request: Request, workflow_euid, _auth=Depends(require_auth)
+):
+    bwfdb = BloomWorkflow(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     workflow = bwfdb.get_sorted_euid(workflow_euid)
     accordion_states = dict(request.session)
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("workflow_details.html").render(
         request=request,
         workflow=workflow,
         accordion_states=accordion_states,
         style=style,
-        udat=request.session['user_data'])
+        udat=request.session["user_data"],
+    )
     return HTMLResponse(content=content)
 
 
@@ -1087,7 +1181,9 @@ from fastapi import Request, Depends, HTTPException
 async def update_accordion_state(request: Request, _auth=Depends(require_auth)):
     data = await request.json()
     step_euid = data["step_euid"]
-    state = data["state"]  # Assuming 'state' is either 'open' or some other value indicating the accordion's state
+    state = data[
+        "state"
+    ]  # Assuming 'state' is either 'open' or some other value indicating the accordion's state
     request.session[step_euid] = state
     return {"status": "success"}
 
@@ -1099,27 +1195,33 @@ async def workflow_step_action(request: Request, _auth=Depends(require_auth)):
     action = data.get("action")
     action_group = data.get("action_group")
     ds = data.get("ds")
-    bobdb = BloomWorkflow(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomWorkflow(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     bo = bobdb.get_by_euid(euid)
 
     ds["curr_user"] = request.session.get("user_data", "bloomui-user")
     udat = request.session.get("user_data", {})
-    ds['lab'] = udat.get("print_lab", "BLOOM")
-    ds['printer_name'] = udat.get("printer_name", "")
-    ds['label_zpl_style'] = udat.get("label_style", "")
-    ds['alt_a'] = udat.get("alt_a", "")
-    ds['alt_b'] = udat.get("alt_b", "")
-    ds['alt_c'] = udat.get("alt_c", )
-    ds['alt_d'] = udat.get("alt_d", "")
-    ds['alt_e'] = udat.get("alt_e", "")
+    ds["lab"] = udat.get("print_lab", "BLOOM")
+    ds["printer_name"] = udat.get("printer_name", "")
+    ds["label_zpl_style"] = udat.get("label_style", "")
+    ds["alt_a"] = udat.get("alt_a", "")
+    ds["alt_b"] = udat.get("alt_b", "")
+    ds["alt_c"] = udat.get(
+        "alt_c",
+    )
+    ds["alt_d"] = udat.get("alt_d", "")
+    ds["alt_e"] = udat.get("alt_e", "")
 
     if bo.__class__.__name__ == "workflow_instance":
-        bwfdb = BloomWorkflow(BLOOMdb3(app_username=request.session['user_data']['email']))
+        bwfdb = BloomWorkflow(
+            BLOOMdb3(app_username=request.session["user_data"]["email"])
+        )
         act = bwfdb.do_action(
             euid, action_ds=ds, action=action, action_group=action_group
         )
     else:
-        bwfsdb = BloomWorkflowStep(BLOOMdb3(app_username=request.session['user_data']['email']))
+        bwfsdb = BloomWorkflowStep(
+            BLOOMdb3(app_username=request.session["user_data"]["email"])
+        )
         act = bwfsdb.do_action(
             euid, action_ds=ds, action=action, action_group=action_group
         )
@@ -1145,14 +1247,14 @@ async def update_obj_json_addl_properties(
     Returns:
         cherrypy.HTTPRedirect: to referrer
     """
-    
+
     referer = request.headers.get("Referer", "/default_page")
 
     # Parse form data manually
     form = await request.form()
     properties = {key: value for key, value in form.items() if key != "obj_euid"}
 
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     step = bobdb.get_by_euid(obj_euid)
 
     if step is None:
@@ -1195,14 +1297,21 @@ async def update_obj_json_addl_properties(
 async def dagg(request: Request):
     content = templates.get_template("dag.html").render()
     return HTMLResponse(content=content)
-    
+
+
 @app.get("/dindex2", response_class=HTMLResponse)
-async def dindex2(request: Request, globalFilterLevel=6, globalZoom=0, globalStartNodeEUID=None,
-                  auth=Depends(require_auth)):
-    dag_data = generate_dag_json_from_all_objects_v2(request=request, euid=globalStartNodeEUID,
-                                                     depth=globalFilterLevel)
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+async def dindex2(
+    request: Request,
+    globalFilterLevel=6,
+    globalZoom=0,
+    globalStartNodeEUID=None,
+    auth=Depends(require_auth),
+):
+    dag_data = generate_dag_json_from_all_objects_v2(
+        request=request, euid=globalStartNodeEUID, depth=globalFilterLevel
+    )
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("dindex2.html").render(
         request=request,
@@ -1210,13 +1319,13 @@ async def dindex2(request: Request, globalFilterLevel=6, globalZoom=0, globalSta
         globalFilterLevel=globalFilterLevel,
         globalZoom=globalZoom,
         globalStartNodeEUID=globalStartNodeEUID,
-        dag_data=dag_data
+        dag_data=dag_data,
     )
     return HTMLResponse(content=content)
 
 
 def add_new_node(request: Request, _auth=Depends(require_auth)):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     new_ci = bobdb.Base.classes.container_instance(name="newthing")
     bobdb.session.add(new_ci)
@@ -1226,7 +1335,7 @@ def add_new_node(request: Request, _auth=Depends(require_auth)):
 
 @app.get("/get_node_info")
 async def get_node_info(request: Request, euid, _auth=Depends(require_auth)):
-    BO = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     node_dat = BO.get_by_euid(euid)
 
     if node_dat:
@@ -1242,25 +1351,37 @@ async def get_node_info(request: Request, euid, _auth=Depends(require_auth)):
     else:
         return {"error": "Node not found"}
 
-def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6, _auth=Depends(require_auth)):
-    # Default values and setup
-    if euid in [None, '', 'None']:
-        euid = 'AY1'
 
-    BO = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+def generate_dag_json_from_all_objects_v2(
+    request: Request, euid="AY1", depth=6, _auth=Depends(require_auth)
+):
+    # Default values and setup
+    if euid in [None, "", "None"]:
+        euid = "AY1"
+
+    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
 
     # Simplify file naming and ensure directory exists
-    user_email_sanitized = request.session['user_data']['email'].replace('@', '_').replace('.', '_')
+    user_email_sanitized = (
+        request.session["user_data"]["email"].replace("@", "_").replace(".", "_")
+    )
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     output_dir = "./dags"
     os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
-    output_file = os.path.join(output_dir, f"dag_{user_email_sanitized}_{depth}_{timestamp}_dagv2.json")
+    output_file = os.path.join(
+        output_dir, f"dag_{user_email_sanitized}_{depth}_{timestamp}_dagv2.json"
+    )
 
     # Check if DAG needs to be regenerated
     schema_mod_dt = request.session.get("schema_mod_dt")
-    if schema_mod_dt != last_schema_edit_dt.changed_at.isoformat() or not os.path.exists(output_file):
-        print(f"Dag WILL BE Regenerated, Schema Has Changed. {output_file} being generated.")
+    if (
+        schema_mod_dt != last_schema_edit_dt.changed_at.isoformat()
+        or not os.path.exists(output_file)
+    ):
+        print(
+            f"Dag WILL BE Regenerated, Schema Has Changed. {output_file} being generated."
+        )
     else:
         print(f"Dag Not Regenerated, Schema Has Not Changed. {output_file} unchanged.")
         return
@@ -1269,48 +1390,56 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
     request.session["user_data"]["dag_fnv2"] = output_file
 
     colors = {
-    "container": "#8B00FF",         # Electric Purple
-    "content": "#00BFFF",           # Deep Sky Blue
-    "workflow": "#00FF7F",          # Spring Green
-    "workflow_step": "#ADFF2F",     # Green Yellow
-    "equipment": "#FF4500",         # Orange Red
-    "object_set": "#FF6347",        # Tomato
-    "actor": "#FFD700",             # Gold
-    "test_requisition": "#FFA500",  # Orange
-    "data": "#FFFF00",              # Yellow
-    "generic": "#FF1493",           # Deep Pink
-    "action": "#FF8C00",            # Dark Orange
-    "file": "#00FF00",              # Lime
+        "container": "#8B00FF",  # Electric Purple
+        "content": "#00BFFF",  # Deep Sky Blue
+        "workflow": "#00FF7F",  # Spring Green
+        "workflow_step": "#ADFF2F",  # Green Yellow
+        "equipment": "#FF4500",  # Orange Red
+        "object_set": "#FF6347",  # Tomato
+        "actor": "#FFD700",  # Gold
+        "test_requisition": "#FFA500",  # Orange
+        "data": "#FFFF00",  # Yellow
+        "generic": "#FF1493",  # Deep Pink
+        "action": "#FF8C00",  # Dark Orange
+        "file": "#00FF00",  # Lime
     }
 
     sub_colors = {
-        "well": "#70658c",     
+        "well": "#70658c",
         "file_set": "#228080",
         "generic": "#008080",
-        }
-
-    edge_relationship_type_colors = {
-        "generic": "#ADD8E6",
-        "index": "#4CAF50"
     }
 
-    #instance_result = []
+    edge_relationship_type_colors = {"generic": "#ADD8E6", "index": "#4CAF50"}
+
+    # instance_result = []
     instance_result = {}
     lineage_result = {}
 
     for r in BO.fetch_graph_data_by_node_depth(euid, depth):
-        if r[0] in [None, '', 'None']:
+        if r[0] in [None, "", "None"]:
             pass
         else:
 
-            instance = {'euid': r[0], 'name': r[2], 'btype': r[3], 'super_type': r[4], 'b_sub_type': r[5],
-                        'version': r[6]}
+            instance = {
+                "euid": r[0],
+                "name": r[2],
+                "btype": r[3],
+                "super_type": r[4],
+                "b_sub_type": r[5],
+                "version": r[6],
+            }
             instance_result[r[0]] = instance
 
-            if r[8] in [None, '', 'None']:
+            if r[8] in [None, "", "None"]:
                 pass
             else:
-                lin_edge = {'parent_euid': r[9], 'child_euid': r[10], 'lineage_euid': r[8], 'relationship_type': r[11]}
+                lin_edge = {
+                    "parent_euid": r[9],
+                    "child_euid": r[10],
+                    "lineage_euid": r[8],
+                    "relationship_type": r[11],
+                }
                 lineage_result[r[8]] = lin_edge
 
     # Construct nodes and edges
@@ -1321,15 +1450,23 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
         instance = instance_result[instance_k]
         node = {
             "data": {
-                "id": str(instance['euid']),
+                "id": str(instance["euid"]),
                 "type": "instance",
-                "euid": str(instance['euid']),
-                "name": instance['name'],
-                "btype": instance['btype'],
-                "super_type": instance['super_type'],
-                "b_sub_type": instance['super_type'] + "." + instance['btype'] + "." + instance['b_sub_type'],
-                "version": instance['version'],
-                "color": colors.get(instance['super_type'], "pink") if instance['btype'] not in ["well", "file_set"] else sub_colors.get(instance['b_sub_type'], "white"),
+                "euid": str(instance["euid"]),
+                "name": instance["name"],
+                "btype": instance["btype"],
+                "super_type": instance["super_type"],
+                "b_sub_type": instance["super_type"]
+                + "."
+                + instance["btype"]
+                + "."
+                + instance["b_sub_type"],
+                "version": instance["version"],
+                "color": (
+                    colors.get(instance["super_type"], "pink")
+                    if instance["btype"] not in ["well", "file_set"]
+                    else sub_colors.get(instance["b_sub_type"], "white")
+                ),
             }
         }
         nodes.append(node)
@@ -1339,21 +1476,20 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
 
         edge = {
             "data": {
-                "source": str(lineage['parent_euid']),
-                "target": str(lineage['child_euid']),
-                "id": str(lineage['lineage_euid']),
-                "relationship_type": str(lineage['relationship_type']),
-                "color": edge_relationship_type_colors.get(lineage['relationship_type'], "lightgreen"),
+                "source": str(lineage["parent_euid"]),
+                "target": str(lineage["child_euid"]),
+                "id": str(lineage["lineage_euid"]),
+                "relationship_type": str(lineage["relationship_type"]),
+                "color": edge_relationship_type_colors.get(
+                    lineage["relationship_type"], "lightgreen"
+                ),
             }
-        
         }
         edges.append(edge)
 
     # Construct JSON structure
 
-    dag_json = {
-        "elements": {"nodes": nodes, "edges": edges}
-    }
+    dag_json = {"elements": {"nodes": nodes, "edges": edges}}
 
     # Write to file
     with open(output_file, "w") as f:
@@ -1372,9 +1508,11 @@ def get_dag(request: Request, _auth=Depends(require_auth)):
 
 
 @app.get("/get_dagv2")
-async def get_dagv2(request: Request, _euid='AY1', _depth=6, _auth=Depends(require_auth)):
+async def get_dagv2(
+    request: Request, _euid="AY1", _depth=6, _auth=Depends(require_auth)
+):
     dag_fn = request.session["user_data"]["dag_fnv2"]
-    #dag_fn = "./dags/j.json"
+    # dag_fn = "./dags/j.json"
     dag_data = {"elements": {"nodes": [], "edges": []}}
     if os.path.exists(dag_fn):
         with open(dag_fn, "r") as f:
@@ -1395,19 +1533,19 @@ async def update_dag(request: Request, _auth=Depends(require_auth)):
 async def delete_object(request: Request, _auth=Depends(require_auth)):
     data = await request.json()
     euid = data.get("euid")
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     bobdb.delete(bobdb.get_by_euid(euid))
     bobdb.session.flush()
     bobdb.session.commit()
-    
-    
+
+
 @app.post("/add_new_edge")
 async def add_new_edge(request: Request, _auth=Depends(require_auth)):
     input_data = await request.json()  # Corrected call to request.json()
     parent_euid = input_data["parent_uuid"]
     child_euid = input_data["child_uuid"]
-    BO = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     # Assuming the method returns the new edge object, you might need to adjust this part
     new_edge = BO.create_generic_instance_lineage_by_euids(parent_euid, child_euid)
     BO.session.flush()
@@ -1419,7 +1557,7 @@ async def add_new_edge(request: Request, _auth=Depends(require_auth)):
 async def delete_node(request: Request, _auth=Depends(require_auth)):
     input_data = await request.json()
     node_euid = input_data["euid"]
-    BO = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     BO.delete(euid=node_euid)
     BO.session.flush()
     BO.session.commit()
@@ -1435,7 +1573,7 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
     input_data = await request.json()
     edge_euid = input_data["euid"]
 
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session['user_data']['email']))
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     bobdb.delete(bobdb.get_by_euid(edge_euid))
     bobdb.session.flush()
     bobdb.session.commit()
@@ -1447,30 +1585,111 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
 
 
 pantone_colors = [
-    "Living Coral", "Classic Blue", "Greenery", "Rose Quartz", "Serenity",
-    "Marsala", "Radiant Orchid", "Emerald", "Tangerine Tango", "Honeysuckle",
-    "Turquoise", "Mimosa", "Blue Iris", "Chili Pepper", "Sand Dollar",
-    "Blue Turquoise", "Tigerlily", "Aqua Sky", "True Red", "Fuchsia Rose",
-    "Cerulean", "Amethyst Orchid", "Ultra Violet", "Palace Blue", "Lime Punch",
-    "Pink Lavender", "Crocus Petal", "Spring Crocus", "Meadowlark", "Cherry Tomato",
-    "Chili Oil", "Blooming Dahlia", "Little Boy Blue", "Arcadia", "Ultra Violet",
-    "Emperador", "Almost Mauve", "Spring Crocus", "Sailor Blue", "Harbor Mist",
-    "Warm Sand", "Coconut Milk", "Soybean", "Mellow Yellow", "Fiery Red",
-    "Biscay Green", "Coral Pink", "Grape Compote", "Storm Gray", "Illuminating"
+    "Living Coral",
+    "Classic Blue",
+    "Greenery",
+    "Rose Quartz",
+    "Serenity",
+    "Marsala",
+    "Radiant Orchid",
+    "Emerald",
+    "Tangerine Tango",
+    "Honeysuckle",
+    "Turquoise",
+    "Mimosa",
+    "Blue Iris",
+    "Chili Pepper",
+    "Sand Dollar",
+    "Blue Turquoise",
+    "Tigerlily",
+    "Aqua Sky",
+    "True Red",
+    "Fuchsia Rose",
+    "Cerulean",
+    "Amethyst Orchid",
+    "Ultra Violet",
+    "Palace Blue",
+    "Lime Punch",
+    "Pink Lavender",
+    "Crocus Petal",
+    "Spring Crocus",
+    "Meadowlark",
+    "Cherry Tomato",
+    "Chili Oil",
+    "Blooming Dahlia",
+    "Little Boy Blue",
+    "Arcadia",
+    "Ultra Violet",
+    "Emperador",
+    "Almost Mauve",
+    "Spring Crocus",
+    "Sailor Blue",
+    "Harbor Mist",
+    "Warm Sand",
+    "Coconut Milk",
+    "Soybean",
+    "Mellow Yellow",
+    "Fiery Red",
+    "Biscay Green",
+    "Coral Pink",
+    "Grape Compote",
+    "Storm Gray",
+    "Illuminating",
 ]
 
 marine_invertebrates = [
-    "Aplysia", "Asterias", "Aurelia", "Balanus", "Branchiostoma",
-    "Ciona", "Daphnia", "Dugesia", "Echinaster", "Eisenia",
-    "Fasciola", "Gammarus", "Glycera", "Haliclystus", "Hydra",
-    "Littorina", "Loligo", "Metridium", "Mytilus", "Nereis",
-    "Obelia", "Octopus", "Patella", "Perophora", "Physalia",
-    "Pleurobrachia", "Polyclinum", "Porphyra", "Sertularia", "Spongia",
-    "Squilla", "Styela", "Synapta", "Terebella", "Tethya",
-    "Thalassiosira", "Tubifex", "Turbo", "Urticina", "Velella",
-    "Vorticella", "Watasenia", "Xenoturbella", "Yoldia", "Zostera",
-    "Zygocotyle", "Zoanthus", "Zoothamnium", "Zooxanthella", "Zygnema"
+    "Aplysia",
+    "Asterias",
+    "Aurelia",
+    "Balanus",
+    "Branchiostoma",
+    "Ciona",
+    "Daphnia",
+    "Dugesia",
+    "Echinaster",
+    "Eisenia",
+    "Fasciola",
+    "Gammarus",
+    "Glycera",
+    "Haliclystus",
+    "Hydra",
+    "Littorina",
+    "Loligo",
+    "Metridium",
+    "Mytilus",
+    "Nereis",
+    "Obelia",
+    "Octopus",
+    "Patella",
+    "Perophora",
+    "Physalia",
+    "Pleurobrachia",
+    "Polyclinum",
+    "Porphyra",
+    "Sertularia",
+    "Spongia",
+    "Squilla",
+    "Styela",
+    "Synapta",
+    "Terebella",
+    "Tethya",
+    "Thalassiosira",
+    "Tubifex",
+    "Turbo",
+    "Urticina",
+    "Velella",
+    "Vorticella",
+    "Watasenia",
+    "Xenoturbella",
+    "Yoldia",
+    "Zostera",
+    "Zygocotyle",
+    "Zoanthus",
+    "Zoothamnium",
+    "Zooxanthella",
+    "Zygnema",
 ]
+
 
 def generate_unique_upload_key():
     color = random.choice(pantone_colors)
@@ -1480,19 +1699,20 @@ def generate_unique_upload_key():
 
 
 @app.get("/create_file_form", response_class=HTMLResponse)
-async def create_file_form(request: Request,_auth=Depends(require_auth)):
-    request.session.pop('form_data', None)
+async def create_file_form(request: Request, _auth=Depends(require_auth)):
+    request.session.pop("form_data", None)
 
     accordion_states = dict(request.session)
-    user_data = request.session.get('user_data', {})
-    style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
     upload_group_key = generate_unique_upload_key()
     content = templates.get_template("create_file.html").render(
         request=request,
         accordion_states=accordion_states,
         style=style,
         upload_group_key=upload_group_key,
-        udat=user_data)
+        udat=user_data,
+    )
 
     return HTMLResponse(content=content)
 
@@ -1512,18 +1732,18 @@ async def create_file(
     x_health_event_id: str = Form(""),
     x_relevant_datetime: str = Form(""),
     x_x_rcrf_patient_uid: str = Form(""),
-    upload_group_key: str = Form("")
+    upload_group_key: str = Form(""),
 ):
-    
+
     if directory and len(directory) > 1000:
         return JSONResponse(
             status_code=400,
-            content={"detail": "Too many files. Maximum number of files is 1000."}
+            content={"detail": "Too many files. Maximum number of files is 1000."},
         )
         raise
-    
+
     try:
-        bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
+        bfi = BloomFile(BLOOMdb3(app_username=request.session["user_data"]["email"]))
         file_metadata = {
             "name": name,
             "comments": comments,
@@ -1532,9 +1752,9 @@ async def create_file(
             "x_health_event_id": x_health_event_id,
             "x_relevant_datetime": x_relevant_datetime,
             "x_x_rcrf_patient_uid": x_x_rcrf_patient_uid,
-            "upload_ui_user": request.session['user_data']['email'],
+            "upload_ui_user": request.session["user_data"]["email"],
             "upload_group_key": upload_group_key,
-            "x_study_id": x_study_id
+            "x_study_id": x_study_id,
         }
 
         results = []
@@ -1543,10 +1763,29 @@ async def create_file(
             for file in file_data:
                 if file.filename:  # Ensure that there is a valid filename
                     try:
-                        new_file = bfi.create_file(file_metadata=file_metadata, file_data=file.file, file_name=file.filename)
-                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url, "current_s3_uri": new_file.json_addl['properties']['current_s3_uri'] })
+                        new_file = bfi.create_file(
+                            file_metadata=file_metadata,
+                            file_data=file.file,
+                            file_name=file.filename,
+                        )
+                        results.append(
+                            {
+                                "identifier": new_file.euid,
+                                "status": "Success",
+                                "original": file.filename if file else url,
+                                "current_s3_uri": new_file.json_addl["properties"][
+                                    "current_s3_uri"
+                                ],
+                            }
+                        )
                     except Exception as e:
-                        results.append({"identifier": file.filename, "status": f"Failed: {str(e)}", "original": file.filename if file else url})
+                        results.append(
+                            {
+                                "identifier": file.filename,
+                                "status": f"Failed: {str(e)}",
+                                "original": file.filename if file else url,
+                            }
+                        )
                 else:
                     logging.warning(f"Skipping file with no filename: {file}")
 
@@ -1554,61 +1793,109 @@ async def create_file(
             for file in directory:
                 if len(file.filename) > 0:
                     try:
-                        new_file = bfi.create_file(file_metadata=file_metadata, file_data=file.file, file_name=file.filename)
-                        results.append({"identifier": new_file.euid, "status": "Success","original": file.filename if file else url, "current_s3_uri": new_file.json_addl['properties']['current_s3_uri']})
+                        new_file = bfi.create_file(
+                            file_metadata=file_metadata,
+                            file_data=file.file,
+                            file_name=file.filename,
+                        )
+                        results.append(
+                            {
+                                "identifier": new_file.euid,
+                                "status": "Success",
+                                "original": file.filename if file else url,
+                                "current_s3_uri": new_file.json_addl["properties"][
+                                    "current_s3_uri"
+                                ],
+                            }
+                        )
                     except Exception as e:
-                        results.append({"identifier": file.filename, "status": f"Failed: {str(e)}","original": file.filename if file else url})
+                        results.append(
+                            {
+                                "identifier": file.filename,
+                                "status": f"Failed: {str(e)}",
+                                "original": file.filename if file else url,
+                            }
+                        )
 
         if urls:
-            url_list = urls.split('\n')
+            url_list = urls.split("\n")
             for url in url_list:
                 if url.strip():
                     try:
-                        new_file = bfi.create_file(file_metadata=file_metadata, url=url.strip())
-                        results.append({"identifier": new_file.euid, "status": "Success", "original":url, "current_s3_uri": new_file.json_addl['properties']['current_s3_uri']})
+                        new_file = bfi.create_file(
+                            file_metadata=file_metadata, url=url.strip()
+                        )
+                        results.append(
+                            {
+                                "identifier": new_file.euid,
+                                "status": "Success",
+                                "original": url,
+                                "current_s3_uri": new_file.json_addl["properties"][
+                                    "current_s3_uri"
+                                ],
+                            }
+                        )
                     except Exception as e:
-                        results.append({"identifier": url.strip(), "status": f"Failed: {str(e)}"})
+                        results.append(
+                            {"identifier": url.strip(), "status": f"Failed: {str(e)}"}
+                        )
         if s3_uris:
-            s3_uri_list = s3_uris.split('\n')
+            s3_uri_list = s3_uris.split("\n")
             for s3_uri in s3_uri_list:
                 if s3_uri.strip():
                     try:
-                        new_file = bfi.create_file(file_metadata=file_metadata, s3_uri=s3_uri.strip())
-                        results.append({"identifier": new_file.euid, "status": "Success", "original":s3_uri,"current_s3_uri": new_file.json_addl['properties']['current_s3_uri']})
+                        new_file = bfi.create_file(
+                            file_metadata=file_metadata, s3_uri=s3_uri.strip()
+                        )
+                        results.append(
+                            {
+                                "identifier": new_file.euid,
+                                "status": "Success",
+                                "original": s3_uri,
+                                "current_s3_uri": new_file.json_addl["properties"][
+                                    "current_s3_uri"
+                                ],
+                            }
+                        )
                     except Exception as e:
-                        results.append({"identifier": s3_uri.strip(), "status": f"Failed: {str(e)}"})
+                        results.append(
+                            {
+                                "identifier": s3_uri.strip(),
+                                "status": f"Failed: {str(e)}",
+                            }
+                        )
 
         # Render the report
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
         content = templates.get_template("create_file_report.html").render(
-            request=request,
-            results=results,
-            style=style,
-            udat=user_data
+            request=request, results=results, style=style, udat=user_data
         )
 
         return HTMLResponse(content=content)
 
     except ValueError as ve:
         logging.error(f"Input error: {ve}")
-        return HTMLResponse(content=f"<html><body><h2>{ve}</h2></body></html>", status_code=400)
+        return HTMLResponse(
+            content=f"<html><body><h2>{ve}</h2></body></html>", status_code=400
+        )
 
     except Exception as e:
         logging.error(f"Error creating file: {e}")
 
         accordion_states = dict(request.session)
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
         content = templates.get_template("create_file.html").render(
             request=request,
             error=f"An error occurred: {e}",
             accordion_states=accordion_states,
             style=style,
-            udat=user_data
+            udat=user_data,
         )
 
         return HTMLResponse(content=content)
+
 
 @app.post("/download_file", response_class=HTMLResponse)
 async def download_file(
@@ -1616,16 +1903,16 @@ async def download_file(
     euid: str = Form(...),
     download_type: str = Form(...),
     create_metadata_file: str = Form(...),
-    ret_json: str = Form(None)
+    ret_json: str = Form(None),
 ):
     try:
-        bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
+        bfi = BloomFile(BLOOMdb3(app_username=request.session["user_data"]["email"]))
         downloaded_file_path = bfi.download_file(
-            euid=euid, 
-            save_pattern=download_type, 
-            include_metadata=True if create_metadata_file == 'yes' else False, 
-            save_path='./tmp/',
-            delete_if_exists=True
+            euid=euid,
+            save_pattern=download_type,
+            include_metadata=True if create_metadata_file == "yes" else False,
+            save_path="./tmp/",
+            delete_if_exists=True,
         )
 
         # Ensure the file exists
@@ -1633,48 +1920,52 @@ async def download_file(
             return HTMLResponse(f"File with EUID {euid} not found.", status_code=404)
 
         metadata_yaml_path = None
-        if create_metadata_file == 'yes':
-            metadata_yaml_path = downloaded_file_path + '.dewey.yaml'
+        if create_metadata_file == "yes":
+            metadata_yaml_path = downloaded_file_path + ".dewey.yaml"
             if not os.path.exists(metadata_yaml_path):
-                return HTMLResponse(f"Metadata file for EUID {euid} not found.", status_code=404)
+                return HTMLResponse(
+                    f"Metadata file for EUID {euid} not found.", status_code=404
+                )
 
         if ret_json:
-            return JSONResponse(content={
-                "file_download_path": downloaded_file_path,
-                "metadata_download_path": metadata_yaml_path
-            })
-
+            return JSONResponse(
+                content={
+                    "file_download_path": downloaded_file_path,
+                    "metadata_download_path": metadata_yaml_path,
+                }
+            )
 
         # Render the template with download paths
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
         content = templates.get_template("trigger_downloads.html").render(
             request=request,
             file_download_path=downloaded_file_path,
             metadata_download_path=metadata_yaml_path,
             style=style,
-            udat=user_data
+            udat=user_data,
         )
 
         return HTMLResponse(content=content)
 
     except Exception as e:
         logging.error(f"Error downloading file: {e}")
-        
+
         # Render the error page with a link to delete the offending temp files
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
-        offending_file = str(e).split('/tmp/')[-1]
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+        offending_file = str(e).split("/tmp/")[-1]
 
         content = templates.get_template("download_error.html").render(
             request=request,
             error=f"An error occurred: {e}",
             style=style,
             udat=user_data,
-            offending_file=offending_file
+            offending_file=offending_file,
         )
 
         return HTMLResponse(content=content)
+
 
 def delete_file(file_path: Path):
     try:
@@ -1683,6 +1974,7 @@ def delete_file(file_path: Path):
             logging.info(f"Deleted file {file_path}")
     except Exception as e:
         logging.error(f"Error deleting file {file_path}: {e}")
+
 
 @app.get("/download/{filename}")
 async def download(filename: str, background_tasks: BackgroundTasks):
@@ -1694,7 +1986,9 @@ async def download(filename: str, background_tasks: BackgroundTasks):
 
 
 @app.get("/delete_temp_file")
-async def delete_temp_file(request: Request, filename: str, background_tasks: BackgroundTasks):
+async def delete_temp_file(
+    request: Request, filename: str, background_tasks: BackgroundTasks
+):
     file_path = Path("./tmp") / filename
     file_path_yaml = Path("./tmp") / f"{filename}.dewey.yaml"
 
@@ -1735,16 +2029,18 @@ async def search_files(
         search_criteria["properties"] = properties
 
     try:
-        bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
-        euid_results = bfi.search_objs_by_addl_metadata(search_criteria, greedy, 'file', super_type='file')
+        bfi = BloomFile(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+        euid_results = bfi.search_objs_by_addl_metadata(
+            search_criteria, greedy, "file", super_type="file"
+        )
 
         # Fetch details for each EUID
         detailed_results = [bfi.get_by_euid(euid) for euid in euid_results]
 
         # Create a list of columns for the table
         columns = ["EUID", "Date Created", "Status"]
-        if detailed_results and detailed_results[0].json_addl.get('properties'):
-            columns += list(detailed_results[0].json_addl['properties'].keys())
+        if detailed_results and detailed_results[0].json_addl.get("properties"):
+            columns += list(detailed_results[0].json_addl["properties"].keys())
 
         # Prepare the data for the template
         table_data = []
@@ -1755,32 +2051,33 @@ async def search_files(
                 "Status": result.bstatus,
             }
             for key in columns[3:]:
-                row[key] = result.json_addl['properties'].get(key, "N/A")
+                row[key] = result.json_addl["properties"].get(key, "N/A")
             table_data.append(row)
 
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
         content = templates.get_template("search_results.html").render(
             request=request,
             columns=columns,
             table_data=table_data,
             style=style,
-            udat=user_data
+            udat=user_data,
         )
         return HTMLResponse(content=content)
 
     except Exception as e:
         logging.error(f"Error searching files: {e}")
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
         content = templates.get_template("search_error.html").render(
             request=request,
             error=f"An error occurred: {e}",
             style=style,
-            udat=user_data
+            udat=user_data,
         )
         return HTMLResponse(content=content)
+
 
 @app.get("/get_node_property")
 async def get_node_property(request: Request, euid: str, key: str):
@@ -1790,13 +2087,18 @@ async def get_node_property(request: Request, euid: str, key: str):
         boi = bo.get_by_euid(euid)
         if boi is None:
             return JSONResponse({"error": "Node not found"}, status_code=404)
-        
-        property_value = boi.json_addl.get('properties', {}).get(key, 'Property Not Found')
+
+        property_value = boi.json_addl.get("properties", {}).get(
+            key, "Property Not Found"
+        )
         return JSONResponse({key: property_value})
     except Exception as e:
         logging.error(f"Error retrieving node property: {e}")
-        return JSONResponse({"error": f"Error retrieving node property: {e}"}, status_code=500)
-    
+        return JSONResponse(
+            {"error": f"Error retrieving node property: {e}"}, status_code=500
+        )
+
+
 @app.post("/create_file_set")
 async def create_file_set(
     request: Request,
@@ -1804,30 +2106,35 @@ async def create_file_set(
     file_set_description: str = Form(...),
     file_set_tag: str = Form(...),
     comments: str = Form(None),
-    file_euids: str = Form(...)
+    file_euids: str = Form(...),
 ):
     try:
-        bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
+        bfs = BloomFileSet(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
-        file_set_metadata = {        
-                "name": file_set_name,
-                "description": file_set_description,
-                "tag": file_set_tag,
-                "comments": comments,
-            }
-        
+        file_set_metadata = {
+            "name": file_set_name,
+            "description": file_set_description,
+            "tag": file_set_tag,
+            "comments": comments,
+        }
+
         # Create the file set
         new_file_set = bfs.create_file_set(file_set_metadata=file_set_metadata)
 
         # Add files to the file set
         file_euids_list = [euid.strip() for euid in file_euids.split()]
-        bfs.add_files_to_file_set(file_set_euid=new_file_set.euid, file_euids=file_euids_list)
+        bfs.add_files_to_file_set(
+            file_set_euid=new_file_set.euid, file_euids=file_euids_list
+        )
 
-        return RedirectResponse(url=f"/euid_details?euid={new_file_set.euid}", status_code=303)
+        return RedirectResponse(
+            url=f"/euid_details?euid={new_file_set.euid}", status_code=303
+        )
 
     except Exception as e:
-        raise(e)
+        raise (e)
         #    return RedirectResponse(url="/create_file_form", status_code=303)
+
 
 # The following is very redundant to the file_search and <s>probably</s> should be refactored
 @app.post("/search_file_sets", response_class=HTMLResponse)
@@ -1838,7 +2145,7 @@ async def search_file_sets(
     file_set_tag: str = Form(None),
     comments: str = Form(None),
     file_euids: str = Form(None),
-    is_greedy: str = Form("yes")
+    is_greedy: str = Form("yes"),
 ):
     search_criteria = {}
 
@@ -1850,23 +2157,24 @@ async def search_file_sets(
         search_criteria["tag"] = file_set_tag
     if comments:
         search_criteria["comments"] = comments
-  
 
-    q_ds = {'properties': search_criteria}
-    
+    q_ds = {"properties": search_criteria}
+
     greedy = is_greedy == "yes"
 
     try:
-        bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
-        file_sets = bfs.search_objs_by_addl_metadata(q_ds, greedy, 'file_set', super_type='file')
+        bfs = BloomFileSet(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+        file_sets = bfs.search_objs_by_addl_metadata(
+            q_ds, greedy, "file_set", super_type="file"
+        )
 
         # Fetch details for each EUID
         detailed_results = [bfs.get_by_euid(euid) for euid in file_sets]
 
         # Create a list of columns for the table
         columns = ["EUID", "Date Created", "Status"]
-        if detailed_results and detailed_results[0].json_addl.get('properties'):
-            columns += list(detailed_results[0].json_addl['properties'].keys())
+        if detailed_results and detailed_results[0].json_addl.get("properties"):
+            columns += list(detailed_results[0].json_addl["properties"].keys())
         columns.append("File EUIDs")
         # Prepare the data for the template
         table_data = []
@@ -1877,71 +2185,85 @@ async def search_file_sets(
                 "Status": result.bstatus,
             }
             for key in columns[3:]:
-                row[key] = result.json_addl['properties'].get(key, "N/A")
-            file_euids = [elem.child_instance.euid for elem in result.parent_of_lineages.all()]
-            euid_links = [f'<a href="euid_details?euid={euid}">{euid}</a>' for euid in file_euids]
+                row[key] = result.json_addl["properties"].get(key, "N/A")
+            file_euids = [
+                elem.child_instance.euid for elem in result.parent_of_lineages.all()
+            ]
+            euid_links = [
+                f'<a href="euid_details?euid={euid}">{euid}</a>' for euid in file_euids
+            ]
             row["File EUIDs"] = euid_links
             table_data.append(row)
 
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
         content = templates.get_template("file_set_search_results.html").render(
             request=request,
             table_data=table_data,
             columns=columns,
             style=style,
-            udat=user_data
+            udat=user_data,
         )
         return HTMLResponse(content=content)
 
     except Exception as e:
         logging.error(f"Error searching file sets: {e}")
-        user_data = request.session.get('user_data', {})
-        style = {"skin_css": user_data.get('style_css', 'static/skins/bloom.css')}
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
         content = templates.get_template("search_error.html").render(
             request=request,
             error=f"An error occurred: {e}",
             style=style,
-            udat=user_data
+            udat=user_data,
         )
         return HTMLResponse(content=content)
-    
-    
+
 
 @app.get("/visual_report", response_class=HTMLResponse)
 async def visual_report(request: Request):
     import io
     import base64
+
     # Read the TSV file
-    file_path = '~/Downloads/dewey_search.tsv'
-    data = pd.read_csv(file_path, sep='\t')
+    file_path = "~/Downloads/dewey_search.tsv"
+    data = pd.read_csv(file_path, sep="\t")
 
     # Analyze the Data
-    file_types = data['file_type'].value_counts()
-    file_sizes = data['original_file_size_bytes'].dropna()
-    upload_users = data['upload_ui_user'].value_counts()
+    file_types = data["file_type"].value_counts()
+    file_sizes = data["original_file_size_bytes"].dropna()
+    upload_users = data["upload_ui_user"].value_counts()
 
     # Generate Visualizations
     plots = []
 
-    def create_plot(series, title, xlabel, ylabel, plot_type='bar'):
+    def create_plot(series, title, xlabel, ylabel, plot_type="bar"):
         fig, ax = plt.subplots()
-        if plot_type == 'bar':
-            series.plot(kind='bar', ax=ax)
-        elif plot_type == 'hist':
-            series.plot(kind='hist', ax=ax, bins=30)
+        if plot_type == "bar":
+            series.plot(kind="bar", ax=ax)
+        elif plot_type == "hist":
+            series.plot(kind="hist", ax=ax, bins=30)
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         figfile = io.BytesIO()
-        plt.savefig(figfile, format='png')
+        plt.savefig(figfile, format="png")
         figfile.seek(0)
-        return base64.b64encode(figfile.getvalue()).decode('utf8')
+        return base64.b64encode(figfile.getvalue()).decode("utf8")
 
-    file_types_img = create_plot(file_types, 'Distribution of File Types', 'File Type', 'Count', 'bar')
-    file_sizes_img = create_plot(file_sizes, 'Distribution of File Sizes', 'File Size (bytes)', 'Frequency', 'hist')
-    upload_users_img = create_plot(upload_users, 'Files Uploaded by User', 'User', 'Number of Files', 'bar')
+    file_types_img = create_plot(
+        file_types, "Distribution of File Types", "File Type", "Count", "bar"
+    )
+    file_sizes_img = create_plot(
+        file_sizes,
+        "Distribution of File Sizes",
+        "File Size (bytes)",
+        "Frequency",
+        "hist",
+    )
+    upload_users_img = create_plot(
+        upload_users, "Files Uploaded by User", "User", "Number of Files", "bar"
+    )
 
     plots.append(file_types_img)
     plots.append(file_sizes_img)
@@ -1949,9 +2271,6 @@ async def visual_report(request: Request):
 
     # Render the HTML template with the plots
     template = templates.get_template("visual_report.html")
-    context = {
-        "request": request,
-        "plots": plots
-    }
+    context = {"request": request, "plots": plots}
 
     return HTMLResponse(content=template.render(context), status_code=200)

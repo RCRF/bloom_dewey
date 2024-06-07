@@ -22,7 +22,7 @@ import boto3
 import requests
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
-boto3.set_stream_logger(name='botocore')
+boto3.set_stream_logger(name="botocore")
 
 from sqlalchemy import (
     and_,
@@ -43,8 +43,8 @@ from sqlalchemy import (
     DateTime,
     Boolean,
     ForeignKey,
-    or_, 
-    and_
+    or_,
+    and_,
 )
 
 from sqlalchemy.ext.automap import automap_base
@@ -67,6 +67,7 @@ from sqlalchemy.orm.attributes import flag_modified
 import sqlalchemy.orm as sqla_orm
 
 import zebra_day.print_mgr as zdpm
+
 try:
     import fedex_tracking_day.fedex_track as FTD
 except Exception as e:
@@ -74,6 +75,7 @@ except Exception as e:
 
 # Universal printer behavior on
 PGLOBAL = False if os.environ.get("PGLOBAL", False) else True
+
 
 def get_datetime_string():
     # Choose your desired timezone, e.g., 'US/Eastern', 'Europe/London', etc.
@@ -144,10 +146,10 @@ class bloom_core(Base):
 
     is_deleted = Column(BOOLEAN, nullable=True, server_default=FetchedValue())
 
-
     @staticmethod
     def sort_by_euid(a_list):
         return sorted(a_list, key=lambda a: a.euid)
+
 
 ## Generic
 class generic_template(bloom_core):
@@ -178,12 +180,14 @@ class generic_instance(bloom_core):
     parent_of_lineages = relationship(
         "generic_instance_lineage",
         primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.parent_instance_uuid),generic_instance_lineage.is_deleted == False)",
-        backref="parent_instance", lazy='dynamic'
+        backref="parent_instance",
+        lazy="dynamic",
     )
     child_of_lineages = relationship(
         "generic_instance_lineage",
         primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.child_instance_uuid),generic_instance_lineage.is_deleted == False)",
-        backref="child_instance", lazy='dynamic'
+        backref="child_instance",
+        lazy="dynamic",
     )
 
     def get_sorted_parent_of_lineages(
@@ -482,32 +486,38 @@ class action_instance_lineage(generic_instance_lineage):
     __mapper_args__ = {
         "polymorphic_identity": "action_instance_lineage",
     }
-    
+
+
 class health_event_template(generic_template):
     __mapper_args__ = {
         "polymorphic_identity": "health_event_template",
     }
-    
+
+
 class health_event_instance(generic_instance):
     __mapper_args__ = {
         "polymorphic_identity": "health_event_instance",
     }
-    
+
+
 class health_event_instance_lineage(generic_instance_lineage):
     __mapper_args__ = {
         "polymorphic_identity": "health_event_instance_lineage",
     }
-    
+
+
 class file_template(generic_template):
     __mapper_args__ = {
         "polymorphic_identity": "file_template",
     }
-    
+
+
 class file_instance(generic_instance):
     __mapper_args__ = {
         "polymorphic_identity": "file_instance",
     }
-    
+
+
 class file_instance_lineage(generic_instance_lineage):
     __mapper_args__ = {
         "polymorphic_identity": "file_instance_lineage",
@@ -518,12 +528,14 @@ class BLOOMdb3:
     def __init__(
         self,
         db_url_prefix="postgresql://",
-        db_hostname="localhost:"+os.environ.get("PGPORT", "5445"), # 5432
-        db_pass=None if 'PGPASSWORD' not in os.environ else os.environ.get("PGPASSWORD"),
+        db_hostname="localhost:" + os.environ.get("PGPORT", "5445"),  # 5432
+        db_pass=(
+            None if "PGPASSWORD" not in os.environ else os.environ.get("PGPASSWORD")
+        ),
         db_user=os.environ.get("USER", "bloom"),
         db_name="bloom",
         app_username=os.environ.get("USER", "bloomdborm"),
-        echo_sql=os.environ.get("ECHO_SQL", False)
+        echo_sql=os.environ.get("ECHO_SQL", False),
     ):
         self.logger = logging.getLogger(__name__)
         self.logger.debug("STARTING BLOOMDB3")
@@ -579,12 +591,11 @@ class BLOOMdb3:
             file_instance_lineage,
             health_event_template,
             health_event_instance,
-            health_event_instance_lineage
+            health_event_instance_lineage,
         ]
         for cls in classes_to_register:
             class_name = cls.__name__
             setattr(self.Base.classes, class_name, cls)
-
 
     def close(self):
         self.session.close()
@@ -599,7 +610,7 @@ class BloomObj:
         # Zebra Day Print Manager
         self.zpld = zdpm.zpl()
         self._config_printers()
-        
+
         try:
             self.track_fedex = FTD.FedexTrack()
         except Exception as e:
@@ -609,61 +620,77 @@ class BloomObj:
         self.session = bdb.session
         self.Base = bdb.Base
 
-
-    def _rebuild_printer_json(self, lab='BLOOM'):
+    def _rebuild_printer_json(self, lab="BLOOM"):
         self.zpld.probe_zebra_printers_add_to_printers_json(lab=lab)
-        self.zpld.save_printer_json(self.zpld.printers_filename.split('zebra_day')[-1])
+        self.zpld.save_printer_json(self.zpld.printers_filename.split("zebra_day")[-1])
         self._config_printers()
 
     def _config_printers(self):
-        if len(self.zpld.printers['labs'].keys()) == 0:
-            self.logger.warning('No printers found, attempting to rebuild printer json\n\n')
-            self.logger.warning('This may take a few minutes, lab code will be set to "BLOOM" ... please sit tight...\n\n')
+        if len(self.zpld.printers["labs"].keys()) == 0:
+            self.logger.warning(
+                "No printers found, attempting to rebuild printer json\n\n"
+            )
+            self.logger.warning(
+                'This may take a few minutes, lab code will be set to "BLOOM" ... please sit tight...\n\n'
+            )
             self._rebuild_printer_json()
-            
-        self.printer_labs = self.zpld.printers['labs'].keys()
+
+        self.printer_labs = self.zpld.printers["labs"].keys()
         self.selected_lab = sorted(self.printer_labs)[0]
-        self.site_printers = self.zpld.printers['labs'][self.selected_lab].keys()
+        self.site_printers = self.zpld.printers["labs"][self.selected_lab].keys()
         _zpl_label_styles = []
-        for zpl_f in os.listdir(os.path.dirname(self.zpld.printers_filename) + '/label_styles/'):
-            if zpl_f.endswith('.zpl'):
-                _zpl_label_styles.append(zpl_f.removesuffix('.zpl'))
+        for zpl_f in os.listdir(
+            os.path.dirname(self.zpld.printers_filename) + "/label_styles/"
+        ):
+            if zpl_f.endswith(".zpl"):
+                _zpl_label_styles.append(zpl_f.removesuffix(".zpl"))
         self.zpl_label_styles = sorted(_zpl_label_styles)
         self.selected_label_style = "tube_2inX1in"
-        
-        
+
     def set_printers_lab(self, lab):
         self.selected_lab = lab
-        
+
     def get_lab_printers(self, lab):
         self.selected_lab = lab
         try:
-            self.site_printers = self.zpld.printers['labs'][self.selected_lab].keys()
+            self.site_printers = self.zpld.printers["labs"][self.selected_lab].keys()
         except Exception as e:
-            self.logger.error(f'Error getting printers for lab {lab}')
+            self.logger.error(f"Error getting printers for lab {lab}")
             self.logger.error(e)
-            self.logger.error('\n\n\nAttempting to rebuild printer json !!! THIS WILL TAKE TIME !!!\n\n\n')
+            self.logger.error(
+                "\n\n\nAttempting to rebuild printer json !!! THIS WILL TAKE TIME !!!\n\n\n"
+            )
             self._rebuild_printer_json()
-            
 
-    def print_label(self, lab=None, printer_name=None, label_zpl_style="tube_2inX1in", euid="", alt_a="", alt_b="", alt_c="", alt_d="", alt_e="", alt_f="", print_n=1):
+    def print_label(
+        self,
+        lab=None,
+        printer_name=None,
+        label_zpl_style="tube_2inX1in",
+        euid="",
+        alt_a="",
+        alt_b="",
+        alt_c="",
+        alt_d="",
+        alt_e="",
+        alt_f="",
+        print_n=1,
+    ):
 
         bc = self.zpld.print_zpl(
-                    lab=lab,
-                    printer_name=printer_name,
-                    uid_barcode=euid,
-                    alt_a=alt_a,
-                    alt_b=alt_b,
-                    alt_c=alt_c,
-                    alt_d=alt_d,
-                    alt_e=alt_e,
-                    alt_f=alt_f,
-                    label_zpl_style=label_zpl_style,
-                    client_ip='pkg',
-                    print_n=print_n,
-                )
-
-
+            lab=lab,
+            printer_name=printer_name,
+            uid_barcode=euid,
+            alt_a=alt_a,
+            alt_b=alt_b,
+            alt_c=alt_c,
+            alt_d=alt_d,
+            alt_e=alt_e,
+            alt_f=alt_f,
+            label_zpl_style=label_zpl_style,
+            client_ip="pkg",
+            print_n=print_n,
+        )
 
     # For use by the cytoscape UI in order to determine if the dag needs regenerating
     def get_most_recent_schema_audit_log_entry(self):
@@ -690,9 +717,11 @@ class BloomObj:
         if not template:
             self.logger.debug(f"No template found with euid:", template_euid)
             return
-                
-        is_singleton = False if template.json_addl.get("singleton", "0") in [0,"0"] else True
-        
+
+        is_singleton = (
+            False if template.json_addl.get("singleton", "0") in [0, "0"] else True
+        )
+
         cname = template.polymorphic_discriminator.replace("_template", "_instance")
         parent_instance = getattr(self.Base.classes, f"{cname}")(
             name=template.name,
@@ -724,8 +753,9 @@ class BloomObj:
             self.logger.error(f"Error creating instance from template {template_euid}")
             self.logger.error(e)
             self.session.rollback()
-            raise Exception(f"Error creating instance from template {template_euid} ... {e} .. Likely Singleton Violation")
-
+            raise Exception(
+                f"Error creating instance from template {template_euid} ... {e} .. Likely Singleton Violation"
+            )
 
         return parent_instance
 
@@ -774,7 +804,7 @@ class BloomObj:
         ##self.session.flush()
         self.session.commit()
 
-        return ret_objs  
+        return ret_objs
 
     # I am of two minds re: if actions should be full objects, or pseudo-objects as they are now...
     def _create_action_ds(self, action_imports):
@@ -804,13 +834,16 @@ class BloomObj:
                     ret_ds[group]["actions"][action_key] = r.json_addl[
                         "action_template"
                     ]
-                    
+
                     #  I'm allowing overrides to the action properties FROM
                     # The non-action object action definition.  Its mostly shaky b/c the overrides are applied to all actions
                     # in the matched group... so, when all core are imported for example, an override will match all
                     # I think...  for singleton imports should be ok.
                     # this is to be used mostly for the assay links for test requisitions
-                    _update_recursive(ret_ds[group]["actions"][action_key], action_imports[group]["actions"][ai])
+                    _update_recursive(
+                        ret_ds[group]["actions"][action_key],
+                        action_imports[group]["actions"][ai],
+                    )
 
         return ret_ds
 
@@ -866,11 +899,11 @@ class BloomObj:
             parent_type=f"{parent_instance.super_type}:{parent_instance.btype}:{parent_instance.b_sub_type}:{parent_instance.version}",
             child_type=f"{child_instance.super_type}:{child_instance.btype}:{child_instance.b_sub_type}:{child_instance.version}",
             polymorphic_discriminator=f"generic_instance_lineage",
-            relationship_type=relationship_type
+            relationship_type=relationship_type,
         )
         self.session.add(lineage_record)
         self.session.flush()
-        #self.session.commit()
+        # self.session.commit()
 
         return lineage_record
 
@@ -961,9 +994,9 @@ class BloomObj:
     get methods.  get() assumes a uuid, which is funny as its rarely used. get_by_euid() is the workhorse.
     """
 
-    # It is VERY nice to be able to query all three instance related tables in one go. 
+    # It is VERY nice to be able to query all three instance related tables in one go.
     # Admitedly, this is a far scaled back remnant of a far more elaborate and hair rasising situation when there were more tables.
-    # There is benefit 
+    # There is benefit
     def get(self, uuid):
         """Global query for uuid across all tables in schema with 'uuid' field
             note does not handle is_deleted!
@@ -972,31 +1005,52 @@ class BloomObj:
 
         Returns:
             [] : Array of rows
-        """        
-        res = self.session.query(self.Base.classes.generic_instance).filter(
-                self.Base.classes.generic_instance.uuid == uuid, self.Base.classes.generic_instance.is_deleted==self.is_deleted
-            ).all()
-        res2 = self.session.query(self.Base.classes.generic_template).filter(
-            self.Base.classes.generic_template.uuid == uuid, self.Base.classes.generic_template.is_deleted==self.is_deleted
-        ).all()
-        res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
-            self.Base.classes.generic_instance_lineage.uuid == uuid, self.Base.classes.generic_instance_lineage.is_deleted==self.is_deleted
-        ).all()
-        
+        """
+        res = (
+            self.session.query(self.Base.classes.generic_instance)
+            .filter(
+                self.Base.classes.generic_instance.uuid == uuid,
+                self.Base.classes.generic_instance.is_deleted == self.is_deleted,
+            )
+            .all()
+        )
+        res2 = (
+            self.session.query(self.Base.classes.generic_template)
+            .filter(
+                self.Base.classes.generic_template.uuid == uuid,
+                self.Base.classes.generic_template.is_deleted == self.is_deleted,
+            )
+            .all()
+        )
+        res3 = (
+            self.session.query(self.Base.classes.generic_instance_lineage)
+            .filter(
+                self.Base.classes.generic_instance_lineage.uuid == uuid,
+                self.Base.classes.generic_instance_lineage.is_deleted
+                == self.is_deleted,
+            )
+            .all()
+        )
+
         combined_result = res + res2 + res3
 
         if len(combined_result) > 1:
-            raise Exception(f"Multiple {len(combined_results)} templates found for {uuid}") 
+            raise Exception(
+                f"Multiple {len(combined_results)} templates found for {uuid}"
+            )
         elif len(combined_result) == 0:
             self.logger.debug(f"No template found with uuid:", uuid)
-            self.logger.debug(f"On second thought, if we are using a UUID and there is no match.. exception:", uuid)
+            self.logger.debug(
+                f"On second thought, if we are using a UUID and there is no match.. exception:",
+                uuid,
+            )
             raise Exception(f"No template found with uuid:", uuid)
         else:
             return combined_result[0]
-            
-    # It is VERY nice to be able to query all three instance related tables in one go. 
+
+    # It is VERY nice to be able to query all three instance related tables in one go.
     # Admitedly, this is a far scaled back remnant of a far more elaborate and hair rasising situation when there were more tables.
-    # There is benefit 
+    # There is benefit
     def get_by_euid(self, euid):
         """Global query for euid across all tables in schema with 'euid' field
            note: does not handle is_deleted!
@@ -1006,20 +1060,38 @@ class BloomObj:
         Returns:
             [] : Array of rows
         """
-        res = self.session.query(self.Base.classes.generic_instance).filter(
-                self.Base.classes.generic_instance.euid == euid, self.Base.classes.generic_instance.is_deleted==self.is_deleted
-            ).all()
-        res2 = self.session.query(self.Base.classes.generic_template).filter(
-            self.Base.classes.generic_template.euid == euid, self.Base.classes.generic_template.is_deleted==self.is_deleted
-        ).all()
-        res3 = self.session.query(self.Base.classes.generic_instance_lineage).filter(
-            self.Base.classes.generic_instance_lineage.euid == euid, self.Base.classes.generic_instance_lineage.is_deleted==self.is_deleted
-        ).all()
-        
+        res = (
+            self.session.query(self.Base.classes.generic_instance)
+            .filter(
+                self.Base.classes.generic_instance.euid == euid,
+                self.Base.classes.generic_instance.is_deleted == self.is_deleted,
+            )
+            .all()
+        )
+        res2 = (
+            self.session.query(self.Base.classes.generic_template)
+            .filter(
+                self.Base.classes.generic_template.euid == euid,
+                self.Base.classes.generic_template.is_deleted == self.is_deleted,
+            )
+            .all()
+        )
+        res3 = (
+            self.session.query(self.Base.classes.generic_instance_lineage)
+            .filter(
+                self.Base.classes.generic_instance_lineage.euid == euid,
+                self.Base.classes.generic_instance_lineage.is_deleted
+                == self.is_deleted,
+            )
+            .all()
+        )
+
         combined_result = res + res2 + res3
 
         if len(combined_result) > 1:
-            raise Exception(f"Multiple {len(combined_result)} templates found for {euid}") 
+            raise Exception(
+                f"Multiple {len(combined_result)} templates found for {euid}"
+            )
         elif len(combined_result) == 0:
             self.logger.debug(f"No template found with euid:", euid)
             raise Exception(f"No template found with euid:", euid)
@@ -1047,8 +1119,10 @@ class BloomObj:
         if version is not None:
             query = query.filter(self.Base.classes.generic_instance.version == version)
 
-        query = query.filter(self.Base.classes.generic_instance.is_deleted == self.is_deleted)
-        
+        query = query.filter(
+            self.Base.classes.generic_instance.is_deleted == self.is_deleted
+        )
+
         # Execute the query
         return query.all()
 
@@ -1071,13 +1145,16 @@ class BloomObj:
         if version is not None:
             query = query.filter(self.Base.classes.generic_template.version == version)
 
-        query = query.filter(self.Base.classes.generic_template.is_deleted == self.is_deleted)
+        query = query.filter(
+            self.Base.classes.generic_template.is_deleted == self.is_deleted
+        )
         # Execute the query
         return query.all()
 
     # Aggregate Report SQL
     def query_generic_template_stats(self):
-        q = text("""
+        q = text(
+            """
             SELECT
                 'Generic Template Summary' as Report,
                 COUNT(*) as Total_Templates,
@@ -1092,24 +1169,30 @@ class BloomObj:
                 generic_template
             WHERE
                 is_deleted = :is_deleted
-        """)
+        """
+        )
 
-        result = self.session.execute(q, {'is_deleted': self.is_deleted}).fetchall()
+        result = self.session.execute(q, {"is_deleted": self.is_deleted}).fetchall()
 
         # Define the column names based on your SELECT statement
         columns = [
-            "Report", "Total_Templates", "Distinct_Base_Types", "Distinct_Sub_Types",
-            "Distinct_Super_Types", "Latest_Creation_Date", "Earliest_Creation_Date",
-            "Average_Age", "Singleton_Count"
+            "Report",
+            "Total_Templates",
+            "Distinct_Base_Types",
+            "Distinct_Sub_Types",
+            "Distinct_Super_Types",
+            "Latest_Creation_Date",
+            "Earliest_Creation_Date",
+            "Average_Age",
+            "Singleton_Count",
         ]
 
         # Convert each row to a dictionary
         return [dict(zip(columns, row)) for row in result]
-    
-     
-    
+
     def query_generic_instance_and_lin_stats(self):
-        q = text(f"""
+        q = text(
+            f"""
         SELECT
             -- Summary from generic_instance table
             'Generic Instance Summary' as Report,
@@ -1143,24 +1226,31 @@ class BloomObj:
             generic_instance_lineage
         WHERE
             is_deleted = {self.is_deleted};
-        """)
+        """
+        )
 
-        result = self.session.execute(q, {'is_deleted': self.is_deleted}).fetchall()
+        result = self.session.execute(q, {"is_deleted": self.is_deleted}).fetchall()
 
         # Define the column names based on your SELECT statement
         columns = [
-        "Report", "Total_Instances", "Distinct_Types", "Distinct_Polymorphic_Discriminators",
-        "Distinct_Super_Types", "Distinct_Sub_Types", "Latest_Creation_Date",
-        "Earliest_Creation_Date", "Average_Age"
+            "Report",
+            "Total_Instances",
+            "Distinct_Types",
+            "Distinct_Polymorphic_Discriminators",
+            "Distinct_Super_Types",
+            "Distinct_Sub_Types",
+            "Latest_Creation_Date",
+            "Earliest_Creation_Date",
+            "Average_Age",
         ]
 
         # Convert each row to a dictionary
         return [dict(zip(columns, row)) for row in result]
 
-
-    def query_cost_of_all_children(self,euid):
-        # limited to 10,000 children right now... 
-        query = text(f"""
+    def query_cost_of_all_children(self, euid):
+        # limited to 10,000 children right now...
+        query = text(
+            f"""
             WITH RECURSIVE descendants AS (
             -- Initial query to get the root instance
             SELECT gi.uuid, gi.euid, gi.json_addl, gi.created_dt
@@ -1183,9 +1273,9 @@ class BloomObj:
             d.json_addl -> 'cogs' ? 'cost' AND 
             d.json_addl -> 'cogs' ->> 'cost' <> ''
         ORDER BY d.created_dt DESC -- Order the final result set        
-        """)
-                     
-        
+        """
+        )
+
         # Execute the query
         result = self.session.execute(query)
 
@@ -1194,10 +1284,10 @@ class BloomObj:
 
         return euid_cost_tuples
 
-        
     def query_all_fedex_transit_times_by_ay_euid(self, qx_euid):
 
-        query = text(f"""SELECT gi.euid,
+        query = text(
+            f"""SELECT gi.euid,
         gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec' AS transit_time
         FROM generic_instance AS gi
         JOIN generic_instance_lineage AS gil1 ON gi.uuid = gil1.child_instance_uuid
@@ -1211,8 +1301,8 @@ class BloomObj:
         jsonb_typeof(gi.json_addl -> 'properties' -> 'fedex_tracking_data') = 'array' AND
         jsonb_typeof((gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0)) = 'object' AND
         COALESCE(NULLIF(gi.json_addl -> 'properties' -> 'fedex_tracking_data' -> 0 ->> 'Transit_Time_sec', ''), '0') >= '0';
-        """)
-
+        """
+        )
 
         # Execute the query
         result = self.session.execute(query)
@@ -1222,10 +1312,10 @@ class BloomObj:
 
         return euid_transit_time_tuples
 
-
     def fetch_graph_data_by_node_depth(self, start_euid, depth):
-            # SQL query with placeholders for parameters
-        query = text(f"""WITH RECURSIVE graph_data AS (
+        # SQL query with placeholders for parameters
+        query = text(
+            f"""WITH RECURSIVE graph_data AS (
                 SELECT 
                     gi.euid, 
                     gi.uuid, 
@@ -1274,25 +1364,24 @@ class BloomObj:
                     gi.is_deleted = FALSE AND gd.depth < {depth}
             )
             SELECT DISTINCT * FROM graph_data;
-        """)
-        
+        """
+        )
+
         # Execute the query
         result = self.session.execute(query)
         return result
-        
 
     def create_instance_by_template_components(
         self, super_type, btype, b_sub_type, version
     ):
         return self.create_instances(
-            self.query_template_by_component_v2(
-                super_type, btype, b_sub_type, version
-            )[0].euid
+            self.query_template_by_component_v2(super_type, btype, b_sub_type, version)[
+                0
+            ].euid
         )
-        
-        
+
     # Is this too special casey? Belong lower?
-    def create_container_with_content(self,cx_quad_tup, mx_quad_tup):
+    def create_container_with_content(self, cx_quad_tup, mx_quad_tup):
         """ie CX=container, MX=content (material)
         ("content", "control", "giab-HG002", "1.0"),
         ("container", "tube", "tube-generic-10ml", "1.0")
@@ -1308,11 +1397,13 @@ class BloomObj:
             )[0].euid
         )
 
-        container.json_addl['properties']['name'] = content.json_addl['properties']["name"]
+        container.json_addl["properties"]["name"] = content.json_addl["properties"][
+            "name"
+        ]
         flag_modified(container, "json_addl")
         ##self.session.flush()
         self.create_generic_instance_lineage_by_euids(container.euid, content.euid)
-        self.session.commit() 
+        self.session.commit()
 
         return container, content
 
@@ -1346,114 +1437,140 @@ class BloomObj:
     #
     # Global Object Actions
     #
-    def do_action(self,euid, action, action_group, action_ds, now_dt="" ):
+    def do_action(self, euid, action, action_group, action_ds, now_dt=""):
 
-        r=None
+        r = None
         action_method = action_ds["method_name"]
         now_dt = get_datetime_string()
         if action_method == "do_action_set_object_status":
-            r=self.do_action_set_object_status(euid, action_ds, action_group, action)
+            r = self.do_action_set_object_status(euid, action_ds, action_group, action)
         elif action_method == "do_action_print_barcode_label":
-            r=self.do_action_print_barcode_label(euid, action_ds)
-            
+            r = self.do_action_print_barcode_label(euid, action_ds)
+
         elif action_method == "do_action_destroy_specimen_containers":
-            r= self.do_action_destroy_specimen_containers(euid, action_ds)
+            r = self.do_action_destroy_specimen_containers(euid, action_ds)
         elif action_method == "do_action_create_package_and_first_workflow_step_assay":
-            r = self.do_action_create_package_and_first_workflow_step_assay(euid, action_ds)
+            r = self.do_action_create_package_and_first_workflow_step_assay(
+                euid, action_ds
+            )
         elif action_method == "do_action_move_workset_to_another_queue":
-            r= self.do_action_move_workset_to_another_queue(euid, action_ds)
+            r = self.do_action_move_workset_to_another_queue(euid, action_ds)
         elif action_method == "do_stamp_plates_into_plate":
-            r=self.do_stamp_plates_into_plate(euid, action_ds)
+            r = self.do_stamp_plates_into_plate(euid, action_ds)
         elif action_method == "do_action_download_file":
-            r=self.do_action_download_file(euid, action_ds)
+            r = self.do_action_download_file(euid, action_ds)
         elif action_method == "do_action_add_file_to_file_set":
-            r=self.do_action_add_file_to_file_set(euid, action_ds)
+            r = self.do_action_add_file_to_file_set(euid, action_ds)
         elif action_method == "do_action_remove_file_from_file_set":
-            r=self.do_action_remove_file_from_file_set(euid, action_ds)
+            r = self.do_action_remove_file_from_file_set(euid, action_ds)
         elif action_method == "do_action_add_relationships":
-            r=self.do_action_add_relationships(euid, action_ds)
+            r = self.do_action_add_relationships(euid, action_ds)
         else:
             raise Exception(f"Unknown do_action method {action_method}")
 
         self._do_action_base(euid, action, action_group, action_ds, now_dt)
         return r
-    
-    
+
     def do_action_add_file_to_file_set(self, file_set_euid, action_ds):
         bfs = BloomFileSet(BLOOMdb3())
-        bfs.add_files_to_file_set(euid=file_set_euid, file_euid=[action_ds['captured_data']['file_euid']])
-    
+        bfs.add_files_to_file_set(
+            euid=file_set_euid, file_euid=[action_ds["captured_data"]["file_euid"]]
+        )
+
     def do_action_remove_file_from_file_set(self, file_set_euid, action_ds):
         bfs = BloomFileSet(BLOOMdb3())
-        bfs.remove_files_from_file_set(euid=file_set_euid, file_euid=[action_ds['captured_data']['file_euid']])
+        bfs.remove_files_from_file_set(
+            euid=file_set_euid, file_euid=[action_ds["captured_data"]["file_euid"]]
+        )
 
     def do_action_add_relationships(self, euid, action_ds):
-        
-        euid_obj = self.get_by_euid(euid) 
-        lineage_to_create = action_ds['captured_data']['lineage_type_to_create']
-        relationship_type = action_ds['captured_data']['relationship_type']
-        euids = action_ds['captured_data']['euids']
-        
-        #euids is the text from a textareas, process each and assign lineage
-        for a_euid in euids.split('\n'):
+
+        euid_obj = self.get_by_euid(euid)
+        lineage_to_create = action_ds["captured_data"]["lineage_type_to_create"]
+        relationship_type = action_ds["captured_data"]["relationship_type"]
+        euids = action_ds["captured_data"]["euids"]
+
+        # euids is the text from a textareas, process each and assign lineage
+        for a_euid in euids.split("\n"):
             if a_euid != "":
                 if lineage_to_create == "parent":
-                    self.create_generic_instance_lineage_by_euids(a_euid, euid, relationship_type)
+                    self.create_generic_instance_lineage_by_euids(
+                        a_euid, euid, relationship_type
+                    )
                 elif lineage_to_create == "child":
-                    self.create_generic_instance_lineage_by_euids(euid, a_euid, relationship_type)
-                else:    
-                   self.logger.exception(f"Unknown lineage type {lineage_to_create}, requires 'parent' or 'child'")
-                   raise Exception(f"Unknown lineage type {lineage_to_create}, requires 'parent' or 'child'") 
+                    self.create_generic_instance_lineage_by_euids(
+                        euid, a_euid, relationship_type
+                    )
+                else:
+                    self.logger.exception(
+                        f"Unknown lineage type {lineage_to_create}, requires 'parent' or 'child'"
+                    )
+                    raise Exception(
+                        f"Unknown lineage type {lineage_to_create}, requires 'parent' or 'child'"
+                    )
 
         return euid_obj
-        
- 
+
     def ret_plate_wells_dict(self, plate):
         plate_wells = {}
         for lin in plate.parent_of_lineages:
             if lin.child_instance.btype == "well":
-               
+
                 well = lin.child_instance
                 content_arr = []
                 for c in well.parent_of_lineages:
                     if c.child_instance.super_type == "content":
                         content_arr.append(c.child_instance)
-                content = None    
+                content = None
                 if len(content_arr) == 0:
                     pass
                 elif len(content_arr) == 1:
                     content = content_arr[0]
                 else:
-                    self.logger.exception(f"More than one content found for well {well.euid}")
+                    self.logger.exception(
+                        f"More than one content found for well {well.euid}"
+                    )
                     raise Exception(f"More than one content found for well {well.euid}")
-                
-                plate_wells[lin.child_instance.json_addl["cont_address"]["name"]] = (lin.child_instance,content)
+
+                plate_wells[lin.child_instance.json_addl["cont_address"]["name"]] = (
+                    lin.child_instance,
+                    content,
+                )
 
         return plate_wells
-    
+
     def do_action_download_file(self, euid, action_ds):
-        
+
         bf = BloomFile(BLOOMdb3())
-        dl_file = bf.download_file(euid=euid, 
-                                   include_metadata = True if action_ds['captured_data']['create_metadata_file'] in ['yes'] else False, 
-                                   save_path = "./tmp",
-                                   save_pattern = action_ds['captured_data']['download_type'])
+        dl_file = bf.download_file(
+            euid=euid,
+            include_metadata=(
+                True
+                if action_ds["captured_data"]["create_metadata_file"] in ["yes"]
+                else False
+            ),
+            save_path="./tmp",
+            save_pattern=action_ds["captured_data"]["download_type"],
+        )
         return dl_file
 
-        
     def do_stamp_plates_into_plate(self, euid, action_ds):
         # Taking a stab at moving to a non obsessive commit world
-        
+
         euid_obj = self.get_by_euid(euid)
 
-        dest_plate = self.get_by_euid(action_ds['captured_data']['Destination Plate EUID'])
+        dest_plate = self.get_by_euid(
+            action_ds["captured_data"]["Destination Plate EUID"]
+        )
         source_plates = []
         source_plates_well_digested = []
-        for source_plt_euid in action_ds['captured_data']['source_barcodes'].split('\n'):
+        for source_plt_euid in action_ds["captured_data"]["source_barcodes"].split(
+            "\n"
+        ):
             spo = self.get_by_euid(source_plt_euid)
             source_plates.append(spo)
             source_plates_well_digested.append(self.ret_plate_wells_dict(spo))
-        
+
         wfs = ""
         for layout_str in action_ds["child_workflow_step_obj"]:
             wfs = self.create_instance_by_code(
@@ -1462,22 +1579,26 @@ class BloomObj:
             self.create_generic_instance_lineage_by_euids(euid_obj.euid, wfs.euid)
 
         self.create_generic_instance_lineage_by_euids(wfs.euid, dest_plate.euid)
-        
+
         for spo in source_plates:
             self.create_generic_instance_lineage_by_euids(wfs.euid, spo.euid)
-        
+
         # For all plates being stamped into the destination, link all source plate wells to the destination plate wells, and the contensts of source wells to destination wells.
         # Further, if a dest well is empty, create a new content instance for it and link appropriately.
         for dest_well in dest_plate.parent_of_lineages:
             if dest_well.child_instance.btype == "well":
-                well_name = dest_well.child_instance.json_addl['cont_address']['name']
+                well_name = dest_well.child_instance.json_addl["cont_address"]["name"]
                 for spod in source_plates_well_digested:
                     if well_name in spod:
-                        self.create_generic_instance_lineage_by_euids(spod[well_name][0].euid,dest_well.child_instance.euid)
+                        self.create_generic_instance_lineage_by_euids(
+                            spod[well_name][0].euid, dest_well.child_instance.euid
+                        )
                         if spod[well_name][1] != None:
                             for dwc in dest_well.child_instance.parent_of_lineages:
                                 if dwc.child_instance.super_type == "content":
-                                    self.create_generic_instance_lineage_by_euids(spod[well_name][1].euid, dwc.child_instance.euid)
+                                    self.create_generic_instance_lineage_by_euids(
+                                        spod[well_name][1].euid, dwc.child_instance.euid
+                                    )
                         del spod[well_name]
         ## TODO
         ### IF there are any source wells left, create new content instances for them and link to the dest wells
@@ -1486,27 +1607,38 @@ class BloomObj:
             for j in i:
                 remaining_wells += 1
         if remaining_wells > 0:
-            self.logger.exception(f"ERROR: {remaining_wells} wells left over after stamping")
+            self.logger.exception(
+                f"ERROR: {remaining_wells} wells left over after stamping"
+            )
             self.session.rollback()
             raise Exception(f"ERROR: {remaining_wells} wells left over after stamping")
 
         self.session.commit()
 
         return wfs
-    
+
     def do_action_move_workset_to_another_queue(self, euid, action_ds):
 
         wfset = self.get_by_euid(euid)
-        action_ds['captured_data']['q_selection']
+        action_ds["captured_data"]["q_selection"]
 
         # EXTRAORDINARILY SLOPPY.  I AM IN A REAL RUSH FOR FEATURES THO :-/
         destination_q = ""
-        (super_type, btype, b_sub_type, version) = action_ds['captured_data']['q_selection'].lstrip('/').rstrip('/').split('/')
-        for q in wfset.child_of_lineages[0].parent_instance.child_of_lineages[0].parent_instance.parent_of_lineages:
-            if q.child_instance.btype == btype and q.child_instance.b_sub_type == b_sub_type:
+        (super_type, btype, b_sub_type, version) = (
+            action_ds["captured_data"]["q_selection"].lstrip("/").rstrip("/").split("/")
+        )
+        for q in (
+            wfset.child_of_lineages[0]
+            .parent_instance.child_of_lineages[0]
+            .parent_instance.parent_of_lineages
+        ):
+            if (
+                q.child_instance.btype == btype
+                and q.child_instance.b_sub_type == b_sub_type
+            ):
                 destination_q = q.child_instance
                 break
-            
+
         if len(wfset.child_of_lineages.all()) != 1 or destination_q == "":
             self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
             self.logger.exception(f"ERROR: {action_ds['captured_data']['q_selection']}")
@@ -1517,26 +1649,37 @@ class BloomObj:
         self.delete_obj(lineage_link)
         ##self.session.flush()
         self.session.commit()
-                                                  
-
-
 
     # Doing this globally for now
-    def do_action_create_package_and_first_workflow_step_assay(self, euid, action_ds={}):    
+    def do_action_create_package_and_first_workflow_step_assay(
+        self, euid, action_ds={}
+    ):
         wf = self.get_by_euid(euid)
-            
+
         #'workflow_step_to_attach_as_child': {'workflow_step/queue/all-purpose/1.0/': {'json_addl': {'properties': {'name': 'hey user, SET THIS NAME ',
-        
+
         active_workset_q_wfs = ""
-        (super_type, btype, b_sub_type, version) = list(action_ds["workflow_step_to_attach_as_child"].keys())[0].lstrip('/').rstrip('/').split('/')
+        (super_type, btype, b_sub_type, version) = (
+            list(action_ds["workflow_step_to_attach_as_child"].keys())[0]
+            .lstrip("/")
+            .rstrip("/")
+            .split("/")
+        )
         for pwf_child_lin in wf.parent_of_lineages:
-            if pwf_child_lin.child_instance.btype == btype and pwf_child_lin.child_instance.b_sub_type == b_sub_type:
+            if (
+                pwf_child_lin.child_instance.btype == btype
+                and pwf_child_lin.child_instance.b_sub_type == b_sub_type
+            ):
                 active_workset_q_wfs = pwf_child_lin.child_instance
                 break
         if active_workset_q_wfs == "":
-            self.logger.exception(f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}")
-            raise Exception(f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}")
-                                                                                                                   
+            self.logger.exception(
+                f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}"
+            )
+            raise Exception(
+                f"ERROR: {action_ds['workflow_step_to_attach_as_child'].keys()}"
+            )
+
         # 1001897582860000245100773464327825
         fx_opsmd = {}
 
@@ -1556,10 +1699,12 @@ class BloomObj:
             wfs = self.create_instance_by_code(
                 layout_str, action_ds["child_workflow_step_obj"][layout_str]
             )
-            self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, wfs.euid)
+            self.create_generic_instance_lineage_by_euids(
+                active_workset_q_wfs.euid, wfs.euid
+            )
             ##self.session.flush()
             self.session.commit()
-    
+
         package = ""
         for layout_str in action_ds["new_container_obj"]:
             for cv_k in action_ds["captured_data"]:
@@ -1582,23 +1727,20 @@ class BloomObj:
         self.create_generic_instance_lineage_by_euids(wfs.euid, package.euid)
         self.session.commit()
         return wfs
-        
+
         # There are A LOT of common patterns with these actions, and only a small number of them too. ABSCRACT MOAR
-        
+
         # Get the euid obj, which is the AY
-        
+
         # Get the AY child workflow queue object defined by the action
-        
+
         # Create the new workset object
-        
+
         # Create the new package object, wiuth the captured data from the action
-        
+
         # link package to workset
         # link workset to workflow queue object
-        
-        
-        
-        
+
     def do_action_print_barcode_label(self, euid, action_ds={}):
         """_summary_
 
@@ -1609,31 +1751,48 @@ class BloomObj:
         """
         bobj = self.get_by_euid(euid)
 
-        lab = action_ds.get("lab","")
-        printer_name = action_ds.get("printer_name","")
-        label_zpl_style = action_ds.get("label_style","")
-        alt_a = action_ds.get("alt_a","") if not PGLOBAL else f"{bobj.b_sub_type}-{bobj.version}" 
-        alt_b = action_ds.get("alt_b","") if not PGLOBAL else bobj.json_addl.get("properties",{}).get("name","__namehere__")
-        alt_c = action_ds.get("alt_c","") if not PGLOBAL else bobj.json_addl.get("properties",{}).get("lab_code","N/A")
-        alt_d = action_ds.get("alt_d","") 
-        alt_e = action_ds.get("alt_e","")  if not PGLOBAL else str(bobj.created_dt).split(' ')[0]  
-        alt_f = action_ds.get("alt_f","")
-        
-        self.logger.info(            
-                         f"PRINTING BARCODE LABEL for {euid} at {lab} .. {printer_name} .. {label_zpl_style} \n"
-                         )
-        
-        self.print_label(lab=lab,
-                         printer_name=printer_name,
-                         label_zpl_style=label_zpl_style,
-                         euid=euid, 
-                         alt_a=alt_a,
-                         alt_b=alt_b,
-                         alt_c=alt_c,
-                         alt_d=alt_d,
-                         alt_e=alt_e,
-                         alt_f=alt_f
-                         )
+        lab = action_ds.get("lab", "")
+        printer_name = action_ds.get("printer_name", "")
+        label_zpl_style = action_ds.get("label_style", "")
+        alt_a = (
+            action_ds.get("alt_a", "")
+            if not PGLOBAL
+            else f"{bobj.b_sub_type}-{bobj.version}"
+        )
+        alt_b = (
+            action_ds.get("alt_b", "")
+            if not PGLOBAL
+            else bobj.json_addl.get("properties", {}).get("name", "__namehere__")
+        )
+        alt_c = (
+            action_ds.get("alt_c", "")
+            if not PGLOBAL
+            else bobj.json_addl.get("properties", {}).get("lab_code", "N/A")
+        )
+        alt_d = action_ds.get("alt_d", "")
+        alt_e = (
+            action_ds.get("alt_e", "")
+            if not PGLOBAL
+            else str(bobj.created_dt).split(" ")[0]
+        )
+        alt_f = action_ds.get("alt_f", "")
+
+        self.logger.info(
+            f"PRINTING BARCODE LABEL for {euid} at {lab} .. {printer_name} .. {label_zpl_style} \n"
+        )
+
+        self.print_label(
+            lab=lab,
+            printer_name=printer_name,
+            label_zpl_style=label_zpl_style,
+            euid=euid,
+            alt_a=alt_a,
+            alt_b=alt_b,
+            alt_c=alt_c,
+            alt_d=alt_d,
+            alt_e=alt_e,
+            alt_f=alt_f,
+        )
 
     def do_action_set_object_status(
         self, euid, action_ds={}, action_group=None, action=None
@@ -1708,7 +1867,7 @@ class BloomObj:
         #                 #bobj.json_addl["actions"][action]["action_executed"]
 
         if "action_groups" in bobj.json_addl:
-            
+
             curr_action_count = int(
                 bobj.json_addl["action_groups"][action_group]["actions"][action][
                     "action_executed"
@@ -1779,18 +1938,20 @@ class BloomObj:
 
         return False
 
-
-    
-    def get_cost_of_euid_children(self,euid):
+    def get_cost_of_euid_children(self, euid):
         tot_cost = 0
         ctr = 0
         for ec_tups in self.query_cost_of_all_children(euid):
             tot_cost += float(ec_tups[1])
             ctr += 1
-        return tot_cost if ctr > 0 else 'na'
-    
+        return tot_cost if ctr > 0 else "na"
+
         # Start with the provided EUID
-        initial_instance = self.session.query(self.Base.classes.generic_instance).filter_by(euid=euid).first()
+        initial_instance = (
+            self.session.query(self.Base.classes.generic_instance)
+            .filter_by(euid=euid)
+            .first()
+        )
         if initial_instance:
             return traverse_and_calculate_children_cogs(initial_instance)
         else:
@@ -1800,26 +1961,41 @@ class BloomObj:
 
         # Function to fetch and calculate the COGS for a given object
         def calculate_cogs(orm_instance):
-            if 'cogs' not in orm_instance.json_addl or 'state' not in orm_instance.json_addl['cogs']:
-                raise ValueError(f"COGS or state information missing for EUID: {orm_instance.euid}")
-            
-            if orm_instance.json_addl['cogs']['state'] != 'active':
+            if (
+                "cogs" not in orm_instance.json_addl
+                or "state" not in orm_instance.json_addl["cogs"]
+            ):
+                raise ValueError(
+                    f"COGS or state information missing for EUID: {orm_instance.euid}"
+                )
+
+            if orm_instance.json_addl["cogs"]["state"] != "active":
                 return 0
 
-            cost = float(orm_instance.json_addl['cogs']['cost'])
-            fractional_cost = float(orm_instance.json_addl['cogs'].get('fractional_cost', 1))
-            allocation_type = orm_instance.json_addl['cogs'].get('allocation_type', 'single')
+            cost = float(orm_instance.json_addl["cogs"]["cost"])
+            fractional_cost = float(
+                orm_instance.json_addl["cogs"].get("fractional_cost", 1)
+            )
+            allocation_type = orm_instance.json_addl["cogs"].get(
+                "allocation_type", "single"
+            )
 
-
-            active_children = len([child for child in orm_instance.child_of_lineages if 'cogs' in child.json_addl and child.json_addl['cogs'].get('state') == 'active'])
+            active_children = len(
+                [
+                    child
+                    for child in orm_instance.child_of_lineages
+                    if "cogs" in child.json_addl
+                    and child.json_addl["cogs"].get("state") == "active"
+                ]
+            )
             if active_children == 0:
                 active_children = 1.0
             return cost * float(fractional_cost) / float(active_children)
-    
+
         # Recursive function to traverse the graph and accumulate COGS
         def traverse_history_and_calculate_cogs(orm_instance):
             total_cogs = calculate_cogs(orm_instance)
-            
+
             # Traverse child_of_lineages to find parent instances and accumulate their COGS
             for lineage in orm_instance.child_of_lineages:
                 parent_instance = lineage.parent_instance
@@ -1829,67 +2005,102 @@ class BloomObj:
             return total_cogs
 
         # Start with the provided EUID
-        initial_instance = self.session.query(self.Base.classes.generic_instance).filter_by(euid=euid).first()
+        initial_instance = (
+            self.session.query(self.Base.classes.generic_instance)
+            .filter_by(euid=euid)
+            .first()
+        )
         if initial_instance:
             return traverse_history_and_calculate_cogs(initial_instance)
         else:
             return 0
 
-
-    def search_objs_by_addl_metadata(self, file_search_criteria, search_greedy=True, btype=None, b_sub_type=None, super_type=None):
+    def search_objs_by_addl_metadata(
+        self,
+        file_search_criteria,
+        search_greedy=True,
+        btype=None,
+        b_sub_type=None,
+        super_type=None,
+    ):
         query = self.session.query(self.Base.classes.generic_instance)
-        
+
         if search_greedy:
             # Greedy search: matching any of the provided search keys
             or_conditions = []
             for key, value in file_search_criteria.items():
-                if key == 'file_metadata':
-                    key = 'properties'
-                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+                if key == "file_metadata":
+                    key = "properties"
+                    logging.warning(
+                        "The key 'file_metadata' is being treated as 'properties'."
+                    )
 
                 # Create conditions for JSONB key-value pairs
                 if isinstance(value, dict):
                     for sub_key, sub_value in value.items():
                         jsonb_filter = {key: {sub_key: sub_value}}
-                        or_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
+                        or_conditions.append(
+                            self.Base.classes.generic_instance.json_addl.op("@>")(
+                                jsonb_filter
+                            )
+                        )
                 else:
                     jsonb_filter = {key: value}
-                    or_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
-            
+                    or_conditions.append(
+                        self.Base.classes.generic_instance.json_addl.op("@>")(
+                            jsonb_filter
+                        )
+                    )
+
             if or_conditions:
                 query = query.filter(or_(*or_conditions))
         else:
             # Non-greedy search: matching all specified search terms
             and_conditions = []
             for key, value in file_search_criteria.items():
-                if key == 'file_metadata':
-                    key = 'properties'
-                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+                if key == "file_metadata":
+                    key = "properties"
+                    logging.warning(
+                        "The key 'file_metadata' is being treated as 'properties'."
+                    )
 
                 if isinstance(value, dict):
                     for sub_key, sub_value in value.items():
                         jsonb_filter = {key: {sub_key: sub_value}}
-                        and_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
+                        and_conditions.append(
+                            self.Base.classes.generic_instance.json_addl.op("@>")(
+                                jsonb_filter
+                            )
+                        )
                 else:
                     jsonb_filter = {key: value}
-                    and_conditions.append(self.Base.classes.generic_instance.json_addl.op('@>')(jsonb_filter))
+                    and_conditions.append(
+                        self.Base.classes.generic_instance.json_addl.op("@>")(
+                            jsonb_filter
+                        )
+                    )
 
             if and_conditions:
                 query = query.filter(and_(*and_conditions))
 
         if btype is not None:
             query = query.filter(self.Base.classes.generic_instance.btype == btype)
-            
+
         if b_sub_type is not None:
-            query = query.filter(self.Base.classes.generic_instance.b_sub_type == b_sub_type)
-        
+            query = query.filter(
+                self.Base.classes.generic_instance.b_sub_type == b_sub_type
+            )
+
         if super_type is not None:
-            query = query.filter(self.Base.classes.generic_instance.super_type == super_type)
+            query = query.filter(
+                self.Base.classes.generic_instance.super_type == super_type
+            )
 
         logging.info(f"Generated SQL: {str(query.statement)}")
-        
+
         results = query.all()
         return [result.euid for result in results]
+
 
 class BloomContainer(BloomObj):
     def __init__(self, bdb):
@@ -2021,7 +2232,12 @@ class BloomWorkflow(BloomObj):
         def sort_key(child_instance):
             # Fetch the step_number if it exists, otherwise return a high value to sort it at the end
             return int(
-                child_instance.json_addl["properties"].get("step_number", float("0")) if child_instance.json_addl["properties"].get("step_number", float("inf")) not in ["", None] else float("0")
+                child_instance.json_addl["properties"].get("step_number", float("0"))
+                if child_instance.json_addl["properties"].get(
+                    "step_number", float("inf")
+                )
+                not in ["", None]
+                else float("0")
             )
 
         # Assuming wfobj is your top-level object
@@ -2040,7 +2256,7 @@ class BloomWorkflow(BloomObj):
         return self.create_instances(template_euid)
 
     def do_action(self, wf_euid, action, action_group, action_ds={}):
-        
+
         action_method = action_ds["method_name"]
         now_dt = get_datetime_string()
         if action_method == "do_action_create_and_link_child":
@@ -2050,7 +2266,7 @@ class BloomWorkflow(BloomObj):
         elif action_method == "do_action_destroy_specimen_containers":
             self.do_action_destroy_specimen_containers(wf_euid, action_ds)
         else:
-            return super().do_action(wf_euid, action, action_group, action_ds)   
+            return super().do_action(wf_euid, action, action_group, action_ds)
 
         return self._do_action_base(wf_euid, action, action_group, action_ds, now_dt)
 
@@ -2093,6 +2309,7 @@ class BloomWorkflow(BloomObj):
     def do_action_create_package_and_first_workflow_step(self, wf_euid, action_ds={}):
         raise Exception("This is GARBAGE?")
         # DELETED A BUNCH OF STUFF... if needed, revert to previous commit
+
 
 class BloomWorkflowStep(BloomObj):
     def __init__(self, bdb):
@@ -2145,8 +2362,8 @@ class BloomWorkflowStep(BloomObj):
             self.do_action_stamp_copy_plate(wfs_euid, action_ds)
         elif action_method == "do_action_log_temperature":
             self.do_action_log_temperature(wfs_euid, action_ds)
-        else:            
-            return super().do_action(wfs_euid, action, action_group, action_ds)   
+        else:
+            return super().do_action(wfs_euid, action, action_group, action_ds)
 
         return self._do_action_base(wfs_euid, action, action_group, action_ds, now_dt)
 
@@ -2240,7 +2457,7 @@ class BloomWorkflowStep(BloomObj):
         self.create_generic_instance_lineage_by_euids(child_wfs.euid, new_plt.euid)
         self.create_generic_instance_lineage_by_euids(in_plt.euid, new_plt.euid)
         self.session.commit()
-        
+
         for new_w in new_wells:
             nwn = new_w.json_addl["cont_address"]["name"]
             in_well = wells_ds[nwn][0]
@@ -2254,7 +2471,7 @@ class BloomWorkflowStep(BloomObj):
                     in_samp.euid, new_samp.euid
                 )
                 self.create_generic_instance_lineage_by_euids(new_w.euid, new_samp.euid)
-    
+
         self.session.commit()
 
         return child_wfs
@@ -2271,7 +2488,7 @@ class BloomWorkflowStep(BloomObj):
             self.session.commit()
         self.create_generic_instance_lineage_by_euids(wfs.euid, child_wfs.euid)
         self.session.commit()
-        
+
         child_data = ""
         for dlayout_str in action_ds["child_container_obj"]:
             child_data = self.create_instance_by_code(
@@ -2330,24 +2547,37 @@ class BloomWorkflowStep(BloomObj):
 
         parent_wf = wfs.child_of_lineages[0].parent_instance
 
-
         active_workset_q_wfs = ""
-        (super_type, btype, b_sub_type, version) = list(action_ds["attach_under_root_workflow_queue"].keys())[0].lstrip('/').rstrip('/').split('/')
+        (super_type, btype, b_sub_type, version) = (
+            list(action_ds["attach_under_root_workflow_queue"].keys())[0]
+            .lstrip("/")
+            .rstrip("/")
+            .split("/")
+        )
         for pwf_child_lin in parent_wf.parent_of_lineages:
-            if pwf_child_lin.child_instance.btype == btype and pwf_child_lin.child_instance.b_sub_type == b_sub_type:
+            if (
+                pwf_child_lin.child_instance.btype == btype
+                and pwf_child_lin.child_instance.b_sub_type == b_sub_type
+            ):
                 active_workset_q_wfs = pwf_child_lin.child_instance
                 break
         if active_workset_q_wfs == "":
-            self.logger.exception(f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}")
-            raise Exception(f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}")
-        
+            self.logger.exception(
+                f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}"
+            )
+            raise Exception(
+                f"ERROR: {action_ds['attach_under_root_workflow_queue'].keys()}"
+            )
+
         new_wf = ""
         for wlayout_str in action_ds["workflow_step_to_attach_as_child"]:
             new_wf = self.create_instance_by_code(
                 wlayout_str, action_ds["workflow_step_to_attach_as_child"][wlayout_str]
             )
             self.session.commit()
-        self.create_generic_instance_lineage_by_euids(active_workset_q_wfs.euid, new_wf.euid)
+        self.create_generic_instance_lineage_by_euids(
+            active_workset_q_wfs.euid, new_wf.euid
+        )
 
         child_wfs = ""
         for layout_strc in action_ds["child_workflow_step_obj"]:
@@ -2372,7 +2602,9 @@ class BloomWorkflowStep(BloomObj):
             # soft delete the edge w the queue
             for aa in parent_cx.child_of_lineages:
                 if aa.parent_instance.euid == wfs.euid:
-                    self.create_generic_instance_lineage_by_euids(new_wf.euid, aa.child_instance.euid)
+                    self.create_generic_instance_lineage_by_euids(
+                        new_wf.euid, aa.child_instance.euid
+                    )
                     self.delete_obj(aa)
 
             self.create_generic_instance_lineage_by_euids(
@@ -2482,7 +2714,9 @@ class BloomWorkflowStep(BloomObj):
             self.session.rollback()
             raise e
 
-        results = self.query_instance_by_component_v2( super_type, btype, b_sub_type, version)
+        results = self.query_instance_by_component_v2(
+            super_type, btype, b_sub_type, version
+        )
 
         if len(results) != 1:
             self.logger.exception(
@@ -2540,7 +2774,6 @@ class BloomWorkflowStep(BloomObj):
                 layout_str, action_ds["child_workflow_step_obj"][layout_str]
             )
             self.session.commit()
-
 
         # AND THIS LOGIC NEEDS TIGHTENING UP too
         parent_cont = ""
@@ -2644,7 +2877,7 @@ class BloomReagent(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)
 
-    def create_rgnt_24w_plate_TEST(self, rg_code='idt-probes-rare-mendelian'):
+    def create_rgnt_24w_plate_TEST(self, rg_code="idt-probes-rare-mendelian"):
         # I am taking a short cut and not taking time to think about making this generic.
 
         containers = self.create_instances(
@@ -2652,26 +2885,34 @@ class BloomReagent(BloomObj):
                 "container", "plate", "fixed-plate-24", "1.0"
             )[0].euid
         )
-        
+
         plate = containers[0][0]
-        wells = containers[1]   
+        wells = containers[1]
         probe_ctr = 1
-        
+
         for i in wells:
             probe_name = f"id_probe_{probe_ctr}"
-            seq_1 = ''.join(random.choices('ATCG', k=18))
-            seq_2 = ''.join(random.choices('ATCG', k=18))
-        
+            seq_1 = "".join(random.choices("ATCG", k=18))
+            seq_2 = "".join(random.choices("ATCG", k=18))
+
             new_reagent = self.create_instance(
                 self.query_template_by_component_v2(
                     "content", "reagent", rg_code, "1.0"
-                )[0].euid, {"properties": {"probe_name": probe_name, "probe_seq_1": seq_1, "probe_seq_2": seq_2}}
+                )[0].euid,
+                {
+                    "properties": {
+                        "probe_name": probe_name,
+                        "probe_seq_1": seq_1,
+                        "probe_seq_2": seq_2,
+                    }
+                },
             )
             self.create_generic_instance_lineage_by_euids(i.euid, new_reagent.euid)
             probe_ctr += 1
-        self.session.commit()   
+        self.session.commit()
         return plate.euid
-        
+
+
 class BloomEquipment(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)
@@ -2688,16 +2929,18 @@ class BloomObjectSet(BloomObj):
 class AuditLog(BloomObj):
     def __init__(self, session, base):
         super().__init__(session, base)
-    
-        
+
+
 class BloomHealthEvent(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)
 
     def create_event(self):
-        
+
         new_event = self.create_instance(
-            self.query_template_by_component_v2("health_event", "generic", "health-event", "1.0")[0].euid
+            self.query_template_by_component_v2(
+                "health_event", "generic", "health-event", "1.0"
+            )[0].euid
         )
         self.session.commit()
 
@@ -2708,35 +2951,51 @@ class BloomFile(BloomObj):
     def __init__(self, bdb, bucket_prefix="daylily-dewey-"):
         super().__init__(bdb)
         self.bucket_prefix = bucket_prefix
-        self.s3_client = boto3.client('s3')
+        self.s3_client = boto3.client("s3")
 
     def _derive_bucket_name(self, euid):
-        euid_int = int(re.sub('[^0-9]', '', euid))
+        euid_int = int(re.sub("[^0-9]", "", euid))
         response = self.s3_client.list_buckets()
-        buckets = response['Buckets']
-        matching_buckets = [bucket['Name'] for bucket in buckets if bucket['Name'].startswith(self.bucket_prefix)]
-        bucket_suffixes = sorted([int(re.sub('[^0-9]', '', name.replace(self.bucket_prefix, ''))) for name in matching_buckets])
-        
+        buckets = response["Buckets"]
+        matching_buckets = [
+            bucket["Name"]
+            for bucket in buckets
+            if bucket["Name"].startswith(self.bucket_prefix)
+        ]
+        bucket_suffixes = sorted(
+            [
+                int(re.sub("[^0-9]", "", name.replace(self.bucket_prefix, "")))
+                for name in matching_buckets
+            ]
+        )
+
         for i in range(len(bucket_suffixes) - 1):
             if bucket_suffixes[i] <= euid_int < bucket_suffixes[i + 1]:
                 return f"{self.bucket_prefix}{bucket_suffixes[i]}"
 
         if euid_int >= bucket_suffixes[-1]:
             return f"{self.bucket_prefix}{bucket_suffixes[-1]}"
-        
+
         raise Exception("No matching bucket found for the provided EUID.")
 
     def _determine_s3_key(self, euid, data_file_name):
         bucket_name = self._derive_bucket_name(euid)
-        euid_numeric_part = int(re.sub('[^0-9]', '', euid))
-        response = self.s3_client.list_objects_v2(Bucket=bucket_name, Prefix='', Delimiter='/')
+        euid_numeric_part = int(re.sub("[^0-9]", "", euid))
+        response = self.s3_client.list_objects_v2(
+            Bucket=bucket_name, Prefix="", Delimiter="/"
+        )
 
         logging.debug(f"ListObjectsV2 Response: {response}")
-        folders = sorted([int(content['Prefix'].rstrip('/')) for content in response.get('CommonPrefixes', [])])
+        folders = sorted(
+            [
+                int(content["Prefix"].rstrip("/"))
+                for content in response.get("CommonPrefixes", [])
+            ]
+        )
 
         if not folders:
             # If no folders are found, create a '0' folder
-            self.s3_client.put_object(Bucket=bucket_name, Key='0/')
+            self.s3_client.put_object(Bucket=bucket_name, Key="0/")
             folders = [0]
 
         for i in range(len(folders) - 1):
@@ -2749,41 +3008,53 @@ class BloomFile(BloomObj):
         logging.debug(f"Determined folder_prefix: {folder_prefix}")
         return f"{folder_prefix}/{euid}.{data_file_name.split('.')[-1]}"
 
-
     def DELME_check_s3_key_exists(self, bucket_name, s3_key):
         try:
             self.s3_client.head_object(Bucket=bucket_name, Key=s3_key)
             return True
         except self.s3_client.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == '404':
+            if e.response["Error"]["Code"] == "404":
                 return False
             else:
                 raise e
 
-    def link_file_to_parent(self, child_euid, parent_euid):        
-        self.create_generic_instance_lineage_by_euids(child_euid, parent_euid)  
+    def link_file_to_parent(self, child_euid, parent_euid):
+        self.create_generic_instance_lineage_by_euids(child_euid, parent_euid)
         self.session.commit()
-   
-   
-    
-    def create_file(self, file_metadata={}, file_data=None, file_name=None, url=None, full_path_to_file=None, s3_uri=None):
+
+    def create_file(
+        self,
+        file_metadata={},
+        file_data=None,
+        file_name=None,
+        url=None,
+        full_path_to_file=None,
+        s3_uri=None,
+    ):
         file_properties = {"properties": file_metadata}
 
         new_file = self.create_instance(
-            self.query_template_by_component_v2("file", "file", "generic", "1.0")[0].euid,
-            file_properties
+            self.query_template_by_component_v2("file", "file", "generic", "1.0")[
+                0
+            ].euid,
+            file_properties,
         )
         self.session.commit()
 
-       
         # Special handling for x_x_rcrf_patient_uid
-        if 'x_x_rcrf_patient_uid' in file_metadata and len(file_metadata['x_x_rcrf_patient_uid']) > 0:
-            patient_id = file_metadata['x_x_rcrf_patient_uid']
-            search_criteria = {'properties': {'rcrf_patient_uid': patient_id}}
-            existing_euids = self.search_objs_by_addl_metadata(search_criteria, True, 
-                                                                 super_type='actor', 
-                                                                 btype='generic', 
-                                                                 b_sub_type='rcrf-patient')
+        if (
+            "x_x_rcrf_patient_uid" in file_metadata
+            and len(file_metadata["x_x_rcrf_patient_uid"]) > 0
+        ):
+            patient_id = file_metadata["x_x_rcrf_patient_uid"]
+            search_criteria = {"properties": {"rcrf_patient_uid": patient_id}}
+            existing_euids = self.search_objs_by_addl_metadata(
+                search_criteria,
+                True,
+                super_type="actor",
+                btype="generic",
+                b_sub_type="rcrf-patient",
+            )
 
             if existing_euids:
                 # Create child relationships to existing objects
@@ -2792,70 +3063,105 @@ class BloomFile(BloomObj):
             else:
                 # Create a new actor/generic/rcrf-patient object
                 new_patient = self.create_instance(
-                    self.query_template_by_component_v2("actor", "generic", "rcrf-patient", "1.0")[0].euid,
-                    {"properties": {"rcrf_patient_uid": patient_id}}
+                    self.query_template_by_component_v2(
+                        "actor", "generic", "rcrf-patient", "1.0"
+                    )[0].euid,
+                    {"properties": {"rcrf_patient_uid": patient_id}},
                 )
                 self.session.commit()
-                self.create_generic_instance_lineage_by_euids( new_patient.euid, new_file.euid)
-        
+                self.create_generic_instance_lineage_by_euids(
+                    new_patient.euid, new_file.euid
+                )
 
-        new_file.json_addl['properties']["current_s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
-        flag_modified(new_file, 'json_addl')
+        new_file.json_addl["properties"]["current_s3_bucket_name"] = (
+            self._derive_bucket_name(new_file.euid)
+        )
+        flag_modified(new_file, "json_addl")
         self.session.commit()
 
         if file_data or url or full_path_to_file or s3_uri:
-            new_file = self.add_file_data(new_file.euid, file_data, file_name, url, full_path_to_file, s3_uri)
+            new_file = self.add_file_data(
+                new_file.euid, file_data, file_name, url, full_path_to_file, s3_uri
+            )
         else:
             logging.warning(f"No data provided for file creation: {file_data, url}")
 
         return new_file
-    
-    def create_filex(self, file_metadata={}, file_data=None, file_name=None, url=None, full_path_to_file=None):
+
+    def create_filex(
+        self,
+        file_metadata={},
+        file_data=None,
+        file_name=None,
+        url=None,
+        full_path_to_file=None,
+    ):
         file_properties = {"properties": file_metadata}
 
         new_file = self.create_instance(
-            self.query_template_by_component_v2("file", "file", "generic", "1.0")[0].euid,
-            file_properties
+            self.query_template_by_component_v2("file", "file", "generic", "1.0")[
+                0
+            ].euid,
+            file_properties,
         )
         self.session.commit()
 
-        new_file.json_addl['properties']["current_s3_bucket_name"] = self._derive_bucket_name(new_file.euid)
-        flag_modified(new_file, 'json_addl')
+        new_file.json_addl["properties"]["current_s3_bucket_name"] = (
+            self._derive_bucket_name(new_file.euid)
+        )
+        flag_modified(new_file, "json_addl")
         self.session.commit()
 
         if file_data or url or full_path_to_file:
-            new_file = self.add_file_data(new_file.euid, file_data, file_name, url, full_path_to_file)
+            new_file = self.add_file_data(
+                new_file.euid, file_data, file_name, url, full_path_to_file
+            )
         else:
             logging.warning(f"No data provided for file creation: {file_data, url}")
 
         return new_file
 
-    def add_file_data(self, euid, file_data=None, file_name=None, url=None, full_path_to_file=None, s3_uri=None):
+    def add_file_data(
+        self,
+        euid,
+        file_data=None,
+        file_name=None,
+        url=None,
+        full_path_to_file=None,
+        s3_uri=None,
+    ):
         file_instance = self.get_by_euid(euid)
-        s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
+        s3_bucket_name = file_instance.json_addl["properties"]["current_s3_bucket_name"]
         file_properties = {}
 
         if file_name is None:
             if url:
-                file_name = url.split('/')[-1]
+                file_name = url.split("/")[-1]
             elif s3_uri:
-                file_name = s3_uri.split('/')[-1]
+                file_name = s3_uri.split("/")[-1]
             elif full_path_to_file:
                 file_name = Path(full_path_to_file).name
             else:
-                raise ValueError("file_name must be provided if file_data or url is passed without a filename.")
+                raise ValueError(
+                    "file_name must be provided if file_data or url is passed without a filename."
+                )
 
-        file_suffix = file_name.split('.')[-1]
+        file_suffix = file_name.split(".")[-1]
         s3_key = self._determine_s3_key(euid, file_name)
 
-
         # Check if a file with the same EUID already exists in the bucket
-        s3_key_path = "/".join(s3_key.split('/')[:-1])
+        s3_key_path = "/".join(s3_key.split("/")[:-1])
         s3_key_path = s3_key_path + "/" if len(s3_key_path) > 0 else ""
-        existing_files = self.s3_client.list_objects_v2(Bucket=s3_bucket_name, Prefix=f"{s3_key_path}{euid}.")
-        if 'Contents' in existing_files:
-            self.logger.exception(f"A file with PREFIX EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}.")
-            raise Exception(f"A file with EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}.")
+        existing_files = self.s3_client.list_objects_v2(
+            Bucket=s3_bucket_name, Prefix=f"{s3_key_path}{euid}."
+        )
+        if "Contents" in existing_files:
+            self.logger.exception(
+                f"A file with PREFIX EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}."
+            )
+            raise Exception(
+                f"A file with EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}."
+            )
 
         try:
             if file_data:
@@ -2866,75 +3172,103 @@ class BloomFile(BloomObj):
                     Bucket=s3_bucket_name,
                     Key=s3_key,
                     Body=file_data,
-                    Tagging=f'creating_service=dewey&original_file_name={file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
+                    Tagging=f"creating_service=dewey&original_file_name={file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}",
                 )
                 odirectory, ofilename = os.path.split(file_name)
 
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": ofilename, "name": file_name,"original_file_path": odirectory,
-                    "original_file_size_bytes": file_size, "original_file_suffix": file_suffix,
-                    "original_file_data_type": "raw data", "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
+                    "current_s3_key": s3_key,
+                    "original_file_name": ofilename,
+                    "name": file_name,
+                    "original_file_path": odirectory,
+                    "original_file_size_bytes": file_size,
+                    "original_file_suffix": file_suffix,
+                    "original_file_data_type": "raw data",
+                    "file_type": file_suffix,
+                    "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}",
                 }
 
             elif url:
                 response = requests.get(url)
                 file_size = len(response.content)
-                url_info = url.split('/')[-1]
-                file_suffix = url_info.split('.')[-1]
+                url_info = url.split("/")[-1]
+                file_suffix = url_info.split(".")[-1]
                 self.s3_client.put_object(
                     Bucket=s3_bucket_name,
                     Key=s3_key,
                     Body=response.content,
-                    Tagging=f'creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
+                    Tagging=f"creating_service=dewey&original_file_name={url_info}&original_url={url}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}",
                 )
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": url_info, "name": url_info,
-                    "original_url": url, "original_file_size_bytes": file_size,
-                    "original_file_suffix": file_suffix, "original_file_data_type": "url",
-                    "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
+                    "current_s3_key": s3_key,
+                    "original_file_name": url_info,
+                    "name": url_info,
+                    "original_url": url,
+                    "original_file_size_bytes": file_size,
+                    "original_file_suffix": file_suffix,
+                    "original_file_data_type": "url",
+                    "file_type": file_suffix,
+                    "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}",
                 }
-            
+
             elif full_path_to_file:
-                with open(full_path_to_file, 'rb') as file:
+                with open(full_path_to_file, "rb") as file:
                     file_data = file.read()
                 file_size = os.path.getsize(full_path_to_file)
                 local_path_info = Path(full_path_to_file)
                 local_ip = socket.gethostbyname(socket.gethostname())
                 self.s3_client.put_object(
-                    Bucket=s3_bucket_name, 
-                    Key=s3_key, 
-                    Body=file_data, 
-                    Tagging=f'creating_service=dewey&original_file_name={local_path_info.name}&original_file_path={full_path_to_file}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
+                    Bucket=s3_bucket_name,
+                    Key=s3_key,
+                    Body=file_data,
+                    Tagging=f"creating_service=dewey&original_file_name={local_path_info.name}&original_file_path={full_path_to_file}&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}",
                 )
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": local_path_info.name,"name": local_path_info.name,
-                    "original_file_path": full_path_to_file, "original_local_server_name": socket.gethostname(),
-                    "original_server_ip": local_ip, "original_file_size_bytes": file_size, 
-                    "original_file_suffix": file_suffix, "original_file_data_type": "local file",
-                    "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
+                    "current_s3_key": s3_key,
+                    "original_file_name": local_path_info.name,
+                    "name": local_path_info.name,
+                    "original_file_path": full_path_to_file,
+                    "original_local_server_name": socket.gethostname(),
+                    "original_server_ip": local_ip,
+                    "original_file_size_bytes": file_size,
+                    "original_file_suffix": file_suffix,
+                    "original_file_data_type": "local file",
+                    "file_type": file_suffix,
+                    "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}",
                 }
-                
+
             elif s3_uri:
                 # Validate and move the file from the provided s3_uri
-                s3_parsed_uri = re.match(r's3://([^/]+)/(.+)', s3_uri)
+                s3_parsed_uri = re.match(r"s3://([^/]+)/(.+)", s3_uri)
                 if not s3_parsed_uri:
-                    raise ValueError("Invalid s3_uri format. Expected format: s3://bucket_name/key")
+                    raise ValueError(
+                        "Invalid s3_uri format. Expected format: s3://bucket_name/key"
+                    )
 
                 source_bucket, source_key = s3_parsed_uri.groups()
                 try:
                     self.s3_client.head_object(Bucket=source_bucket, Key=source_key)
                 except self.s3_client.exceptions.NoSuchKey:
-                    raise ValueError(f"The s3_uri {s3_uri} does not exist or is not accessible with the provided credentials.")
+                    raise ValueError(
+                        f"The s3_uri {s3_uri} does not exist or is not accessible with the provided credentials."
+                    )
 
-                copy_source = {'Bucket': source_bucket, 'Key': source_key}
+                copy_source = {"Bucket": source_bucket, "Key": source_key}
                 self.s3_client.copy(copy_source, s3_bucket_name, s3_key)
-                file_size = self.s3_client.head_object(Bucket=s3_bucket_name, Key=s3_key)['ContentLength']
+                file_size = self.s3_client.head_object(
+                    Bucket=s3_bucket_name, Key=s3_key
+                )["ContentLength"]
 
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": file_name, "name": file_name,
-                    "original_s3_uri": s3_uri, "original_file_size_bytes": file_size,
-                    "original_file_suffix": file_suffix, "original_file_data_type": "s3_uri",
-                    "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
+                    "current_s3_key": s3_key,
+                    "original_file_name": file_name,
+                    "name": file_name,
+                    "original_s3_uri": s3_uri,
+                    "original_file_size_bytes": file_size,
+                    "original_file_suffix": file_suffix,
+                    "original_file_data_type": "s3_uri",
+                    "file_type": file_suffix,
+                    "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}",
                 }
 
                 # Delete the old file and create a marker file
@@ -2943,8 +3277,8 @@ class BloomFile(BloomObj):
                 self.s3_client.put_object(
                     Bucket=source_bucket,
                     Key=marker_key,
-                    Body=b'',
-                    Tagging=f'euid={euid}&original_s3_uri={s3_uri}'
+                    Body=b"",
+                    Tagging=f"euid={euid}&original_s3_uri={s3_uri}",
                 )
 
             else:
@@ -2956,23 +3290,30 @@ class BloomFile(BloomObj):
         except Exception as e:
             raise Exception(f"An error occurred while uploading the file: {e}")
 
-        _update_recursive(file_instance.json_addl['properties'], file_properties)
-        flag_modified(file_instance, 'json_addl')
+        _update_recursive(file_instance.json_addl["properties"], file_properties)
+        flag_modified(file_instance, "json_addl")
         self.session.commit()
 
         return file_instance
 
     def update_file_metadata(self, euid, file_metadata={}):
         file_instance = self.get_by_euid(euid)
-        _update_recursive(file_instance.json_addl['properties'], file_metadata)
-        flag_modified(file_instance, 'json_addl')
+        _update_recursive(file_instance.json_addl["properties"], file_metadata)
+        flag_modified(file_instance, "json_addl")
         self.session.commit()
         return file_instance
 
     def get_file_by_euid(self, euid):
         return self.get_by_euid(euid)
 
-    def download_file(self, euid, save_pattern='dewey', include_metadata=False, save_path='.', delete_if_exists=False):
+    def download_file(
+        self,
+        euid,
+        save_pattern="dewey",
+        include_metadata=False,
+        save_path=".",
+        delete_if_exists=False,
+    ):
         """
         Downloads the S3 file locally with different naming patterns and optionally includes metadata in a YAML file.
 
@@ -2983,23 +3324,25 @@ class BloomFile(BloomObj):
         :return: Path of the saved file.
         """
         file_instance = self.get_by_euid(euid)
-        s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
-        s3_key = file_instance.json_addl['properties']['current_s3_key']
-        original_file_name = file_instance.json_addl['properties']['original_file_name']
-        file_suffix = file_instance.json_addl['properties']['original_file_suffix']
+        s3_bucket_name = file_instance.json_addl["properties"]["current_s3_bucket_name"]
+        s3_key = file_instance.json_addl["properties"]["current_s3_key"]
+        original_file_name = file_instance.json_addl["properties"]["original_file_name"]
+        file_suffix = file_instance.json_addl["properties"]["original_file_suffix"]
 
-        if save_pattern == 'dewey':
+        if save_pattern == "dewey":
             local_file_name = f"{euid}.{file_suffix}"
-        elif save_pattern == 'orig':
+        elif save_pattern == "orig":
             local_file_name = original_file_name
             print("WARNING: Using 'orig' pattern may overwrite existing files!")
-        elif save_pattern == 'hybrid':
+        elif save_pattern == "hybrid":
             local_file_name = f"{euid}.{original_file_name}"
         else:
-            raise ValueError("Invalid save_pattern. Options are: 'dewey', 'orig', 'hybrid'.")
+            raise ValueError(
+                "Invalid save_pattern. Options are: 'dewey', 'orig', 'hybrid'."
+            )
 
         local_file_path = os.path.join(save_path, local_file_name)
-        
+
         if os.path.exists(local_file_path):
             self.logger.exception(f"File already exists: {local_file_path}")
             if delete_if_exists:
@@ -3011,20 +3354,24 @@ class BloomFile(BloomObj):
         if include_metadata:
             metadata_file_path = f"{local_file_path}.dewey.yaml"
             if os.path.exists(metadata_file_path):
-                self.logger.exception(f"Metadata file already exists: {metadata_file_path}")
+                self.logger.exception(
+                    f"Metadata file already exists: {metadata_file_path}"
+                )
 
                 if delete_if_exists:
                     os.remove(metadata_file_path)
                 else:
-                    raise Exception(f"Metadata file already exists: {metadata_file_path}")
-            
-            with open(metadata_file_path, 'w') as metadata_file:
-                yaml.dump(file_instance.json_addl['properties'], metadata_file)
+                    raise Exception(
+                        f"Metadata file already exists: {metadata_file_path}"
+                    )
+
+            with open(metadata_file_path, "w") as metadata_file:
+                yaml.dump(file_instance.json_addl["properties"], metadata_file)
             print(f"Metadata saved successfully: {metadata_file_path}")
-            
+
         # Download the file from S3
         try:
-            with open(local_file_path, 'wb') as file:
+            with open(local_file_path, "wb") as file:
                 self.s3_client.download_fileobj(s3_bucket_name, s3_key, file)
             print(f"File downloaded successfully: {local_file_path}")
         except Exception as e:
@@ -3045,10 +3392,14 @@ class BloomFile(BloomObj):
         for euid in euids:
             try:
                 file_instance = self.get_by_euid(euid)
-                s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
-                s3_key = file_instance.json_addl['properties']['current_s3_key']
+                s3_bucket_name = file_instance.json_addl["properties"][
+                    "current_s3_bucket_name"
+                ]
+                s3_key = file_instance.json_addl["properties"]["current_s3_key"]
                 s3_uri = f"s3://{s3_bucket_name}/{s3_key}"
-                metadata = file_instance.json_addl['properties'] if include_metadata else None
+                metadata = (
+                    file_instance.json_addl["properties"] if include_metadata else None
+                )
                 euid_to_s3_data[euid] = [s3_uri, metadata]
             except Exception as e:
                 self.logger.error(f"Error retrieving S3 URI for EUID {euid}: {e}")
@@ -3056,16 +3407,15 @@ class BloomFile(BloomObj):
 
         return euid_to_s3_data
 
-    
     def delete_file(self, euid):
         # SOFT delete (S3 record is not deleted)
 
         file_instance = self.get_by_euid(euid)
-        #s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
-        #s3_key = file_instance.json_addl['properties']['current_s3_key']
+        # s3_bucket_name = file_instance.json_addl['properties']['current_s3_bucket_name']
+        # s3_key = file_instance.json_addl['properties']['current_s3_key']
 
         try:
-            #self.s3_client.delete_object(Bucket=s3_bucket_name, Key=s3_key)
+            # self.s3_client.delete_object(Bucket=s3_bucket_name, Key=s3_key)
             self.delete_obj(file_instance)
             self.session.commit()
             return True
@@ -3073,16 +3423,18 @@ class BloomFile(BloomObj):
             self.logger.error(f"Error deleting file {euid}: {e}")
             self.session.rollback()
             return False
-        
+
+
 class BloomFileSet(BloomObj):
     def __init__(self, bdb):
         super().__init__(bdb)
 
-
     def create_file_set(self, file_uids=[], file_set_metadata={}):
         file_set = self.create_instance(
-            self.query_template_by_component_v2("file", "file_set", "generic", "1.0")[0].euid, 
-            {"properties": file_set_metadata}
+            self.query_template_by_component_v2("file", "file_set", "generic", "1.0")[
+                0
+            ].euid,
+            {"properties": file_set_metadata},
         )
         self.session.commit()
 
@@ -3092,23 +3444,23 @@ class BloomFileSet(BloomObj):
         file_set = self.get_by_euid(file_set_euid)
         for file_euid in file_euids:
             self.create_generic_instance_lineage_by_euids(file_set_euid, file_euid)
-        self.session.commit()        
+        self.session.commit()
         return file_set
-    
+
     def get_file_set_by_euid(self, euid):
         return self.get_by_euid(euid)
-    
+
     def remove_files_from_file_set(self, file_set_euid, file_euids=[]):
         file_set = self.get_by_euid(file_set_euid)
-        
+
         # delete the lineage for each file to this file set
         for file_euid in file_euids:
             for i in file_set.child_of_lineages:
                 if i.child_instance.euid == file_euid:
                     self.delete_obj(i)
-                    
+
         self.session.commit()
-        return file_set    
+        return file_set
 
     def search_file_sets_by_metadata(self, search_criteria, greedy=True):
         """
@@ -3125,18 +3477,28 @@ class BloomFileSet(BloomObj):
             # Greedy search: matching any of the provided search keys
             or_conditions = []
             for key, value in search_criteria.items():
-                if key == 'file_metadata':
-                    key = 'properties'
-                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+                if key == "file_metadata":
+                    key = "properties"
+                    logging.warning(
+                        "The key 'file_metadata' is being treated as 'properties'."
+                    )
 
                 # Create conditions for JSONB key-value pairs
                 if isinstance(value, dict):
                     for sub_key, sub_value in value.items():
                         jsonb_filter = {key: {sub_key: sub_value}}
-                        or_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+                        or_conditions.append(
+                            self.Base.classes.file_set_instance.json_addl.op("@>")(
+                                jsonb_filter
+                            )
+                        )
                 else:
                     jsonb_filter = {key: value}
-                    or_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+                    or_conditions.append(
+                        self.Base.classes.file_set_instance.json_addl.op("@>")(
+                            jsonb_filter
+                        )
+                    )
 
             if or_conditions:
                 query = query.filter(or_(*or_conditions))
@@ -3144,17 +3506,27 @@ class BloomFileSet(BloomObj):
             # Non-greedy search: matching all specified search terms
             and_conditions = []
             for key, value in search_criteria.items():
-                if key == 'file_metadata':
-                    key = 'properties'
-                    logging.warning("The key 'file_metadata' is being treated as 'properties'.")
+                if key == "file_metadata":
+                    key = "properties"
+                    logging.warning(
+                        "The key 'file_metadata' is being treated as 'properties'."
+                    )
 
                 if isinstance(value, dict):
                     for sub_key, sub_value in value.items():
                         jsonb_filter = {key: {sub_key: sub_value}}
-                        and_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+                        and_conditions.append(
+                            self.Base.classes.file_set_instance.json_addl.op("@>")(
+                                jsonb_filter
+                            )
+                        )
                 else:
                     jsonb_filter = {key: value}
-                    and_conditions.append(self.Base.classes.file_set_instance.json_addl.op('@>')(jsonb_filter))
+                    and_conditions.append(
+                        self.Base.classes.file_set_instance.json_addl.op("@>")(
+                            jsonb_filter
+                        )
+                    )
 
             if and_conditions:
                 query = query.filter(and_(*and_conditions))
