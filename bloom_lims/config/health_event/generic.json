@@ -1,13 +1,11 @@
 {
-  "generic": {
+  "health-event": {
     "1.0": {
-      "description": "Generic File Set",
+      "description": "Generic Health Event",
       "properties": {
-        "name": "A Generic File Set",
+        "name": "Generic Object Name (displayed in UI, can be easily overidded in child template references)",
         "comments": "",
-        "lab_code":"",
-        "tag":"",
-        "description":""
+        "lab_code":""
       },
       "expected_inputs": [],
       "expected_outputs": [],

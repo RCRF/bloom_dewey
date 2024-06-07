@@ -300,8 +300,9 @@
                         "selector": "edge",
                         "style": {
                             "width": 3,
-                            "line-color": "#357b95",
-                            "source-arrow-color": "#357b95",
+                            "line-color": function(ele) {
+                                return ele.data('color') || '#357b95'; // Use the 'color' property from the edge's data
+                            },                            "source-arrow-color": "#357b95",
                             "target-arrow-color": "#357b95",
                             "source-arrow-shape": "triangle",   
                             "curve-style": "bezier",
@@ -363,9 +364,9 @@
                 });
 
                 selectAndCenterRandomNode();
-                if (cy) {
-                    filterNodes(globalFilterLevel.toString()); // Convert to string as the slider input would provide
-                }
+                //if (cy) {
+                //    filterNodes(globalFilterLevel.toString()); // Convert to string as the slider input would provide
+                //}
 
                 var btypes = new Set();
                     data.elements.nodes.forEach(function(ele) {
@@ -488,11 +489,24 @@
                             dialog.find('#actionALink').attr('href', '/calculate_cogs_parents?euid=' + nodeData.euid);
                             dialog.find('#actionBLink').attr('href', '/calculate_cogs_children?euid=' + nodeData.euid);
                             dialog.find('#euidInfoLink').attr('href', '/euid_details?euid=' + nodeData.euid);
-                    
-                            // Position and show dialog
-                            var renderedPosition = evt.renderedPosition;
-                            dialog.css({ top: renderedPosition.y, left: renderedPosition.x }).show();
-                    
+                              // Fetch the name property dynamically
+                                $.ajax({
+                                    url: '/get_node_property',
+                                    method: 'GET',
+                                    data: { euid: euid, key: 'name' },
+                                    success: function(response) {
+                                        var nodeName = response.name || 'Unknown Name';
+                                        dialog.find('#nodeName span').text(nodeName);
+
+                                        // Position and show dialog
+                                        var renderedPosition = evt.renderedPosition;
+                                        dialog.css({ top: renderedPosition.y, left: renderedPosition.x }).show();
+                                    },
+                                    error: function() {
+                                        dialog.find('#nodeName span').text('Unknown Name');
+                                        dialog.css({ top: evt.renderedPosition.y, left: evt.renderedPosition.x }).show();
+                                    }
+                                });
                             // Prevent other tap actions when triple-clicked
                             return;
                         }
@@ -565,7 +579,7 @@
                             // AJAX request to the server for node info
                             $.getJSON('/get_node_info', { euid: euid }, function(data) {
                                 if (!data.error) {
-                                    var content = 'EUID: ' + data.euid + ' // '+data.uuid+' ( '+data.btype +':::'+data.b_sub_type+' ) <br>Name: ' + data.name + ' ( '+data.status+' )<br>json_addl: ' + data.json_addl;
+                                    var content = 'EUID: ' + data.euid + ' // ' + JSON.parse(data.json_addl)?.properties?.name  + ' // ' +data.uuid+' ( '+data.btype +':::'+data.b_sub_type+' ) <br>Name: ' + JSON.parse(data.json_addl)?.properties?.name  + ' ( '+data.status+' )<br>json_addl: ' + data.json_addl;
                                     $('#node-info').html(content).show();
                                 } else {
                                     $('#node-info').html('Node information not found').show();

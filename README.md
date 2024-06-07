@@ -457,6 +457,6 @@ Auto-gen 'n' passes of the lims schema
 - `python tx.py 2 ` . # runs through creating objects in the current workflows.
 
 Run the bloom UI
+- `uvicorn main:app --reload --log-level trace --port 8911 --timeout-keep-alive 303`
 
-
-
+ 

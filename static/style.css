@@ -437,3 +437,18 @@ th {
 .flash-effect {
     animation: flash 1s linear 1; /* Change '3' to the number of flashes */
 }
+
+
+.header-container {
+    display: flex;
+    align-items: center;
+}
+.header-container h1 {
+    margin-right: 20px;
+}
+.header-container a {
+    margin: 0 10px;
+}
+.header-container small {
+    margin-left: 5px;
+}

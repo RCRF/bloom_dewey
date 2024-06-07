@@ -40,3 +40,9 @@ PyJWT~=2.8.0
 fastapi~=0.109.1
 uvicorn~=0.27.0.post1
 starlette~=0.35.1
+boto3
+botocore
+requests_mock
+moto
+pandas
+matplotlib

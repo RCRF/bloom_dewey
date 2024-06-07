@@ -72,7 +72,9 @@
         </script>
     </head>
     <body id="content2">
-        <small> <a href=dindex2?globalStartNodeEUID={{ object.euid }}>( graph )</a> </small> <small> <a href= />( h o m e )</a> </small>
+        {% include 'dewey_header.html' %}
+
+        <small> <a href=dindex2?globalStartNodeEUID={{ object.euid }}>( graph )</a> </small>
         {% macro render_json_value(value, key) %}
             {% if value is mapping %}
                 <div class="nested-json">
@@ -196,6 +198,7 @@
                 <table class="searchable">
                     <tr>
                         <th>Lineage EUID</th>
+                        <th>Relationship Type</th>
                         <th>Parent Instance EUID</th>
                         <th>Parent Type</th>
                         <th>Parent Sub Type</th>
@@ -210,6 +213,7 @@
                             <td>
                                 <a href="euid_details?euid={{ lineage.euid }}">{{ lineage.euid }}</a>
                             </td>
+                            <td>{{ lineage.relationship_type }}</td>
                             <td>
                                 <a href="euid_details?euid={{ lineage.parent_instance.euid }}">{{ lineage.parent_instance.euid }}</a>
                             </td>
@@ -230,6 +234,7 @@
                 <table class="searchable">
                     <tr>
                         <th>Lineage EUID</th>
+                        <th>Relationship Type</th>
                         <th>Parent Instance EUID</th>
                         <th>Parent Type</th>
                         <th>Parent Sub Type</th>
@@ -243,6 +248,9 @@
                         <tr>
                             <td>
                                 <a href="euid_details?euid={{ lineage.euid }}">{{ lineage.euid }}</a>
+                            </td>
+                            <td>
+                                {{ lineage.relationship_type }}
                             </td>
                             <td>
                                 <a href="euid_details?euid={{ lineage.parent_instance.euid }}">{{ lineage.parent_instance.euid }}</a>

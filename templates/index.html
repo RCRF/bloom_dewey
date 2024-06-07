@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Bloom </title>
-        <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
+        <title>Bloom</title>
+        <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
 
-
-<script>
+        <script>
             function checkForOauthCode() {
-                 const urlFragment = new URLSearchParams(window.location.hash.substring(1)); // Remove the # and parse
+                const urlFragment = new URLSearchParams(window.location.hash.substring(1)); // Remove the # and parse
                 const accessToken = urlFragment.get('access_token');
                 console.log("Access token:", accessToken);
 
@@ -25,7 +24,7 @@
                     .then(response => response.text())
                     .then(data => {
                         console.log("Response from server:", data);
-                        alert(" authentication successful!");
+                        alert("Authentication successful!");
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -39,7 +38,6 @@
             window.onload = function() {
                 checkForOauthCode();
             };
-
         </script>
 
         <style>
@@ -65,206 +63,159 @@
             button .accordion {  
                 background-color: var(--secondary-color);
             }
+            .blink {
+                animation: blinker 1s linear infinite;
+                color: red;
+                font-weight: bold;
+            }
+            @keyframes blinker {
+                50% {
+                    opacity: 0;
+                }
+            }
         </style>
     </head>
     <body>
         <h1>
-            Bloom  <small> <a href=dindex2>( graph view )</a></small> <a href=https://github.com/Daylily-Informatics/bloom><font style="font-size: 10px;">github</font></a>
+            Bloom <small> <a href=dindex2>(graph view)</a></small> <a href="https://github.com/Daylily-Informatics/bloom"><font style="font-size: 10px;">github</font></a>
         </h1>
         <hr>
         <ul>
+            <h2><a href="create_file_form">DEWEY (file management)</a></h2>
+            <small>... like the Dewey Decimal System, but for files? </small>
+            <a href="create_file_form">It's in progress here.</a>
 
             <h2>Core</h2>
-            Bloom takes a non-traditional approach to meeting the needs LIMS are designed for (and rately satisfy well). 
-            <b><small>Exhausive archtecture docs will follow, but for now, the following points are worth noting. user IDs also tracked when data is changed.</small></b> 
-         <ul>
-            <button   class="accordion">...more</button>
-            <div class="panel">
+            Bloom is an experiment in working with chatGPT to develop a LIMS from scratch. Bloom is meant to be a useful operational system and a tool to help explore the problem space (and guide development in a tighter feedback loop).
+            <b><small>Architecture docs will follow, but for now, the following points are worth noting.</small></b>
             <ul>
-            - Bloom provides a model of the core LIMS objects and concepts. Provided UIs are funtional, and should be useful in guiding more complex UI development w/external systems. 
-            <br>
-            - - - Beyond UIs, even for applications liek dashboards, Bloom offers a handful, but complex dashboards are expected to be built with projects like <a href=https://superset.apache.org/ > superset</a>
-            <br>
-            - <a href=/euid_details?euid=AY1 >Audit logs</a>, for all details about every object. No data is lost or deleted.
-            <br>
-            - Objects each have one EUID.
-            <br>
-            - Barcode printing of EUIDS is EXPECTED by Bloom. Out of the box, Bloom will manage printing to ZPL printers. Printer config can be found in the admin view.
-            <br>
-            - UI does not include highly error prone operations like: DRAGGING and DROPPING, and discourages manual entry of data.
-            <br>
-            - Once a sample is accessioned, all downstream EUID use should be handled by automated systems or scanning.
-            <br>
-            - The UI offers the ability to navigate through all objects and their relationships.
-            <br>
-            - Complex actions may be defined for objects
-            <br>
-            - Objects are modeled w/out taking coneptual shortcuts. 
-            <br>
-            - - - ie: containers and the things in containers are modeled independently, as are plates and wset.child_instance.json_addl.get
-            <br>
-            - - - over simplifying the core model to solve for this complexity is, I believe, a core reason most LIMS stink.
-            <br>
-            - Development has focused on establishing feasability of this approach. Safety nets coming. In the meantime, it is possible to wedge the system (more so in the graph)
-            <br>
-            - Bloom objects all adhere to a common set of interfaces, you can get a sense of this from the <a href=/euid_details?euid=AY1 >object detail</a> pages. The entire dataset can be navigate from here.
-            <br>
-            - 'batches' or 'sets' of any group of objects may be created, and this batch/set can be used to interact/monitor/etc this batch. (not used by BLOOM, but designed)
-            <br>
-            - Bloom UI is easily skinnable for those needing different color schemes for usability. These can be switched between in the admin view.
+                <button class="accordion">...more</button>
+                <div class="panel">
+                    <ul>
+                        <li>Bloom provides a model of the core LIMS objects and concepts & a way to mess with the models in near real time.</li>
+                        <li>Provided UIs are functional for base needs. Elaborate for your use cases will need to be developed.</li>
+                        <li>Beyond UIs, even for applications like dashboards, Bloom offers a handful, but complex dashboards are expected to be built with projects like <a href="https://superset.apache.org/">superset</a>.</li>
+                        <li><a href="/euid_details?euid=AY1">Audit logs</a>, for all details about every object. No data is lost or deleted.</li>
+                        <li>Objects each have one EUID.</li>
+                        <li>Barcode printing of EUIDs is EXPECTED by Bloom. Out of the box, Bloom will manage printing to ZPL printers. Printer config can be found in the admin view.</li>
+                        <li>UI does not include highly error-prone operations like: DRAGGING and DROPPING, and discourages manual entry of data.</li>
+                        <li>Once a sample is accessioned, all downstream EUID use should be handled by automated systems or scanning.</li>
+                        <li>The UI offers the ability to navigate through all objects and their relationships.</li>
+                        <li>Complex actions may be defined for objects.</li>
+                        <li>Objects are modeled without taking conceptual shortcuts.</li>
+                        <li>ie: containers and the things in containers are modeled independently, as are plates and wset.child_instance.json_addl.get.</li>
+                        <li>Oversimplifying the core model to solve for this complexity is, I believe, a core reason most LIMS stink.</li>
+                        <li>Development has focused on establishing the feasibility of this approach. Safety nets coming. In the meantime, it is possible to wedge the system (more so in the graph).</li>
+                        <li>Bloom objects all adhere to a common set of interfaces, you can get a sense of this from the <a href="/euid_details?euid=AY1">object detail</a> pages. The entire dataset can be navigated from here.</li>
+                        <li>'Batches' or 'sets' of any group of objects may be created, and this batch/set can be used to interact/monitor/etc this batch. (not used by BLOOM, but designed)</li>
+                        <li>Bloom UI is easily skinnable for those needing different color schemes for usability. These can be switched between in the admin view.</li>
+                    </ul>
+                </div>
             </ul>
-        </div>
-    </ul>
-            <h2>
-            <a href="/assays?show_type=accessioning ">ACCESSIONING</a></h2>
-            UI design is functionally complete, and could serve in production. However, it is demonstrating the finest level of control Bloom offers, and a highthroughput scenario would be well advised to aggregate many operations when skinning a lower touch experience.
+            <h2><a href="/assays?show_type=accessioning">ACCESSIONING</a></h2>
+            UI design is functionally complete and could serve in production. However, it is demonstrating the finest level of control Bloom offers, and a high throughput scenario would be well advised to aggregate many operations when skinning a lower touch experience.
             <u>the following works out of the box</u>
             <ul>
-            <button   class="accordion">...more</button>
-            
-            <div class="panel">
-            <ul>
-            - receive a package, capture desired info (ie: fedex trk#, used to calculate transit time for package). try this fedex test#<small> 1001897582860000245100773464327825 </small>.
-            <br>
-            - link 0-many kits to this package, capture desired info (ie: kit barcode, can be used to check kit vendor API for expiry of kit).
-            <br>
-            - link 0-many specimen containers to each kit, capture desired info (ie: collection date, etc) <br>
-            - - - - <b><small>ANY container type holding ANY specimen type is handled out of the box</small></b> - - -
-            <br>
-            - create test reqisitions ONCE for each unique req, then associate as many specimen containers to the req as needed.
-            <br> 
-            - test requisitions may be satisfied by 1-many assays (as defined in the test requisition template).
-            <br>
-            - specimens associated to a test requisition are eligible to be added to assay queues available for the test requisition.
-            <br>
-            - add specimen containers to 0-many assay queue.
-            <br>
-            - manage different kinds of accessioning workflows.
-            <br>
-            - quite rich monitoring, reporting, observability capabilities ( in real time COGS tracking, in real time FEDEX tracking stats).
+                <button class="accordion">...more</button>
+                <div class="panel">
+                    <ul>
+                        <li>Receive a package, capture desired info (ie: FedEx trk#, used to calculate transit time for package). Try this FedEx test#<small> 1001897582860000245100773464327825 </small>.</li>
+                        <li>Link 0-many kits to this package, capture desired info (ie: kit barcode, can be used to check kit vendor API for expiry of kit).</li>
+                        <li>Link 0-many specimen containers to each kit, capture desired info (ie: collection date, etc).</li>
+                        <li><b><small>ANY container type holding ANY specimen type is handled out of the box</small></b>.</li>
+                        <li>Create test requisitions ONCE for each unique req, then associate as many specimen containers to the req as needed.</li>
+                        <li>Test requisitions may be satisfied by 1-many assays (as defined in the test requisition template).</li>
+                        <li>Specimens associated to a test requisition are eligible to be added to assay queues available for the test requisition.</li>
+                        <li>Add specimen containers to 0-many assay queue.</li>
+                        <li>Manage different kinds of accessioning workflows.</li>
+                        <li>Quite rich monitoring, reporting, observability capabilities (in real-time COGS tracking, in real-time FEDEX tracking stats).</li>
+                    </ul>
+                </div>
             </ul>
-        </div>
-    </ul>
-                    <br>
-            <h2>
-             <a href="/assays?show_type=assay "> ASSAYS / Queues /  worksets </a>
-            </h2>
-            UI design is functionally complete and could serve in production (with the same caveats described above applying).
-            ... the two (example assay/queue/workset)'s are not inteded for production use. They demonstrate how the Bloom objects can be combined to define types of work, manage this work, and monitor/report.
+            <h2><a href="/assays?show_type=assay">ASSAYS / Queues / worksets</a></h2>
+            UI design is functionally complete and could serve in production (with the same caveats described above applying). The two (example assay/queue/workset)'s are not intended for production use. They demonstrate how the Bloom objects can be combined to define types of work, manage this work, and monitor/report.
             <u>the following works out of the box</u>
             <ul>
-            <button   class="accordion">...more</button>
-            <div class="panel">
-            <ul>
-            - monitoring overall assay state (ie: failure rates, COGS, queue sizes, etc)
-            - processing assay 'available' objects (in this case tubes) into 'worksets', worksets being groups of work in service of completing an assay request.
-            - queue management for 4 types : available, in progress, completed, exception.
-
-            </div>
-        </ul>
+                <button class="accordion">...more</button>
+                <div class="panel">
+                    <ul>
+                        <li>Monitoring overall assay state (ie: failure rates, COGS, queue sizes, etc).</li>
+                        <li>Processing assay 'available' objects (in this case tubes) into 'worksets', worksets being groups of work in service of completing an assay request.</li>
+                        <li>Queue management for 4 types: available, in progress, completed, exception.</li>
+                    </ul>
+                </div>
             </ul>
-            <ul>
-            <br>
             <h2><a href="/equipment_overview">Equipment Management</a></h2>
             <ul>
-
-                    functionally feature complete, user interactions still elementary.
-                    <br>
-                    - creating equipment from templates (notably, freezers) works.
-                    <br>
-                    - functionality for logging temperature for freezers is in place, can be access from freezer group_value.actions.items
-                    <br>
-                    - functionality to add/remove containers from freezers is in place.
+                <li>Functionally feature complete, user interactions still elementary.</li>
+                <li>Creating equipment from templates (notably, freezers) works.</li>
+                <li>Functionality for logging temperature for freezers is in place, can be accessed from freezer group_value.actions.items.</li>
+                <li>Functionality to add/remove containers from freezers is in place.</li>
             </ul>
-            <br>
             <h2><a href="/reagent_overview">Reagent Management</a></h2>
             <ul>
-
-                    functionally feature complete, user interactions still elementary
-                    <br>
-                    - creating reagents from templates works.
-
+                <li>Functionally feature complete, user interactions still elementary.</li>
+                <li>Creating reagents from templates works.</li>
             </ul>
-            
-
-            <br>
             <h2>Administration</h2>
             <ul>
-                <li>
-                    <a href="/admin?dest=schema">Schema Object Statistics</a>
-                </il>
-                <li>
-                    <a href="/admin?dest=skin">Session Settings :: Change UI Skin</a>
-                </il><li>
-                    <a href="/admin?dest=zebra">Session Settings ::  Zebra Printer Config</a>
-                </il><li>
-
-                    <a href="/admin?dest=template">Instance Template Admin</a>
-                </li>
+                <li><a href="/admin?dest=schema">Schema Object Statistics</a></li>
+                <li><a href="/admin?dest=skin">Session Settings :: Change UI Skin</a></li>
+                <li><a href="/admin?dest=zebra">Session Settings :: Zebra Printer Config</a></li>
+                <li><a href="/admin?dest=template">Instance Template Admin</a></li>
             </ul>
-
-                 
-                <br>
-                <h2>Coming</h2>
-                <ul>
-                    <li>Documentaiton   </li>
-                    <li>A more formal API</li>
-                    <li>Example integration with automation platforms (ie: Hamilton) ... this is there, just not exposed as I dont have the automation API to match to.</li>
-                    <li>Develop a more complete Assay NGS usecase, including integration with downstream data analysis AND looping back to Bloom to produce QC reports which can easily report on various DATA and BLOOM tracked metrics for things like <b><u>BATCH</b></u> monitoring/reports.
-                    <li>More user friendly tools to create new objects and define workflows (Bloom was designed to acheive this eventually)
-                        <li>More comprehensive COGS tracking</li>
-                        <li>Add in the calculations for all of the operational timing metrics we expect (data is there!) </li>
-                        <li>Develop an set of equipment management tools : objects are ready for this.</li>
-                        <li>Develop reagent accessioning, lot/and real time use tools, QC and monitoring tools: objects are ready for this.</li>
-                </ul>
-
-            <br> 
-                <br>
-                <h2>Stuff Outside Blooms Purvue</h2>
-                <ul>
-                    <li>All questions re: deployment, backup, etc.  As the system is fully in the users hands, they can dictate all of these details. FWIW, the core is postgres, and there are well established management protocols for queue.child_instance.b_sub_type
-                    </li>
-                    <li>Regulatory and Compliance:  Bloom can meet any/all regulatory requirements.But, similar to the point above, this depends on how you deploy and manage it. Is it able to comply to CAP/CLIA? 100%.</li>
-                </ul>
-
-            <br>
-
+            <h2>Coming</h2>
+            <ul>
+                <li>Documentation</li>
+                <li>A more formal API</li>
+                <li>Example integration with automation platforms (ie: Hamilton)... this is there, just not exposed as I don't have the automation API to match to.</li>
+                <li>Develop a more complete Assay NGS use case, including integration with downstream data analysis AND looping back to Bloom to produce QC reports which can easily report on various DATA and BLOOM tracked metrics for things like <b><u>BATCH</b></u> monitoring/reports.</li>
+                <li>More user-friendly tools to create new objects and define workflows (Bloom was designed to achieve this eventually).</li>
+                <li>More comprehensive COGS tracking.</li>
+                <li>Add in the calculations for all of the operational timing metrics we expect (data is there!).</li>
+                <li>Develop a set of equipment management tools: objects are ready for this.</li>
+                <li>Develop reagent accessioning, lot/and real-time use tools, QC and monitoring tools: objects are ready for this.</li>
+            </ul>
+            <h2>Stuff Outside Bloom's Purview</h2>
+            <ul>
+                <li>All questions re: deployment, backup, etc. As the system is fully in the user's hands, they can dictate all of these details. FWIW, the core is PostgreSQL, and there are well-established management protocols for queue.child_instance.b_sub_type.</li>
+                <li>Regulatory and Compliance: Bloom can meet any/all regulatory requirements. But, similar to the point above, this depends on how you deploy and manage it. Is it able to comply with CAP/CLIA? 100%.</li>
+            </ul>
             <h2>Other</h2>
             <ul>
-            <h3>Search by EUID/Barcode</h3>
-            <ul>
-                <form action="/euid_details" method="get">
-                    <label for="euid">EUID:</label>
-                    <input class="idx_text" type="text" id="euid" name="euid" />
-                    <input type="submit" value="Submit" class="idx_button" />
-                </form>
+                <h3>Search by EUID/Barcode</h3>
+                <ul>
+                    <form action="/euid_details" method="get">
+                        <label for="euid">EUID:</label>
+                        <input class="idx_text" type="text" id="euid" name="euid" />
+                        <input type="submit" value="Submit" class="idx_button" />
+                    </form>
+                </ul>
+                <h3>Plate Visualization</h3>
+                <ul>
+                    <form action="/plate_visualization" method="get">
+                        <label for="plate_euid">Plate EUID:</label>
+                        <input class="idx_text" type="text" id="plate_euid" name="plate_euid">
+                        <input type="submit" value="Submit" class="idx_button">
+                    </form>
+                </ul>
+                <hr>
+                <h4>ie.</h4>
+                <img src="static/plate_viz.png" alt="plate viz" width="400" height="300">
+                <img src="static/graph_ui.png" alt="graph ui" width="350" height="274">
+                <br>
+                <a href="https://github.com/Daylily-Informatics/bloom_lims">
+                    <h2>Documentation</h2>
+                </a>
             </ul>
-            <h3>Plate Visualization</h3>
-            <ul>
-                <form action="/plate_visualization" method="get">
-                    <label for="plate_euid">Plate EUID:</label>
-                    <input class="idx_text" type="text" id="plate_euid" name="plate_euid">
-                    <input type="submit" value="Submit" class="idx_button">
-                </form>
-            </ul>
-            <hr>
-            <h4>ie.</h4>
-            <img src="static/plate_viz.png" alt="plate viz" width="400" height="300">
-            <img src="static/graph_ui.png" alt="graph ui" width="350" height="274">
-            <br>
-            <a href=https://github.com/Daylily-Informatics/bloom_lims>
-                <h2>Documentation</h2>
-            </a>
         </ul>
-
         <div>
-    <button class="floating-button2 floating-button-logout2" onclick="location.href='/admin?dest=skin'">🎨</button>
-    
-    {% if user_logged_in %} <!-- You'll need to replace this with actual server-side code -->
-        <button class="floating-button2 floating-button-skin2" onclick="location.href='/logout'"  >🏃‍♂️</button>
-    {% else %}
-        <button class="floating-button2 floating-button-skin2" onclick="location.href='/login'" >🔑</button>
-    {% endif %}
+            <button class="floating-button2 floating-button-logout2" onclick="location.href='/admin?dest=skin'">🎨</button>
+            {% if user_logged_in %}
+                <button class="floating-button2 floating-button-skin2" onclick="location.href='/logout'">🏃‍♂️</button>
+            {% else %}
+                <button class="floating-button2 floating-button-skin2" onclick="location.href='/login'">🔑</button>
+            {% endif %}
         </div>
     </body>
 </html>
