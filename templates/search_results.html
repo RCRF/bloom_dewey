@@ -119,7 +119,7 @@
             position: fixed;
             padding: 10px;
             z-index: 1000;
-            background-color: #008CBA; /* Blue background */
+            background-color: var(--primary-color);
             color: white; /* White text */
             border: none;
             text-align: center;
@@ -169,7 +169,7 @@
         }
 
         .form-group label {
-            width: 200px; /* Adjust as needed */
+            width: 100px; /* Adjust as needed */
             margin-right: 10px;
         }
 
@@ -230,7 +230,6 @@
                     <input type="text" id="comments" name="comments" value="">
                 </div>
                 <input type="hidden" id="file_euids" name="file_euids">
-                <button type="submit" onclick="createFileSet(event)"> Create File Set: </button>
             </div>
         </div>
     </form>
@@ -283,9 +282,6 @@
         <button onclick="downloadSelectedFiles()">Download Files</button>
     </div>
 
-    <div class="floating-button search">
-        <button onclick="window.location.href='/search_file_sets_form'">🔍</button>
-    </div>
 
     <script>
         async function triggerDownload(url) {

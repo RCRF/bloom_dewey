@@ -2777,7 +2777,7 @@ class BloomFile(BloomObj):
 
        
         # Special handling for x_x_rcrf_patient_uid
-        if 'x_x_rcrf_patient_uid' in file_metadata:
+        if 'x_x_rcrf_patient_uid' in file_metadata and len(file_metadata['x_x_rcrf_patient_uid']) > 0:
             patient_id = file_metadata['x_x_rcrf_patient_uid']
             search_criteria = {'properties': {'rcrf_patient_uid': patient_id}}
             existing_euids = self.search_objs_by_addl_metadata(search_criteria, True, 

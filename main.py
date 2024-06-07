@@ -1187,6 +1187,12 @@ async def update_obj_json_addl_properties(
 
     return RedirectResponse(url=referer, status_code=303)
 
+
+@app.get("/dagg", response_class=HTMLResponse)
+async def dagg(request: Request):
+    content = templates.get_template("dag.html").render()
+    return HTMLResponse(content=content)
+    
 @app.get("/dindex2", response_class=HTMLResponse)
 async def dindex2(request: Request, globalFilterLevel=6, globalZoom=0, globalStartNodeEUID=None,
                   auth=Depends(require_auth)):
@@ -1321,9 +1327,7 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
                 "b_sub_type": instance['super_type'] + "." + instance['btype'] + "." + instance['b_sub_type'],
                 "version": instance['version'],
                 "color": colors.get(instance['super_type'], "pink") if instance['btype'] not in ["well", "file_set"] else sub_colors.get(instance['b_sub_type'], "white"),
-            },
-            "position": {"x": 0, "y": 0},
-            "group": "nodes",
+            }
         }
         nodes.append(node)
 
@@ -1337,43 +1341,15 @@ def generate_dag_json_from_all_objects_v2(request: Request, euid='AY1', depth=6,
                 "id": str(lineage['lineage_euid']),
                 "relationship_type": str(lineage['relationship_type']),
                 "color": edge_relationship_type_colors.get(lineage['relationship_type'], "lightgreen"),
-            },
-            "group": "edges",
+            }
+        
         }
         edges.append(edge)
 
     # Construct JSON structure
 
     dag_json = {
-        "elements": {"nodes": nodes, "edges": edges},
-        "style": [
-            {
-                "selector": "node",
-                "style": {"background-color": "data(color)", "label": "data(name)"},
-            },
-            {
-                "selector": "edge",
-                "style": {
-                    "width": "3px",
-                    "line-color": "rgb(204,204,204)",
-                    "source-arrow-color": "rgb(204,204,204)",
-                    "source-arrow-shape": "triangle",
-                    "curve-style": "bezier",
-                    "control-point-step-size": "40px",
-                },
-            },
-        ],
-        "data": {},
-        "zoomingEnabled": True,
-        "userZoomingEnabled": True,
-        "zoom": 1.8745865634962724,
-        "minZoom": 1e-50,
-        "maxZoom": 1e50,
-        "panningEnabled": True,
-        "userPanningEnabled": True,
-        "pan": {"x": 180.7595665772659, "y": 52.4950387619553},
-        "boxSelectionEnabled": True,
-        "renderer": {"name": "canvas"},
+        "elements": {"nodes": nodes, "edges": edges}
     }
 
     # Write to file
@@ -1395,6 +1371,7 @@ def get_dag(request: Request, _auth=Depends(require_auth)):
 @app.get("/get_dagv2")
 async def get_dagv2(request: Request, _euid='AY1', _depth=6, _auth=Depends(require_auth)):
     dag_fn = request.session["user_data"]["dag_fnv2"]
+    #dag_fn = "./dags/j.json"
     dag_data = {"elements": {"nodes": [], "edges": []}}
     if os.path.exists(dag_fn):
         with open(dag_fn, "r") as f:
@@ -1754,7 +1731,7 @@ async def search_files(
 
     try:
         bfi = BloomFile(BLOOMdb3(app_username=request.session['user_data']['email']))
-        euid_results = bfi.search_objs_by_addl_metadata(search_criteria, greedy, 'file')
+        euid_results = bfi.search_objs_by_addl_metadata(search_criteria, greedy, 'file', super_type='file')
 
         # Fetch details for each EUID
         detailed_results = [bfi.get_by_euid(euid) for euid in euid_results]
