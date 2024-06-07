@@ -1825,3 +1825,31 @@ async def create_file_set(
     except Exception as e:
         raise(e)
         #    return RedirectResponse(url="/create_file_form", status_code=303)
+
+
+
+# Define the new endpoint
+@app.post("/create_file_set2")
+async def create_file_set2(request: Request, euids: List[str], name: str, description: str, tag: str, comments: str):
+    try:
+        bfs = BloomFileSet(BLOOMdb3(app_username=request.session['user_data']['email']))
+
+        file_set_metadata = {
+            "properties": {
+                "name": file_set_request.name,
+                "description": file_set_request.description,
+                "tag": file_set_request.tag,
+                "comments": file_set_request.comments,
+            }
+        }
+
+        # Create the file set
+        new_file_set = bfs.create_file_set(file_set_metadata=file_set_metadata)
+
+        # Add files to the file set
+        file_euids_list = file_set_request.euids
+        bfs.add_files_to_file_set(file_set_euid=new_file_set.euid, file_euids=file_euids_list)
+
+        return {"status": "success", "file_set_euid": new_file_set.euid}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -7,67 +7,192 @@
     <link rel="stylesheet" type="text/css" href="static/style.css">
     <script src="static/action_buttons.js"></script>
     <script>
-        function toggleSelectAll() {
-            const checkboxes = document.querySelectorAll('.file-checkbox');
-            const selectAll = document.getElementById('select-all').checked;
+        function toggleSelectAll(checkboxClass, masterCheckboxId) {
+            const checkboxes = document.querySelectorAll(checkboxClass);
+            const selectAll = document.getElementById(masterCheckboxId).checked;
             checkboxes.forEach(checkbox => checkbox.checked = selectAll);
+            updateColumnGlow(checkboxClass);
+        }
+
+        function checkConflict(currentCheckbox, checkboxClass) {
+            const otherCheckboxes = document.querySelectorAll(checkboxClass);
+            if (currentCheckbox.checked) {
+                otherCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        alert('You cannot select files for both download and create set at the same time.');
+                        currentCheckbox.checked = false;
+                        return;
+                    }
+                });
+            }
+            updateColumnGlow('.file-checkbox');
+            updateColumnGlow('.file-set-checkbox');
+        }
+
+        function updateColumnGlow(checkboxClass) {
+            const checkboxes = document.querySelectorAll(checkboxClass);
+            const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+            const columnClass = checkboxClass === '.file-checkbox' ? 'download-column' : 'file-set-column';
+            const columnCells = document.querySelectorAll(`.${columnClass}`);
+            
+            columnCells.forEach(cell => {
+                if (anyChecked) {
+                    cell.classList.add('glow');
+                } else {
+                    cell.classList.remove('glow');
+                }
+            });
+        }
+
+        function createFileSet(event) {
+            event.preventDefault();
+
+            const checkboxes = document.querySelectorAll('.file-set-checkbox:checked');
+            const euids = Array.from(checkboxes).map(cb => cb.value).join("\n");
+            document.getElementById('file_euids').value = euids;
+
+            document.getElementById('fileSetForm').submit();
         }
     </script>
+    <style>
+        .floating-button {
+            position: fixed;
+            bottom: 10px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        .floating-button.create-set {
+            right: 10px;
+            background-color: var(--primary-color);
+        }
+
+        .floating-button.download {
+            left: 10px;
+            background-color: var(--primary-color);
+        }
+
+        .form-section {
+            display: inline-block;
+            margin: 0 7.5%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .form-section label, .form-section input, .form-section select, .form-section textarea {
+            margin: 5px 0;
+            vertical-align: middle;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label {
+            width: 200px; /* Adjust as needed */
+            margin-right: 10px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            flex: 1;
+        }
+
+        .glow {
+            box-shadow: 0 0 10px fuchsia;
+            transition: box-shadow 0.5s ease-in-out;
+        }
+    </style>
 </head>
 <body>
     <h1>Search Results</h1>
+    <form id="fileSetForm" action="/create_file_set" method="post">
+        <div style="display: flex;">
+            <div class="form-section" style="background-color: rgba(255, 204, 204, 0.1);">
+                <div class="form-group">
+                    <label for="download-type"> Download Type: </label>
+                    <select id="download-type">
+                        <option value="dewey" selected>dewey</option>
+                        <option value="hybrid">hybrid</option>
+                        <option value="orig">orig</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="create-metadata"> Create dewey.yaml Metadata File: </label>
+                    <select id="create-metadata">
+                        <option value="yes" selected>yes</option>
+                        <option value="no">no</option>
+                    </select>
+                </div>
+            </div>
 
-    <div>
-        <label for="download-type">Download Type:</label>
-        <select id="download-type">
-            <option value="dewey" selected>dewey</option>
-            <option value="hybrid">hybrid</option>
-            <option value="orig">orig</option>
-        </select>
-
-        <label for="create-metadata">Create dewey.yaml Metadata File:</label>
-        <select id="create-metadata">
-            <option value="yes" selected>yes</option>
-            <option value="no">no</option>
-        </select>
-    </div>
-
+            <div class="form-section" style="background-color: rgba(204, 255, 204, 0.1);">
+                File Set Details
+                <div class="form-group">
+                    <label for="file_set_name"> Name: </label>
+                    <input type="text" id="file_set_name" name="file_set_name" required>
+                    <label for="file_set_description" value="" > Description: </label>
+                    <input type="text" id="file_set_description" name="file_set_description" required>
+                </div>
+                <div class="form-group">
+                    <label for="file_set_tag" value=""> Tag: </label>
+                    <input type="text" id="file_set_tag" name="file_set_tag" required>
+                    <label for="comments"> Comments: </label>
+                    <input type="text" id="comments" name="comments" value="">
+                </div>
+                <input type="hidden" id="file_euids" name="file_euids">
+                <button type="submit" onclick="createFileSet(event)"> Create File Set: </button>
+            </div>
+        </div>
+    </form>
     <table border="1">
         <thead>
             <tr>
-                <th>
-                    <input type="checkbox" id="select-all" onclick="toggleSelectAll()">
+                <th class="download-column">
+                    <input type="checkbox" id="select-all-download" onclick="toggleSelectAll('.file-checkbox', 'select-all-download')">
                     Flag to download
+                </th>
+                <th class="file-set-column">
+                    <input type="checkbox" id="select-all-file-set" onclick="toggleSelectAll('.file-set-checkbox', 'select-all-file-set')">
+                    Create File Set
                 </th>
                 {% for column in columns %}
                 <th>{{ column }}</th>
                 {% endfor %}
+                <th>S3 URI</th>
             </tr>
         </thead>
         <tbody>
             {% for row in table_data %}
             <tr>
-                <td><input type="checkbox" class="file-checkbox" value="{{ row['EUID'] }}"></td>
+                <td class="download-column"><input type="checkbox" class="file-checkbox" value="{{ row['EUID'] }}" onclick="checkConflict(this, '.file-set-checkbox')"></td>
+                <td class="file-set-column"><input type="checkbox" class="file-set-checkbox" value="{{ row['EUID'] }}" onclick="checkConflict(this, '.file-checkbox')"></td>
                 {% for column in columns %}
                 <td>
                     {% if column == 'EUID' %}
-                    <a target=euid_detail href="euid_details?euid={{ row[column] }}">{{ row[column] }}</a> .. 
-                   
+                    <a target=euid_detail href="euid_details?euid={{ row[column] }}">{{ row[column] }}</a>
                     {% elif column == 'File URL' %}
                     {% else %}
                     {{ row[column] }}
                     {% endif %}
                 </td>
                 {% endfor %}
+                <td>{{ row['current_s3_uri'] }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <button onclick="downloadSelectedFiles()">Download Files</button>
-
-    <br>
     <a href="/create_file_form">Go Back</a>
+
+    <div class="floating-button create-set">
+        <button onclick="createFileSet(event)">Create File Set</button>
+    </div>
+
+    <div class="floating-button download">
+        <button onclick="downloadSelectedFiles()">Download Files</button>
+    </div>
 
     <script>
         async function triggerDownload(url) {
@@ -84,7 +209,7 @@
 
         async function downloadFile(euid, downloadType, createMetadataFile) {
             console.log(`Downloading file for EUID: ${euid}`);
-        
+
             const formData = new URLSearchParams();
             formData.append('euid', euid);
             formData.append('download_type', downloadType);
@@ -94,17 +219,16 @@
             const response = await fetch(`/download_file`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    // 'X-CSRFToken': getCsrfToken() // Uncomment if CSRF token is needed
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: formData.toString()
             });
-        
+
             if (response.ok) {
                 const jsonResponse = await response.json();
                 const fileDownloadPath = jsonResponse.file_download_path;
                 const metadataDownloadPath = jsonResponse.metadata_download_path;
-                
+
                 console.log('fileDownloadPath:', fileDownloadPath);
                 console.log('metadataDownloadPath:', metadataDownloadPath);
 
@@ -121,14 +245,14 @@
         async function downloadSelectedFiles() {
             const checkboxes = document.querySelectorAll('.file-checkbox:checked');
             const euids = Array.from(checkboxes).map(cb => cb.value);
-    
+
             const downloadType = document.getElementById('download-type').value;
             const createMetadataFile = document.getElementById('create-metadata').value;
-    
+
             console.log('Selected EUIDs:', euids);
-    
+
             for (const euid of euids) {
-                await downloadFile(euid, downloadType, createMetadataFile); // Adjust the downloadType and createMetadataFile values as needed
+                await downloadFile(euid, downloadType, createMetadataFile);
             }
         }
     </script>

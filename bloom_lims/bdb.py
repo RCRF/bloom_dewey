@@ -2793,10 +2793,12 @@ class BloomFile(BloomObj):
                     Body=file_data,
                     Tagging=f'creating_service=dewey&original_file_name={file_name}&original_file_path=N/A&original_file_size_bytes={file_size}&original_file_suffix={file_suffix}&euid={euid}'
                 )
+                odirectory, ofilename = os.path.split(file_name)
+
                 file_properties = {
-                    "current_s3_key": s3_key, "original_file_name": file_name, "name": file_name,
+                    "current_s3_key": s3_key, "original_file_name": ofilename, "name": file_name,"original_file_path": odirectory,
                     "original_file_size_bytes": file_size, "original_file_suffix": file_suffix,
-                    "original_file_data_type": "raw data", "file_type": file_suffix
+                    "original_file_data_type": "raw data", "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
                 }
 
             elif url:
@@ -2814,7 +2816,7 @@ class BloomFile(BloomObj):
                     "current_s3_key": s3_key, "original_file_name": url_info, "name": url_info,
                     "original_url": url, "original_file_size_bytes": file_size,
                     "original_file_suffix": file_suffix, "original_file_data_type": "url",
-                    "file_type": file_suffix
+                    "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
                 }
             
             elif full_path_to_file:
@@ -2857,7 +2859,7 @@ class BloomFile(BloomObj):
                     "current_s3_key": s3_key, "original_file_name": file_name, "name": file_name,
                     "original_s3_uri": s3_uri, "original_file_size_bytes": file_size,
                     "original_file_suffix": file_suffix, "original_file_data_type": "s3_uri",
-                    "file_type": file_suffix
+                    "file_type": file_suffix, "current_s3_uri": f"s3://{s3_bucket_name}/{s3_key}"
                 }
 
                 # Delete the old file and create a marker file
