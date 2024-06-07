@@ -2693,7 +2693,8 @@ class BloomFile(BloomObj):
         logging.debug(f"Determined folder_prefix: {folder_prefix}")
         return f"{folder_prefix}/{euid}.{data_file_name.split('.')[-1]}"
 
-    def _check_s3_key_exists(self, bucket_name, s3_key):
+
+    def DELME_check_s3_key_exists(self, bucket_name, s3_key):
         try:
             self.s3_client.head_object(Bucket=bucket_name, Key=s3_key)
             return True
@@ -2767,9 +2768,19 @@ class BloomFile(BloomObj):
         file_suffix = file_name.split('.')[-1]
         s3_key = self._determine_s3_key(euid, file_name)
 
-        if self._check_s3_key_exists(s3_bucket_name, s3_key):
-            self.logger.exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
-            raise Exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
+
+        # Check if a file with the same EUID already exists in the bucket
+        s3_key_path = "/".join(s3_key.split('/')[:-1])
+        s3_key_path = s3_key_path + "/" if len(s3_key_path) > 0 else ""
+        existing_files = self.s3_client.list_objects_v2(Bucket=s3_bucket_name, Prefix=f"{s3_key_path}{euid}.")
+        if 'Contents' in existing_files:
+            self.logger.exception(f"A file with PREFIX EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}.")
+            raise Exception(f"A file with EUID {euid} already exists in bucket {s3_bucket_name} {s3_key_path}.")
+
+
+        #if self._check_s3_key_exists(s3_bucket_name, s3_key):
+        #    self.logger.exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
+        #    raise Exception(f"The s3_key {s3_key} already exists in bucket {s3_bucket_name}.")
 
         try:
             if file_data:
