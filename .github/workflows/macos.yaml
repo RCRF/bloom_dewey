@@ -35,5 +35,6 @@ jobs:
       - name: Run custom PostgreSQL setup script (if applicable)
         run: |
          pip3 install pytest psycopg2-binary sqlalchemy zebra_day==0.3.0.4 pytz fedex_tracking_day==0.2.6
-         source bloom_lims/env/install_postgres.sh ghmac
+         source bloom_lims/env/install_postgres.sh skip
          pytest
+
