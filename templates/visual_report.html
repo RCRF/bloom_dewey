@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visual Report</title>
+</head>
+<body>
+    <h1>File Reports (dull)</h1>
+    {% for plot in plots %}
+        <img src="data:image/png;base64,{{ plot }}">
+    {% endfor %}
+</body>
+</html>
