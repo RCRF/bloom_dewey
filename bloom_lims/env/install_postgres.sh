@@ -35,6 +35,11 @@ fi
 export PGPORT=5445
 
 conda info
+bcnt = `conda info | grep BLOOM | wc -l`
+if [[ "$bcnt" != "2" ]]; then
+    conda activate BLOOM
+fi;
+
 # Create database
 initdb -D $PGDATA
 
