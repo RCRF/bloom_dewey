@@ -33,6 +33,12 @@ if [[ "$1" == "" ]]; then
 fi
 
 export PGPORT=5445
+echo "SHELL IS: $SHELL"
+if [[ "$SHELL" == "/bin/zsh" ]]; then
+    source ~/.zshrc 
+else
+    source ~/.bashrc
+fi
 
 conda info
 bcnt=$(conda info | grep BLOOM | wc -l)
