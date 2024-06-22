@@ -35,7 +35,7 @@ fi
 export PGPORT=5445
 
 conda info
-bcnt = `conda info | grep BLOOM | wc -l`
+bcnt=$(conda info | grep BLOOM | wc -l)
 if [[ "$bcnt" != "2" ]]; then
     conda activate BLOOM
 fi;
