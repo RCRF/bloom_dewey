@@ -33,6 +33,7 @@ jobs:
           auto-activate-base: false
 
       - name: Run custom PostgreSQL setup script (if applicable)
+        shell: bash -l {0}
         run: |
          pip3 install pytest psycopg2-binary sqlalchemy zebra_day==0.3.0.4 pytz fedex_tracking_day==0.2.6
          source bloom_lims/env/install_postgres.sh skip

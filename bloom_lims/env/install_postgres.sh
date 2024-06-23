@@ -35,16 +35,6 @@ fi
 export PGPORT=5445
 echo "SHELL IS: $SHELL
 
-echo "CONDA_EXE: $CONDA_EXE"
-$CONDA_EXE init
-$CONDA_EXE activate BLOOM
-
-conda info
-bcnt=$(conda info | grep BLOOM | wc -l)
-if [[ "$bcnt" != "2" ]]; then
-    conda activate BLOOM
-fi;
-
 # Create database
 initdb -D $PGDATA
 
