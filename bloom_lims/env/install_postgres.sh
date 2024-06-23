@@ -34,8 +34,10 @@ fi
 
 export PGPORT=5445
 echo "SHELL IS: $SHELL
-source ~/.bashrc
 
+echo "CONDA_EXE: $CONDA_EXE"
+$CONDA_EXE init
+$CONDA_EXE activate BLOOM
 
 conda info
 bcnt=$(conda info | grep BLOOM | wc -l)
