@@ -3227,8 +3227,13 @@ class BloomFile(BloomObj):
                 with open(full_path_to_file, "rb") as file:
                     file_data = file.read()
                 file_size = os.path.getsize(full_path_to_file)
-                local_path_info = Path(full_path_to_file)
-                local_ip = socket.gethostbyname(socket.gethostname())
+                local_path_info = Path(full_path_to_file)                
+                local_ip = None
+                try:
+                    local_ip = socket.gethostbyname(socket.gethostname())
+                except socket.gaierror:
+                    local_ip = '127.0.0.1'  # Fallback to localhost
+
                 self.s3_client.put_object(
                     Bucket=s3_bucket_name,
                     Key=s3_key,
