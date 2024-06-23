@@ -33,7 +33,7 @@ if [[ "$1" == "" ]]; then
 fi
 
 export PGPORT=5445
-echo "SHELL IS: $SHELL
+echo "SHELL IS: $SHELL"
 
 # Create database
 initdb -D $PGDATA
