@@ -17,6 +17,8 @@
         </style>
     </head>
     <body>
+        {% include 'bloom_header.html' %}
+
         <button id="toggleFilterButton" class="floating-buttonf">minimal recursion:{{ udat.get('wf_filter','no') }}</button>
 
         {% macro render_step(step, accordion_states) %}

@@ -1,44 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Bloom</title>
+        <title>Bloom LIMS</title>
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
-
-        <script>
-            function checkForOauthCode() {
-                const urlFragment = new URLSearchParams(window.location.hash.substring(1)); // Remove the # and parse
-                const accessToken = urlFragment.get('access_token');
-                console.log("Access token:", accessToken);
-
-                if (accessToken) {
-                    // Send the code to the backend
-                    fetch('/oauth_callback', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ accessToken: accessToken }),
-                    })
-                    .then(response => response.text())
-                    .then(data => {
-                        console.log("Response from server:", data);
-                        alert("Authentication successful!");
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert("Failed to process GitHub authentication.");
-                    });
-                } else {
-                    console.log("No GitHub code found on home page.");
-                }
-            }
-
-            window.onload = function() {
-                checkForOauthCode();
-            };
-        </script>
 
         <style>
             .accordion {
@@ -76,12 +42,10 @@
         </style>
     </head>
     <body>
+
         {% include 'bloom_header.html' %}
 
         <ul>
-            <h2><a href="create_file_form">DEWEY (file management)</a></h2>
-            <small>... like the Dewey Decimal System, but for files? </small>
-            <a href="create_file_form">It's in progress here.</a>
 
             <h2>Core</h2>
             Bloom is an experiment in working with chatGPT to develop a LIMS from scratch. Bloom is meant to be a useful operational system and a tool to help explore the problem space (and guide development in a tighter feedback loop).

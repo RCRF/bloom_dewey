@@ -33,11 +33,13 @@
     </style>
 </head>
 <body>
-    <a href=/> Bloom </a> <small> <a href=dindex2>( graph view )</a></small> <a href=https://github.com/Daylily-Informatics/bloom><font style="font-size: 10px;">github</font></a>
+    {% include 'bloom_header.html' %}
+</ul>
 <h1>{{ atype.get('type', 'Assay') }}</h1>
 
     {% for assay in workflow_instances %}
-   
+    <ul>
+
     <button class="accordion">{{ assay.euid }} - {{ assay.json_addl['properties'].get('name',assay.euid) }} 
         
         <hr>

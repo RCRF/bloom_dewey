@@ -4,6 +4,8 @@
     <title>Visual Report</title>
 </head>
 <body>
+    {% include 'bloom_header.html' %}
+
     <h1>File Reports (dull)</h1>
     {% for plot in plots %}
         <img src="data:image/png;base64,{{ plot }}">

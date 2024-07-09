@@ -8,7 +8,13 @@
     <script src="static/action_buttons.js"></script>
 </head>
 <body>
-    <ul><a href=dindex2>( graph )</a> <a href=/>( h o m e )</a><ul><hr>
+    {% include 'bloom_header.html' %}
+
+    <h1>Database Stats</h1>
+    <ul>
+        <small>for all the pgadmn goodness, run the pgadmn install script</small>
+        
+        <ul><hr>
         <b>Total Number of Rows: {{ nrows }}</b> 
 
     <h2>Database Summary Reports</h2>

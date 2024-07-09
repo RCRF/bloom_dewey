@@ -265,6 +265,11 @@ async def auth_exception_handler(_request: Request, _exc: RequireAuthException):
     return RedirectResponse(url="/login")
 
 
+#
+#  The following are the mainpage / index and auth routes for the application
+#
+
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, _=Depends(require_auth)):
     count = request.session.get("count", 0)
@@ -274,7 +279,7 @@ async def read_root(request: Request, _=Depends(require_auth)):
     template = templates.get_template("index.html")
     user_data = request.session.get("user_data", {})
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
-    context = {"request": request, "style": style}
+    context = {"request": request, "style": style, "udat": user_data}
 
     return HTMLResponse(content=template.render(context), status_code=200)
 
@@ -287,7 +292,7 @@ async def get_login_page(request: Request):
     # Ensure you have this function defined, and it returns the expected style information
     template = templates.get_template("login.html")
     # Pass the 'style' variable in the context
-    context = {"request": request, "style": style}
+    context = {"request": request, "style": style, "udat": user_data}
     return HTMLResponse(content=template.render(context))
 
 
@@ -417,7 +422,23 @@ async def login(request: Request, response: Response, email: str = Form(...)):
     # Add this line at the end of the /login endpoint
 
 
-## ?? templates = Environment(loader=FileSystemLoader("templates"))
+#
+#  The following are the main routes for the application
+#
+
+
+@app.get("/lims", response_class=HTMLResponse)
+async def lims(request: Request, _=Depends(require_auth)):
+    count = request.session.get("count", 0)
+    count += 1
+    request.session["count"] = count
+
+    template = templates.get_template("lims_main.html")
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+    context = {"request": request, "style": style, "udat": user_data}
+
+    return HTMLResponse(content=template.render(context), status_code=200)
 
 
 @app.get("/assays", response_class=HTMLResponse)
@@ -536,7 +557,7 @@ async def assays(request: Request, show_type: str = "all", _auth=Depends(require
         atype=atype,
         workflow_instances=assays,  # Assuming this is needed based on your template logic
         ay_stats=ay_dss,  # Assuming this is needed based on your template logic
-    )
+        udat = user_data)
 
     return HTMLResponse(content=content)
 
@@ -544,7 +565,7 @@ async def assays(request: Request, show_type: str = "all", _auth=Depends(require
 @app.get("/calculate_cogs_children")
 async def Acalculate_cogs_children(euid, request: Request, _auth=Depends(require_auth)):
     try:
-        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]['email']))
+        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
         cogs_value = round(bobdb.get_cost_of_euid_children(euid), 2)
         return json.dumps({"success": True, "cogs_value": cogs_value})
     except Exception as e:
@@ -675,6 +696,7 @@ async def queue_details(
         queue_details=queue_details,
         pagination=pagination,
         user_logged_in=user_logged_in,
+        udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -736,6 +758,7 @@ async def workflow_summary(request: Request, _auth=Depends(require_auth)):
         workflows=workflows,
         workflow_statistics=workflow_statistics,
         unique_workflow_types=unique_workflow_types,
+        udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -775,6 +798,7 @@ async def equipment_overview(request: Request, _auth=Depends(require_auth)):
         style=style,
         equipment_list=equipment_instances,
         template_list=equipment_templates,
+        udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -812,6 +836,7 @@ async def reagent_overview(request: Request, _auth=Depends(require_auth)):
         style=style,
         instance_list=reagent_instances,
         template_list=reagent_templates,
+        udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -835,7 +860,7 @@ async def control_overview(request: Request, _auth=Depends(require_auth)):
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("control_overview.html").render(
-        style=style, instance_list=control_instances, template_list=control_templates
+        style=style, instance_list=control_instances, template_list=control_templates,udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -871,7 +896,7 @@ async def vertical_exp(request: Request, euid=None, _auth=Depends(require_auth))
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("vertical_exp.html").render(
-        style=style, instance=instance
+        style=style, instance=instance,udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -896,7 +921,7 @@ async def plate_carosel(
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("vertical_exp.html").render(
-        style=style, main_plate=main_plate, related_plates=related_plates
+        style=style, main_plate=main_plate, related_plates=related_plates,udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -967,7 +992,7 @@ async def plate_visualization(
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("plate_display.html").render(
-        style=style, plate=plate, get_well_color=get_well_color
+        style=style, plate=plate, get_well_color=get_well_color,udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -1007,6 +1032,7 @@ async def database_statistics(request: Request, _auth=Depends(require_auth)):
         stats_7d=stats_7d,
         stats_30d=stats_30d,
         style=style,
+        udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -1034,6 +1060,7 @@ async def object_templates_summary(request: Request, _auth=Depends(require_auth)
         generic_templates=generic_templates,
         unique_discriminators=unique_discriminators,
         style=style,
+        udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -1120,7 +1147,7 @@ async def bloom_schema_report(request: Request, _auth=Depends(require_auth)):
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("bloom_schema_report.html").render(
-        request=request, reports=reports, nrows=nrows, style=style
+        request=request, reports=reports, nrows=nrows, style=style,udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -1171,9 +1198,6 @@ async def workflow_details(
         udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
-
-
-from fastapi import Request, Depends, HTTPException
 
 
 @app.post("/update_accordion_state")
@@ -1319,6 +1343,7 @@ async def dindex2(
         globalZoom=globalZoom,
         globalStartNodeEUID=globalStartNodeEUID,
         dag_data=dag_data,
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -1580,115 +1605,7 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
     return {"status": "success", "message": "Edge deleted successfully."}
 
 
-## BloomFile
-
-
-pantone_colors = [
-    "Living Coral",
-    "Classic Blue",
-    "Greenery",
-    "Rose Quartz",
-    "Serenity",
-    "Marsala",
-    "Radiant Orchid",
-    "Emerald",
-    "Tangerine Tango",
-    "Honeysuckle",
-    "Turquoise",
-    "Mimosa",
-    "Blue Iris",
-    "Chili Pepper",
-    "Sand Dollar",
-    "Blue Turquoise",
-    "Tigerlily",
-    "Aqua Sky",
-    "True Red",
-    "Fuchsia Rose",
-    "Cerulean",
-    "Amethyst Orchid",
-    "Ultra Violet",
-    "Palace Blue",
-    "Lime Punch",
-    "Pink Lavender",
-    "Crocus Petal",
-    "Spring Crocus",
-    "Meadowlark",
-    "Cherry Tomato",
-    "Chili Oil",
-    "Blooming Dahlia",
-    "Little Boy Blue",
-    "Arcadia",
-    "Ultra Violet",
-    "Emperador",
-    "Almost Mauve",
-    "Spring Crocus",
-    "Sailor Blue",
-    "Harbor Mist",
-    "Warm Sand",
-    "Coconut Milk",
-    "Soybean",
-    "Mellow Yellow",
-    "Fiery Red",
-    "Biscay Green",
-    "Coral Pink",
-    "Grape Compote",
-    "Storm Gray",
-    "Illuminating",
-]
-
-marine_invertebrates = [
-    "Aplysia",
-    "Asterias",
-    "Aurelia",
-    "Balanus",
-    "Branchiostoma",
-    "Ciona",
-    "Daphnia",
-    "Dugesia",
-    "Echinaster",
-    "Eisenia",
-    "Fasciola",
-    "Gammarus",
-    "Glycera",
-    "Haliclystus",
-    "Hydra",
-    "Littorina",
-    "Loligo",
-    "Metridium",
-    "Mytilus",
-    "Nereis",
-    "Obelia",
-    "Octopus",
-    "Patella",
-    "Perophora",
-    "Physalia",
-    "Pleurobrachia",
-    "Polyclinum",
-    "Porphyra",
-    "Sertularia",
-    "Spongia",
-    "Squilla",
-    "Styela",
-    "Synapta",
-    "Terebella",
-    "Tethya",
-    "Thalassiosira",
-    "Tubifex",
-    "Turbo",
-    "Urticina",
-    "Velella",
-    "Vorticella",
-    "Watasenia",
-    "Xenoturbella",
-    "Yoldia",
-    "Zostera",
-    "Zygocotyle",
-    "Zoanthus",
-    "Zoothamnium",
-    "Zooxanthella",
-    "Zygnema",
-]
-
+## File Manager // Dewey (pull into separate file   )
 
 def generate_unique_upload_key():
     color = random.choice(pantone_colors)
@@ -1789,11 +1706,16 @@ async def create_file(
                     logging.warning(f"Skipping file with no filename: {file}")
 
         if directory:
-            directory_files = [file for file in directory if not file.filename.startswith('.')]
+            directory_files = [
+                file for file in directory if not file.filename.startswith(".")
+            ]
 
             for file in directory_files:
-              
-                if len(file.filename) > 0 and len(file.filename.lstrip('.').lstrip('/').split('/')) < 3:
+
+                if (
+                    len(file.filename) > 0
+                    and len(file.filename.lstrip(".").lstrip("/").split("/")) < 3
+                ):
                     try:
                         new_file = bfi.create_file(
                             file_metadata=file_metadata,

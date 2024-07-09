@@ -55,7 +55,11 @@
         </script>
 </head>
 <body>
-            <small> <a href=dindex2?globalStartNodeEUID={{ pagination.euid }}>( graph )</a> </small> <small> <a href= />( h o m e )</a> </small>
+
+    {% include 'bloom_header.html' %}
+
+
+            <small> <a href=dindex2?globalStartNodeEUID={{ pagination.euid }}>( graph )</a> </small> 
 
     <h1>Queue {{pagination.euid}} Details</h1>
     <table border="1" id="genericTemplateTable">

@@ -58,35 +58,38 @@
     </script>
 </head>
 <body>
-    {% include 'dewey_header.html' %}
+    {% include 'bloom_header.html' %}
 
     <h1>File Tools</h1>
     <hr>
-    <ul>
-    <br>
-
-    <button class="accordion" style="width: -webkit-fill-available;">Create New File(s)</button>
+    
+    <button class="accordion" style="width: -webkit-fill-available;">Register File(s)</button>
     <div class="accordion-content">
         <ul>
         <form id="createFileForm" action="create_file" method="post" enctype="multipart/form-data">
             <input type="hidden" name="upload_group_key" value="{{ upload_group_key }}">
             <table>
                 <tr><td>
-            <input type="hidden" value="na" id="name" name="name"><br><br>
-            <h3>Enter: A File (and|or) A Directory Of Files (and|or) A List Of URLs (and|or) A List Of S3 URIs</h3>
+            <input type="hidden" value="na" id="name" name="name">
+            
+            <h3>Specify Files</h3>
+            <hr>
             <ul>
             <label for="file_data">A Local File:</label>
-            <input type="file" id="file_data" name="file_data"><br><br>
+            <input type="file" id="file_data" name="file_data">
+            <br><br>
+
             <label for="directory">A Directory Of Files <br>(RECURSIVE, max 1k files):</label>
-            <input type="file" id="directory" name="directory" webkitdirectory directory multiple><br><br>
-
+            <input type="file" id="directory" name="directory" webkitdirectory directory multiple>
             <br><br>
+
             <label for="urls">Public URLs To Files (one per line):</label>
-            <textarea id="urls" name="urls" rows="5" cols="25"></textarea><br><br>
-
+            <textarea id="urls" name="urls" rows="5" cols="25"></textarea>
             <br><br>
+            
             <label for="s3_uris">S3 URIs (accessible to dewey):</label>
-            <textarea id="s3_uris" name="s3_uris" rows="5" cols="28"></textarea><br><br>
+            <textarea id="s3_uris" name="s3_uris" rows="5" cols="28"></textarea>
+            <br><br>
             </ul>
         </ul>
 
@@ -107,7 +110,7 @@
             <input type="text" id="x_health_event_id" name="x_health_event_id"><br><br>
             <label for="lab_code">Lab Code:</label>
             <input type="text" id="lab_code" name="lab_code"><br><br>
-            <label for="x_relevant_datetime">File Relevant Datetime:</label>
+            <label for="x_relevant_datetime">Original File Creation Datetime:</label>
             <input type="datetime-local" id="x_relevant_datetime" name="x_relevant_datetime"><br><br>
             <label for="comments">Comments:</label>
             <textarea id="comments" name="comments"></textarea><br><br>
@@ -289,7 +292,7 @@
 
                 <button type="submit">Search File Sets</button>
             </form>
-        </ul>
+        
     </div>
 
     <script>
