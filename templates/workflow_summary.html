@@ -4,7 +4,10 @@
 
         {% set page_title = 'Bloom LIMS Workflow Summaries' %}
         <title>{{ page_title }}</title>
-                <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
+
+        {% set bloom_mod = 'lims' %}
+
+        <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script>
         var currentSortColumn = -1;
@@ -57,9 +60,6 @@
     <body>
         {% include 'bloom_header.html' %}
 
-        <h1>
-            Workflow Summary <small>
-        </h1>
         <!-- Display Workflow Statistics -->
         <div>
             <h2>Workflow Statistics</h2>
