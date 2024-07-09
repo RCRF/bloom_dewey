@@ -74,24 +74,26 @@
     <body>
         {% include 'bloom_header.html' %}
 
-        <ul><li><a href=/logout>LOGOUT</a></ul>
         <div id="error-message" style="color: red;"></div> <!-- Error message display -->
-        <ul><hr><ul>
-            <br><h3> Login w/Github or Google (this requires config! see docs)</h3><ul>
+        <ul><ul>
+            <br><h3> Login w/Google</h3><ul>
                 
-            <button onclick="handleGitHubLogin()">Login with GitHub</button>
-            <button onclick="handleGoogleLogin()">Login with Gmail</button>
+            <button onclick="handleGoogleLogin()">Login with Google</button>
         </ul></ul></ul>
-  <hr>
+
+        <br><br><br>
         <div id="error-message-no-network" style="color: red;"></div> <!-- Error message display for no network form -->
-        <ul><hr><ul>
-            <h2>Login Form without internet connection</h2>
-            <br><h3> Login or Signup with your Email To Begin A Bloom Session</h3><ul>
+        
+        <ul><ul><hr><br><ul>
+            <h3>Login Form without internet connection</h3>
+            <h4> Use An Email To Begin A Bloom Session</h4><ul>
+                <small>This is effectively just a string with no auth. For dev convenience ATM.</small>
+           <br><ul>
                 <form method="post" action="/login" onsubmit="return validateFormNoNetwork()">
                     <label for="emailwithoutnetwork">Email:</label>
                     <input type="text" id="emailwithoutnetwork" name="email">
                     <br>
-                    <label for="pwd">Password Not Required At This Time</label> 
+                    <label for="pwd">no p/w needed</label> 
                     <input value='notapplicable' type="hidden" id="password" name="password">
                     <br>
                     <input type="submit" value="Login">
