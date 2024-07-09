@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Bloom Obj Details</title>
+
+        {% set page_title = 'Bloom LIMS Object Details' %}
+        <title>{{ page_title }}</title>
+        
+        {% set bloom_mod = 'lims' %}
+
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
@@ -17,6 +22,8 @@
         </style>
     </head>
     <body>
+        {% include 'bloom_header.html' %}
+
         <button id="toggleFilterButton" class="floating-buttonf">minimal recursion:{{ udat.get('wf_filter','no') }}</button>
 
         {% macro render_step(step, accordion_states) %}
@@ -178,7 +185,7 @@
                         <a  href=euid_details?euid={{ workflow.euid }}>{{ workflow.euid }}</a> :
                          {{ workflow.json_addl.get('properties',{}).get('name','hey you, ADD A NAME') }} 
                         </h1>
-                        <h4> <font style="color: darkgray;">: : : : : : </font> <a  href=dindex2>( graph view )</a><font style="color: darkgray;">  : : :  </font><a href=/ >( h o m e )</a> </h4>
+                        
                     </div>
                         <ul>
                             {% if workflow.json_addl and 'action_groups' in workflow.json_addl %}

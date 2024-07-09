@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Search Results</title>
+
+    {% set page_title = 'File Search Results' %}
+    <title>{{ page_title }}</title>
+
+    {% set bloom_mod = 'dewey' %}
+
     <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
     <link rel="stylesheet" type="text/css" href="static/style.css">
 </head>
 <body>
-    {% include 'dewey_header.html' %}
+    {% include 'bloom_header.html' %}
 
     <h1>Search Results</h1>
 

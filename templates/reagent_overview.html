@@ -5,10 +5,15 @@
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
-        <title>Reagent Overview</title>
+ 
+        {% set page_title = 'Reagent Overview' %}
+        <title>{{ page_title }}</title>
+
+        {% set bloom_mod = 'lims' %}
+
     </head>
-    <body>
-        <small><a href=dindex2>( graph )</a></small> <small><a href= />( B )</a></small>
+    <body>   
+         {% include 'bloom_header.html' %}
 
         <h1>Create New Reagent</h1>
         {% if template_list %}

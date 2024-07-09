@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create File Report</title>
+
+    {% set page_title = 'File Report' %}
+    <title>{{ page_title }}</title>
+
+    {% set bloom_mod = 'dewey' %}
+
     <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <script src="static/action_buttons.js"></script>
@@ -64,7 +69,8 @@
     </script>
 </head>
 <body>
-    {% include 'dewey_header.html' %}
+            
+    {% include 'bloom_header.html' %}
 
     <h1>Create File Report</h1>
     <hr>

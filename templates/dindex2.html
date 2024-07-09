@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html width="100%">
     <head>
-        <title>Interactive DAG Editor</title>
+        {% set page_title = 'DAG Explorer' %}
+        <title>{{ page_title }}</title>
+
+        {% set bloom_mod = 'dag' %}
+
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.19.0/cytoscape.min.js"></script>
@@ -73,6 +77,8 @@
         </style>
     </head>
     <body>
+        {% include 'bloom_header.html'  %}
+
         <div id="nodeDialog" class="node-dialog" style="display: none;">
             <p id="nodeEuid">
                 EUID: <span></span>
@@ -92,8 +98,6 @@
             <button id="closeDialogButton" class="close-dialog-btn">Close</button>
         </div>
         <div class="container" style="margin-top: 0px; padding: 0px;" >
-            <h1><a href= />Bloom</a> Workflow DAG Explorer (<small><a href=https://github.com/Daylily-Informatics/bloom_lims>github</a>)</small></h1>
-            <hr>
             <div style="display: flex;" >
 
             <div style="width: 92%;">

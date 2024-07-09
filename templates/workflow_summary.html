@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Workflow Summary</title>
+
+        {% set page_title = 'Bloom LIMS Workflow Summaries' %}
+        <title>{{ page_title }}</title>
+
+        {% set bloom_mod = 'lims' %}
+
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script>
@@ -53,9 +58,8 @@
         </script>
     </head>
     <body>
-        <h1>
-            Workflow Summary <small><a href=dindex2>( graph view )</a></small> <small><a href= />( B )</a></small>
-        </h1>
+        {% include 'bloom_header.html' %}
+
         <!-- Display Workflow Statistics -->
         <div>
             <h2>Workflow Statistics</h2>

@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Plate Visualization</title>
+
+        {% set page_title = 'Plate Visualization' %}
+        <title>{{ page_title }}</title>
+
+        {% set bloom_mod = 'lims' %}
+
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <style>
@@ -114,9 +119,9 @@
         </script>
     </head>
     <body>
-        <h1>
-            Bloom LIMS <a href=dindex2>( graph view )</a></small> <small><a href= />( B )</a></small>
-        </h1>
+        
+        {% include 'bloom_header.html' %}
+
         <div id="myTooltipx" class="xtooltip"></div>
         <br>
         <ul>

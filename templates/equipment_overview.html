@@ -5,9 +5,16 @@
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="static/action_buttons.js"></script>
-        <title>Equipment Overview</title>
+
+        {% set page_title = 'Equipment Overview' %}
+        <title>{{ page_title }}</title>
+
+        {% set bloom_mod = 'lims' %}
+
     </head>
     <body>
+        {% include 'bloom_header.html' %}
+
         <small><a href=dindex2>( graph )</a></small> <small><a href= />( B )</a></small>
 
         <h1>Create New Equipment</h1>

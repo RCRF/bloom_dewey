@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Database Statistics</title>
+
+        {% set page_title = 'Database Stats' %}
+        <title>{{ page_title }}</title>
+        
+        {% set bloom_mod = 'admin' %}
+
         <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
         <link rel="stylesheet" type="text/css" href="static/style.css">
         <script src="https://cdn.jsdelivr.net/npm/tablesort@5.2.1/dist/tablesort.min.js"></script>
     </head>
     <body>
+        {% include 'bloom_header.html' %}
+
         <h1>Database Statistics</h1>
         <h2>Records Created in the Last 1 Day, 7 Days, and 30 Days</h2>
         <table id="statsTable">

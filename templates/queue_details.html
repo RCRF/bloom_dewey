@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Queue Details</title>
+
+    {% set page_title = 'Queue Details' %}
+    <title>{{ page_title }}</title>
+
+    {% set bloom_mod = 'lims' %}
+
     <link rel="stylesheet" href="{{ style.skin_css }}">
     <link rel="stylesheet" href="static/style.css">
     <script src="static/action_buttons.js"></script>
@@ -55,7 +60,11 @@
         </script>
 </head>
 <body>
-            <small> <a href=dindex2?globalStartNodeEUID={{ pagination.euid }}>( graph )</a> </small> <small> <a href= />( h o m e )</a> </small>
+
+    {% include 'bloom_header.html' %}
+
+
+            <small> <a href=dindex2?globalStartNodeEUID={{ pagination.euid }}>( graph )</a> </small> 
 
     <h1>Queue {{pagination.euid}} Details</h1>
     <table border="1" id="genericTemplateTable">

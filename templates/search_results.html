@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Search Results</title>
+
+    {% set page_title = 'Search Results' %}
+    <title>{{ page_title }}</title>
+
+    {% set bloom_mod = 'dewey' %}
+
     <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}">
     <link rel="stylesheet" type="text/css" href="static/style.css">
     <script src="static/action_buttons.js"></script>
@@ -192,7 +197,7 @@
     </style>
 </head>
 <body>
-    {% include 'dewey_header.html' %}
+    {% include 'bloom_header.html' %}
 
     <h1>Search Results</h1>
     <form id="fileSetForm" action="/create_file_set" method="post">
