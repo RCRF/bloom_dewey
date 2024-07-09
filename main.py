@@ -98,6 +98,10 @@ from bloom_lims.bdb import (
     BloomFile,
     BloomFileSet,
 )
+
+from bloom_lims.bvars import BloomVars
+BVARS = BloomVars()
+
 from auth.supabase.connection import create_supabase_client
 
 
@@ -1608,8 +1612,8 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
 ## File Manager // Dewey (pull into separate file   )
 
 def generate_unique_upload_key():
-    color = random.choice(pantone_colors)
-    invertebrate = random.choice(marine_invertebrates)
+    color = random.choice(BVARS.pantone_colors)
+    invertebrate = random.choice(BVARS.marine_invertebrates)
     number = random.randint(0, 1000)
     return f"{color.replace(' ','_')}_{invertebrate.replace(' ','_')}_{number}"
 

@@ -1,14 +1,19 @@
     <div class="header-container" style="display: flex; align-items: flex-end;">
-        <h1 style="margin: 0 5px; line-height: 1.2;"><a href="/" >bloom</a></h1> 
+        <h1 style="margin: 0 0px; line-height: 1.2;"><a href="/" >bloom</a></h1> 
+        <small style="margin: 0 0px;"><a href="dindex2" >(g)</a></small>
         <span style="margin: 0 5px;"> /// </span>
-        <small style="margin: 0 5px;"><a href="dindex2" >(g)</a></small>
+        <small style="margin: 0 5px;">
+            {% if page_title %}
+                {% if page_title == 'Bloom' %}
+                     
+                {% else %}
+                    {{ page_title }}
+                {% endif %}
+            {% else %}
+                ...
+            {% endif %}
+        </small>
         <span style="margin: 0 5px;"> /// </span>
-        <small style="margin: 0 5px;"><a href="admin" >admin</a></small>
-        <span style="margin: 0 5px;"> /// </span>
-
-        <a href="#" style="margin: 0 5px; "><small> hello {{ udat.get('email','<a href=login>==> please login <==</a>') }} </small></a>
-        <br>
-
         <a href="#" style="margin: 0 5px; ">
             <small>
                 hello 
@@ -24,4 +29,3 @@
     </div>
     <hr>
     <ul>
-    

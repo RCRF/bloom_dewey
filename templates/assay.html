@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% set page_title = atype.get('type', 'Assay') %}
+
     <title>{{ atype.get('type', 'Assay') }} </title>
     <link rel="stylesheet" type="text/css" href="{{ style.skin_css }}"  >
     <link rel="stylesheet" type="text/css" href="static/style.css">
