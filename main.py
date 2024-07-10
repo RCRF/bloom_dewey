@@ -1054,15 +1054,16 @@ async def object_templates_summary(request: Request, _auth=Depends(require_auth)
     return HTMLResponse(content=content)
 
 
-@app.get("/euid_details")
-async def euid_details(
+@app.get("/euid_details0")
+async def euid_details0(
     request: Request,
     euid: str = Query(..., description="The EUID to fetch details for"),
     _uuid: str = Query(None, description="Optional UUID parameter"),
     _auth=Depends(require_auth),
 ):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-
+    
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]), is_deleted=is_deleted)
+    
     # Fetch the object using euid
     obj = bobdb.get_by_euid(euid)
     relationship_data = get_relationship_data(obj) if obj else {}
@@ -1095,29 +1096,96 @@ async def euid_details(
     return HTMLResponse(content=content)
 
 
-@app.get("/un-delete")
-async def un_delete_by_uuid(
-    request: Request, uuid: str = None, euid: str = None, _auth=Depends(require_auth)
+# Quick hack to allow the details page to display deleted items.  Need to rework how the rest of the system juggles this.
+@app.get("/euid_details")
+async def euid_details(
+    request: Request,
+    euid: str = Query(..., description="The EUID to fetch details for"),
+    _uuid: str = Query(None, description="Optional UUID parameter"),
+    is_deleted: bool = Query(False, description="Flag to include deleted items"),
+    _auth=Depends(require_auth),
 ):
-    referer = request.headers.get("Referer", "/default_page")
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]), is_deleted=is_deleted)
 
-    if uuid is None or euid is None:
-        # Consider using an HTTPException for error handling
-        return HTMLResponse(
-            content=f"Error: uuid or euid not provided && both are required. {uuid} {euid}",
-            status_code=400,
+    try:
+        # Fetch the object using euid
+        obj = bobdb.get_by_euid(euid)
+        relationship_data = get_relationship_data(obj) if obj else {}
+
+        if not obj:
+            raise HTTPException(status_code=404, detail="Object not found")
+
+        # Convert the SQLAlchemy object to a dictionary, checking for attribute existence
+        obj_dict = {
+            column.key: getattr(obj, column.key)
+            for column in obj.__table__.columns
+            if hasattr(obj, column.key)
+        }
+        obj_dict["parent_template_euid"] = (
+            obj.parent_template.euid if hasattr(obj, "parent_template") else ""
         )
+        audit_logs = bobdb.query_audit_log_by_euid(euid)
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-    del_obj = bobdb.get(uuid)
-    if not del_obj:
-        # Handling the case where the object does not exist
-        return HTMLResponse(content="Object not found.", status_code=404)
+        content = templates.get_template("euid_details.html").render(
+            request=request,
+            object=obj_dict,
+            style=style,
+            relationships=relationship_data,
+            audit_logs=audit_logs,
+            oobj=obj,
+            udat=request.session["user_data"],
+        )
+        return HTMLResponse(content=content)
 
-    del_obj.is_deleted = False
-    bobdb.session.commit()
+    except Exception as e:
+        if not is_deleted:
+            # Retry with is_deleted set to True
+            return await euid_details(
+                request=request,
+                euid=euid,
+                _uuid=_uuid,
+                is_deleted=True,
+                _auth=_auth,
+            )
+        else:
+            # Re-raise the exception if already tried with is_deleted = True
+            raise e
+@app.get("/un_delete_by_uuid")
+async def un_delete_by_uuid(
+    request: Request,
+    uuid: str = Query(..., description="The UUID to un-delete"),
+    euid: str = Query(..., description="The EUID associated with the UUID"),
+    _auth=Depends(require_auth),
+    is_deleted: bool = True
+):
+    try:
+        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]), is_deleted=is_deleted)
 
-    return RedirectResponse(url=referer, status_code=303)
+        # Fetch the object using uuid
+        obj = bobdb.get(uuid)
+        if not obj:
+            raise HTTPException(status_code=404, detail="Object not found")
+
+        # Set the object to not deleted
+        obj.is_deleted = False
+        bobdb.session.commit()
+
+        logging.info(f"Successfully un-deleted object with UUID: {uuid} and EUID: {euid}")
+        return RedirectResponse(url=f"/euid_details?euid={euid}", status_code=303)
+
+    except Exception as e:
+        logging.error(f"Error un-deleting object with UUID: {uuid} and EUID: {euid} - {e}", exc_info=True)
+        if is_deleted:
+            try:
+                logging.info(f"Retrying with is_deleted=True for UUID: {uuid} and EUID: {euid}")
+                return await un_delete_by_uuid(request, uuid, euid, _auth, is_deleted=False)
+            except Exception as inner_e:
+                logging.error(f"Retry failed for UUID: {uuid} and EUID: {euid} - {inner_e}", exc_info=True)
+                raise HTTPException(status_code=404, detail="Object not found after retry")
+        else:
+            raise HTTPException(status_code=404, detail="Object not found")
 
 
 @app.get("/bloom_schema_report", response_class=HTMLResponse)
@@ -1911,8 +1979,8 @@ async def delete_temp_file(
     return RedirectResponse(url="/create_file_form", status_code=303)
 
 
-@app.post("/search_files", response_class=HTMLResponse)
-async def search_files(
+@app.post("/search_files0", response_class=HTMLResponse)
+async def search_files0(
     request: Request,
     euid: str = Form(None),
     is_greedy: str = Form(...),
@@ -1991,6 +2059,85 @@ async def search_files(
         )
         return HTMLResponse(content=content)
 
+
+@app.post("/search_files", response_class=HTMLResponse)
+async def search_files(
+    request: Request,
+    euid: str = Form(None),
+    is_greedy: str = Form(...),
+    key_1: str = Form(None),
+    value_1: str = Form(None),
+    key_2: str = Form(None),
+    value_2: str = Form(None),
+    key_3: str = Form(None),
+    value_3: str = Form(None),
+):
+    search_criteria = {}
+
+    greedy = True
+    if is_greedy != "yes":
+        greedy = False
+
+    properties = {}
+    if key_1 and value_1:
+        properties[key_1] = value_1
+    if key_2 and value_2:
+        properties[key_2] = value_2
+    if key_3 and value_3:
+        properties[key_3] = value_3
+
+    if properties:
+        search_criteria["properties"] = properties
+
+    try:
+        bfi = BloomFile(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+        euid_results = bfi.search_objs_by_addl_metadata(
+            search_criteria, greedy, "file", super_type="file"
+        )
+
+        # Fetch details for each EUID
+        detailed_results = [bfi.get_by_euid(euid) for euid in euid_results]
+
+        # Create a list of columns for the table
+        columns = ["EUID", "Date Created", "Status"]
+        if detailed_results and detailed_results[0].json_addl.get("properties"):
+            columns += list(detailed_results[0].json_addl["properties"].keys())
+
+        # Prepare the data for the template
+        table_data = []
+        for result in detailed_results:
+            row = {
+                "EUID": result.euid,
+                "Date Created": result.created_dt.strftime("%Y-%m-%d %H:%M:%S"),
+                "Status": result.bstatus,
+            }
+            for key in columns[3:]:
+                row[key] = result.json_addl["properties"].get(key, "N/A")
+            table_data.append(row)
+
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+
+        content = templates.get_template("search_results.html").render(
+            request=request,
+            columns=columns,
+            table_data=table_data,
+            style=style,
+            udat=user_data,
+        )
+        return HTMLResponse(content=content)
+
+    except Exception as e:
+        logging.error(f"Error searching files: {e}", exc_info=True)
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+        content = templates.get_template("search_error.html").render(
+            request=request,
+            error=f"An error occurred: {e}",
+            style=style,
+            udat=user_data,
+        )
+        return HTMLResponse(content=content)
 
 @app.get("/get_node_property")
 async def get_node_property(request: Request, euid: str, key: str):

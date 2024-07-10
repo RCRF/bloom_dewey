@@ -160,9 +160,10 @@ class generic_template(bloom_core):
     instance_prefix = Column(Text, nullable=True)
     json_addl_schema = Column(JSON, nullable=True)
 
+    # removed ,generic_instance.is_deleted == False)
     child_instances = relationship(
         "generic_instance",
-        primaryjoin="and_(generic_template.uuid == foreign(generic_instance.template_uuid),generic_instance.is_deleted == False)",
+        primaryjoin="and_(generic_template.uuid == foreign(generic_instance.template_uuid))",
         backref="parent_template",
     )
 
@@ -176,15 +177,18 @@ class generic_instance(bloom_core):
     template_uuid = Column(UUID, ForeignKey("generic_template.uuid"), nullable=True)
 
     # Way black magic the reference selctor is filtering out records which are soft deleted
+    # removed : ,generic_instance_lineage.is_deleted == False) no )
     parent_of_lineages = relationship(
         "generic_instance_lineage",
-        primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.parent_instance_uuid),generic_instance_lineage.is_deleted == False)",
+        primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.parent_instance_uuid))",
         backref="parent_instance",
         lazy="dynamic",
     )
+    
+    # removed ,generic_instance_lineage.is_deleted == False
     child_of_lineages = relationship(
         "generic_instance_lineage",
-        primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.child_instance_uuid),generic_instance_lineage.is_deleted == False)",
+        primaryjoin="and_(generic_instance.uuid == foreign(generic_instance_lineage.child_instance_uuid))",
         backref="child_instance",
         lazy="dynamic",
     )
@@ -603,7 +607,7 @@ class BLOOMdb3:
 
 
 class BloomObj:
-    def __init__(self, bdb, is_deleted=False):
+    def __init__(self, bdb, is_deleted=False):  # ERROR -- the is_deleted flag should be set, I think, at the db level...
         self.logger = logging.getLogger(__name__ + ".BloomObj")
         self.logger.debug("Instantiating BloomObj")
 
