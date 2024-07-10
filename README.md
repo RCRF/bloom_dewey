@@ -259,18 +259,18 @@ pytest
 
 
 
-# Dev Notes
+# Dev Tools
+__note:__ all commands below are expected to be run from a shell with conda activated.
+`conda activate BLOOM`
 
-## Rebuild a fresh DB, while leaving the environment untouched.
+## Drop The Entire Database(loose all data!) > Rebuild The Database / Re-seed With All Accessible json Templates
 
-**This is wrapped in a script now, please see [clear_and_rebuild_postgres.sh](bloom_lims/env/clear_and_rebuild_postgres.sh)**
+**The steps are wrapped in a script, please see [clear_and_rebuild_postgres.sh](bloom_lims/env/clear_and_rebuild_postgres.sh).**
 
-This is helpful if iterating on json object definitions.
-
-### Commands
-It is assumed:
--  That a fresh installation was successful (_see the install section if you are starting out with a new install_).
-- You are in the repo root directory and have run `conda activate BLOOM`.
+It is executed as follows:
+```bash
+source clear_and_rebuild_postgres.sh
+```
 
 ### Stop pgsql
 - `source bloom_lims/bin/stop_bloom_db.sh` 
@@ -286,11 +286,12 @@ Similar to `pytest`, but more extensive. Largely useful in development work.  Th
 - `python tx.py 2 `.
 
 ### Run the bloom UI
-- `uvicorn main:app --reload --log-level trace --port 8911 --timeout-keep-alive 303`
-_or_
-- `source source run_bloomui.sh` # this runs the command above
+- `source source run_bloomui.sh`
  
- 
- 
+### Run the pgadmin UI
+- `source bloom_lims/env/install_pgadmin.sh`
+
+### Start Interactive Shell w/Core Bloom Objects Instantiated
+`python bloom_shell.py` 
  
  
