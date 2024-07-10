@@ -53,16 +53,16 @@
 
     function handleGitHubLogin() {
         try {
-            window.location.href = 'https://kslpzwcmkyrbxqmlhgln.supabase.co/auth/v1/authorize?provider=github&scope=user:email';
+            window.location.href = 'https://kslpzwcmkyrbxqmlhgln.supabase.co/auth/v1/authorize?provider=github&scope=user:email&prompt=select_account';
         } catch (error) {
             console.error("GitHub login error:", error);
             alert('An error occurred while attempting to log in with GitHub. Please try again.');
         }
     }
-
+    
     function handleGoogleLogin() {
         try {
-            window.location.href = 'https://kslpzwcmkyrbxqmlhgln.supabase.co/auth/v1/authorize?provider=google&userinfo.email';
+            window.location.href = 'https://kslpzwcmkyrbxqmlhgln.supabase.co/auth/v1/authorize?provider=google&userinfo.email&prompt=select_account';
         } catch (error) {
             console.error("Google login error:", error);
             alert('An error occurred while attempting to log in with Google. Please try again.');
