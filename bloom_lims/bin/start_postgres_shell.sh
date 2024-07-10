@@ -7,6 +7,6 @@ PGUSER=$USER
 PGPASSWORD=passw0rd
 PGDBNAME=bloom
 
-psql  -U $PGUSER -d $PGDBNAME 
+psql  -U $PGUSER -d $PGDBNAME -p 5445
 
 # SET search_path TO bloom;

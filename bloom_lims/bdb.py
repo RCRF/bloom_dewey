@@ -162,7 +162,7 @@ class generic_template(bloom_core):
 
     child_instances = relationship(
         "generic_instance",
-        primaryjoin="and_(generic_template.uuid == foreign(generic_instance.template_uuid),generic_instance.is_deleted == False)",
+        primaryjoin=f"and_(generic_template.uuid == foreign(generic_instance.template_uuid),generic_instance.is_deleted == False)",
         backref="parent_template",
     )
 
@@ -550,7 +550,8 @@ class BLOOMdb3:
         # This is so the database can log a user if changes are made
         set_current_username_sql = text("SET session.current_username = :username")
         self.session.execute(set_current_username_sql, {"username": self.app_username})
-
+        self.session.commit()   
+        
         # reflect and load the support tables just in case they are needed, but this can prob be disabled in prod
         self.Base.prepare(autoload_with=self.engine)
 
@@ -714,7 +715,7 @@ class BloomObj:
         template = self.get_by_euid(template_euid)
 
         if not template:
-            self.logger.debug(f"No template found with euid:", template_euid)
+            self.logger.debug(f"No template found with euid: " + template_euid)
             return
 
         is_singleton = (
@@ -1092,8 +1093,8 @@ class BloomObj:
                 f"Multiple {len(combined_result)} templates found for {euid}"
             )
         elif len(combined_result) == 0:
-            self.logger.debug(f"No template found with euid:", euid)
-            raise Exception(f"No template found with euid:", euid)
+            self.logger.debug(f"No template found with euid: " + euid)
+            raise Exception(f"No template found with euid: " + euid)
         else:
             return combined_result[0]
 

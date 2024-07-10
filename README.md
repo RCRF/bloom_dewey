@@ -444,21 +444,31 @@ pytest
 # Dev Scratch Notes
 Removing a dev db. Assumes your BLOOM env is activated.
 
-Stop pgsql
+## Commands
+It is assumed:
+-  That a fresh installation was successful (_see the install section if you are starting out with a new install_).
+- You are in the repo root directory and have run `conda activate BLOOM`.
+
+### Run pytest
+- `pytest`
+
+### Stop pgsql
 - `source bloom_lims/bin/stop_bloom_db.sh` 
 
-Remove the db
+### Remove the db
 - `rm -rf bloom_lims/database/*`
 
-Rebuild the schema
+### Rebuild the schema
 -  `source bloom_lims/env/install_postgres.sh skip` the skip will skip building the conda env. This will start pgsql in the env, and build the schema.
 
-Auto-gen 'n' passes of the lims schema
-- `python tx.py 2 ` . # runs through creating objects in the current workflows.
+### Build LIMS Workflows With Autogen Objects
+Similar to `pytest`, but more extensive. Largely useful in development work.  The following will auto-gen 'n=2' passes of the lims schema
+- `python tx.py 2 `.
 
-Run the bloom UI
+### Run the bloom UI
 - `uvicorn main:app --reload --log-level trace --port 8911 --timeout-keep-alive 303`
-
+_or_
+- `source source run_bloomui.sh` # this runs the command above
  
  
  
