@@ -16,13 +16,12 @@ To use Supabase, you need to create an account, then set up an organization whic
     SUPABASE_KEY=your_project_anon_public_key
     SUPABASE_WHITELIST_DOMAINS=rcrf.org,daylilyinformatics.com,wgrbtb.farm
     ```
-    > _note-1: when running the bloom installer for the first time, you will be prompted for these values and this file will be created for you. If no values are specified, then the file is made with no values set for each, and you can add them at a latter time. your proeject url will end in `.co`_
-    
-    > _note-2: if the `SUPABASE_WHITELIST_DOMAINS` does not exist, or if it is set to '' or to `all`, no whitelist filtering will occur. If a `csv` string of domains, as seen above, is specified, logins are only allowed from those domains._
-    
-    > _note-3: This .env file is read when the app is hard re-started, not auto restarts._
 
-1. Return to your project dashboard. There are lots of other settings you can tweak if you like, but the last thing we need to do is enable an auth provider.  In this example, we will enable Google.
+    > _note-1: if the `SUPABASE_WHITELIST_DOMAINS` does not exist, or if it is set to '' or to `all`, no whitelist filtering will occur. If a `csv` string of domains, as seen above, is specified, logins are only allowed from those domains._
+    
+    > _note-2: This .env file is read when the app is hard re-started, not auto restarts._
+
+6. Return to your project dashboard. There are lots of other settings you can tweak if you like, but the last thing we need to do is enable an auth provider.  In this example, we will enable Google.
    - Click on the `Authentication` button on the far left side of the dashboard.
    - Click on the `Providers` button on the second tab in from the left.
    - Click on the `Google` button in the long list of providers ( only email should be enabled at this point).
@@ -37,9 +36,9 @@ To use Supabase, you need to create an account, then set up an organization whic
    - `Google` should now be enabled. You can enable other auth providers in the same way, such as Github, Gitlab, etc. However, each will need a small bit of code written in the jinja2 tempates `index.html` and `login.html` to enable other login buttons.
      - You might get a warning `OTP expiry exceeds recommended threshold`, which can be ignored for the time being.
    - Click on the `Home` icon in the upper left, which should bring you to the project dashboard. In the upper right of this dashboard will be a status button, which will be yellow if your project is still deploying. Once it is green, you can proceed to the next step. _note: this will appear yellow if the project has been suspended for inactivity.  You will have access to a button to unsuspend the project from this view._
-2. For more extensive config of supabase (ie: only allowing access from certain domains, etc, [please see their docs](https://supabase.com/docs)).
-3. You can now run the bloom UI and test the auth functionality.
-4. _(optional)_ To define rules that control who can auth via this project, you can create a rule in the `SQL` tab of the `SQL Editor` in the supabase dashboard. For example, to only allow users with a specific email domain to auth, you could use the following rule:
+7. For more extensive config of supabase (ie: only allowing access from certain domains, etc, [please see their docs](https://supabase.com/docs)).
+8. You can now run the bloom UI and test the auth functionality.
+9. _(optional)_ To define rules that control who can auth via this project, you can create a rule in the `SQL` tab of the `SQL Editor` in the supabase dashboard. For example, to only allow users with a specific email domain to auth, you could use the following rule:
     ```sql
     drop policy if exists "Domain restriction for user signups" on auth.users;
 
