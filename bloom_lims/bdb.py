@@ -2955,10 +2955,11 @@ class BloomFile(BloomObj):
     def __init__(self, bdb, bucket_prefix=None):
         super().__init__(bdb)
 
-
         if bucket_prefix is None:
-            bucket_prefix = os.environ.get("BLOOM_S3_BUCKET_PREFIX", "set-a-bucket-prefix-in-the-dotenv-file")
+            bucket_prefix = os.environ.get("BLOOM_DEWEY_S3_BUCKET_PREFIX", "set-a-bucket-prefix-in-the-dotenv-file")
+        
         self.bucket_prefix = bucket_prefix
+
         self.s3_client = boto3.client("s3")
 
     def _derive_bucket_name(self, euid):

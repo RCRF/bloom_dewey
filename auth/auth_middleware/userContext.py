@@ -2,9 +2,6 @@ from auth.supabase.connection import create_supabase_client
 
 class UserContext:
     def __init__(self):
-        
-        from IPython import embed
-        embed() 
         self.supabase = create_supabase_client()
 
     def get_current_session(self):
