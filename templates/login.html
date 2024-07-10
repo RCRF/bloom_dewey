@@ -75,19 +75,29 @@
         {% include 'bloom_header.html' %}
 
         <div id="error-message" style="color: red;"></div> <!-- Error message display -->
-        <ul><ul>
-            <br><h3> Login w/Google</h3><ul>
                 
-            <button onclick="handleGoogleLogin()">Login with Google</button>
-        </ul></ul></ul>
+        <div style="width:90%; text-align:center;">
+            <br><br>
+        <button onclick="handleGoogleLogin()">Login with Google</button>
 
-        <br><br><br>
+        </div>
+<br><br>
+        <div style="width:100%; text-align:center;">
+        <hr>
+        </div>
+
+
         <div id="error-message-no-network" style="color: red;"></div> <!-- Error message display for no network form -->
-        
-        <ul><ul><hr><br><ul>
-            <h3>Login Form without internet connection</h3>
-            <h4> Use An Email To Begin A Bloom Session</h4><ul>
-                <small>This is effectively just a string with no auth. For dev convenience ATM.</small>
+
+
+
+        <div style="width:90%; text-align:center; color:gray;">        
+<br>
+            <h3>Login Without Internet Connection or w/App Specific un/pw</h3>
+                <small>This is effectively just a string with no auth.<br> 
+                    For dev purposes, if exposed, crude local user/pass mgmt could be added.<br>
+                    I bet the supabase library handles this in fact *CHECK*</small>
+                    <br>
            <br><ul>
                 <form method="post" action="/login" onsubmit="return validateFormNoNetwork()">
                     <label for="emailwithoutnetwork">Email:</label>
@@ -98,6 +108,7 @@
                     <br>
                     <input type="submit" value="Login">
                 </form>
-        </ul></ul></ul>
+        </ul>
+    </div>    
     </body>
 </html>

@@ -355,12 +355,108 @@ async def oauth_callback(request: Request):
                     status_code=400, detail="Failed to retrieve user email from GitHub"
                 )
 
+    # Check if the email domain is allowed
+    whitelist_domains = os.getenv("SUPABASE_WHITELIST_DOMAINS", "all")
+    if len(whitelist_domains) == 0:
+        whitelist_domains = "all"
+    if whitelist_domains.lower() != 'all':
+        allowed_domains = [domain.strip() for domain in whitelist_domains.split(',')]
+        user_domain = primary_email.split('@')[1]
+        if user_domain not in allowed_domains:
+            raise HTTPException(
+                status_code=400, detail="Email domain not allowed"
+            )
+
     request.session["user_data"] = proc_udat(
         primary_email
     )  # {"email": primary_email, "style_css": "static/skins/bloom.css"}
 
     # Redirect to home page or dashboard
     return RedirectResponse(url="/", status_code=303)
+
+
+@app.post("/oauth_callback0")
+async def oauth_callback0(request: Request):
+    body = await request.json()
+    access_token = body.get("accessToken")
+
+    if not access_token:
+        return "No access token provided."
+    # Attempt to decode the JWT to get email
+    try:
+        decoded_token = jwt.decode(access_token, options={"verify_signature": False})
+        primary_email = decoded_token.get("email")
+    except jwt.DecodeError:
+        primary_email = None
+
+    # Fetch user email from GitHub if not present in decoded token
+    if not primary_email:
+        async with httpx.AsyncClient() as client:
+            headers = {"Authorization": f"Bearer {access_token}"}
+            response = await client.get(
+                "https://api.github.com/user/emails", headers=headers
+            )
+            if response.status_code == 200:
+                emails = response.json()
+                primary_email = next(
+                    (email["email"] for email in emails if email.get("primary")), None
+                )
+            else:
+                raise HTTPException(
+                    status_code=400, detail="Failed to retrieve user email from GitHub"
+                )
+
+    # Check if the email domain is allowed
+    allowed_domains = ["rcrf.org", "daylilyinformatics.com","wgrbtb.farm"]
+    user_domain = primary_email.split('@')[1]
+    if user_domain not in allowed_domains:
+        raise HTTPException(
+            status_code=400, detail="Email domain not allowed"
+        )
+
+    request.session["user_data"] = proc_udat(
+        primary_email
+    )  # {"email": primary_email, "style_css": "static/skins/bloom.css"}
+
+    # Redirect to home page or dashboard
+    return RedirectResponse(url="/", status_code=303)
+
+@app.post("/login", include_in_schema=False)
+async def login(request: Request, response: Response, email: str = Form(...)):
+    # Use a static password for simplicity (not recommended for production)
+    password = "notapplicable"
+    # Initialize the Supabase client
+    supabase = create_supabase_client()
+
+    if not email:
+        return JSONResponse(content={"message": "Email is required"}, status_code=status.HTTP_400_BAD_REQUEST)
+
+    with open(UDAT_FILE, 'r+') as f:
+        user_data = json.load(f)
+        if email not in user_data:
+            # The email is not in udat.json, attempt to sign up the user
+            auth_response = supabase.auth.sign_up({"email": email, "password": password})
+            if 'error' in auth_response and auth_response['error']:
+                # Handle signup error
+                return JSONResponse(content={"message": auth_response['error']['message']},
+                                    status_code=status.HTTP_400_BAD_REQUEST)
+            else:
+               pass # set below via proc_udat
+        else:
+            # The email exists in udat.json, attempt to sign in the user
+            auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            if 'error' in auth_response and auth_response['error']:
+                # Handle sign-in error
+                return JSONResponse(content={"message": auth_response['error']['message']},
+                                    status_code=status.HTTP_400_BAD_REQUEST)
+
+    # Set session cookie after successful authentication, with a 60-minute expiration
+    response.set_cookie(key="session", value="user_session_token", httponly=True, max_age=3600, path="/")
+    request.session['user_data'] = proc_udat( email )
+    # Redirect to the root path ("/") after successful login/signup
+    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    # Add this line at the end of the /login endpoint
+
 
 
 @app.get(
