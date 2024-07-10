@@ -15,11 +15,15 @@ To use Supabase, you need to create an account, then set up an organization whic
     SUPABASE_URL=your_project_url
     SUPABASE_KEY=your_project_anon_public_key
     SUPABASE_WHITELIST_DOMAINS=rcrf.org,daylilyinformatics.com,wgrbtb.farm
+    BLOOM_S3_BUCKET_PREFIX=a-prefix-for-your-s3-bucket
     ```
 
     > _note-1: if the `SUPABASE_WHITELIST_DOMAINS` does not exist, or if it is set to '' or to `all`, no whitelist filtering will occur. If a `csv` string of domains, as seen above, is specified, logins are only allowed from those domains._
     
     > _note-2: This .env file is read when the app is hard re-started, not auto restarts._
+
+    > _note-3: The `BLOOM_S3_BUCKET_PREFIX` is used to locate the appropriate buckets for the file manager, [dewey](./dewey.md) to work with. The prefix pattern for all buckets used by dewey is `^([\w-]+)(-)(\d+)$`, ie: `daylily-dewey-0`. Where `$1$2` is the shared prefix for dewey buckets and `$3` is an integer which dewey uses to place new files based on if the `euid` in relation to `$3`.  *_this is just a suggestion, no code tries to find files by inferring anything other than the euid encoded in the file name._* This is a simple mechanism to allow rolling to a new S3 bucket when needed. [Learn more in the dewey docs](./dewey.md).
+
 
 6. Return to your project dashboard. There are lots of other settings you can tweak if you like, but the last thing we need to do is enable an auth provider.  In this example, we will enable Google.
    - Click on the `Authentication` button on the far left side of the dashboard.
