@@ -64,4 +64,40 @@ cd projects/git/bloom/
 
 
 # Install the BLOOM conda environment
+# The script also installs postgres and creates the database, and spins it up so if you get no error, it will now be running on a non-std port...need to look
+# When the server restarts, postgres will be down, and you can restart it with source "bloom_lims_bin/start_postgres.sh"
 source bloom_lims/env/install_postgres.sh # this can take a few min to 10+min, it depends on the hardware.
+
+# Test your install
+pytest  # You should get mostly successes, and some warnings (which are fine)
+
+
+# The DB is running, we can now start the UI
+# Open a tmux session which can be detached and reattached to later.
+tmux new -s bloom
+conda activate bloom
+source run_bloomui.sh # note you'll have to edit the gvicorn command in this script to run on an  IP visivble externally.
+# ctrl-b d to detach from the tmux session
+# this will run, logging to stdout.  
+
+# And that should return something like
+TERM_OUT="""
+(BLOOM) ubuntu@ip-172-31-7-22:~/projects/git/bloom$ source run_bloomui.sh
+INFO:     Will watch for changes in these directories: ['/home/ubuntu/projects/git/bloom']
+INFO:     Uvicorn running on http://127.0.0.1:8911 (Press CTRL+C to quit)
+INFO:     Started reloader process [6128] using StatReload
+INFO:     Started server process [6130]
+INFO:     Waiting for application startup.
+TRACE:    ASGI [1] Started scope={'type': 'lifespan', 'asgi': {'version': '3.0', 'spec_version': '2.0'}, 'state': {}}
+TRACE:    ASGI [1] Receive {'type': 'lifespan.startup'}
+TRACE:    ASGI [1] Send {'type': 'lifespan.startup.complete'}
+INFO:     Application startup complete.
+"""
+# the shell is blocked while the service runs.
+# This can be made a service and directed to log to a file if you wish.
+
+
+# Next, visit the UI at http://ip:8911/ and you should be able to auth with an rcrf.org email.
+# Dewey is the file manager app.
+
+echo "fin!"
