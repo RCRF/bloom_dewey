@@ -12,51 +12,137 @@
     <script src="static/action_buttons.js"></script>
     
     <style>
-        .floating-buttonf {
+        .floating-button {
             position: fixed;
+            padding: 10px;
+            z-index: 1000;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .floating-button.download-tsv {
             top: 20px;
             right: 20px;
-            /* Add more styling as needed */
         }
+
+        .floating-button.create-set {
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .floating-button.download {
+            bottom: 10px;
+            left: 10px;
+        }
+
+        .form-section {
+            display: inline-block;
+            margin: 0 7.5%;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .form-section label, .form-section input, .form-section select, .form-section textarea {
+            margin: 5px 0;
+            vertical-align: middle;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label {
+            width: 100px;
+            margin-right: 10px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            flex: 1;
+        }
+
+        .glow {
+            box-shadow: 0 0 10px fuchsia;
+            transition: box-shadow 0.5s ease-in-out;
+        }
+
         th {
             cursor: pointer;
         }
+
+        th.ascending::after {
+            content: ' \25B2';
+        }
+
+        th.descending::after {
+            content: ' \25BC';
+        }
     </style>
     <script>
-        function sortTable(n, tableId) {
-            const table = document.getElementById(tableId);
-            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-            switching = true;
-            dir = "asc";
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    if (dir === "asc") {
-                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else if (dir === "desc") {
-                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    }
+        async function triggerDownload(url) {
+            return new Promise((resolve) => {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                resolve();
+            });
+        }
+
+        async function downloadFile(euid, downloadType, createMetadataFile) {
+            console.log(`Downloading file for EUID: ${euid}`);
+
+            const formData = new URLSearchParams();
+            formData.append('euid', euid);
+            formData.append('download_type', downloadType);
+            formData.append('create_metadata_file', createMetadataFile);
+            formData.append('ret_json', 'True');
+
+            const response = await fetch(`/download_file`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            });
+
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                const fileDownloadPath = jsonResponse.file_download_path;
+                const metadataDownloadPath = jsonResponse.metadata_download_path;
+
+                console.log('fileDownloadPath:', fileDownloadPath);
+                console.log('metadataDownloadPath:', metadataDownloadPath);
+
+                // Trigger downloads
+                await triggerDownload(fileDownloadPath);
+                if (metadataDownloadPath) {
+                    await triggerDownload(metadataDownloadPath);
                 }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    switchcount++;
-                } else {
-                    if (switchcount === 0 && dir === "asc") {
-                        dir = "desc";
-                        switching = true;
-                    }
-                }
+            } else {
+                console.error(`Failed to download file for EUID: ${euid}`);
+            }
+        }
+
+        async function downloadSelectedFiles() {
+            const euid = document.getElementById('euid').value;
+            const downloadType = document.getElementById('download-type').value;
+            const createMetadataFile = document.getElementById('create_metadata_file').value;
+
+            if (euid) {
+                await downloadFile(euid, downloadType, createMetadataFile);
+            } else {
+                console.error('No EUID specified.');
             }
         }
     </script>
@@ -132,12 +218,12 @@
     <button class="accordion" style="width: -webkit-fill-available;">Download File</button>
     <div class="accordion-content">
         <ul><ul>
-        <form id="downloadFileForm" action="download_file" method="post" enctype="multipart/form-data">
+        <form id="downloadFileForm" onsubmit="event.preventDefault(); downloadSelectedFiles();" method="post" enctype="multipart/form-data">
             <label for="euid">File EUID: </label>
             <input type="text" id="euid" name="euid"><br><br>
             
-            <label for="download_type">File Creation Mode:</label> 
-            <select name="download_type">
+            <label for="download-type">File Creation Mode:</label> 
+            <select id="download-type" name="download_type">
                 <option value="dewey" selected>dewey</option>
                 <option value="hybrid">hybrid</option>
                 <option value="orig">orig</option>
@@ -151,9 +237,9 @@
                 </ul>
             </ul></ul>
             <br>
-        
+         
             <label for="create_metadata_file">Generate dewey.yaml:</label>
-            <select name="create_metadata_file">
+            <select id="create_metadata_file" name="create_metadata_file">
                 <option selected value="yes">yes</option>
                 <option value="no">no</option>
             </select>
