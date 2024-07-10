@@ -162,7 +162,7 @@ class generic_template(bloom_core):
 
     child_instances = relationship(
         "generic_instance",
-        primaryjoin=f"and_(generic_template.uuid == foreign(generic_instance.template_uuid),generic_instance.is_deleted == False)",
+        primaryjoin="and_(generic_template.uuid == foreign(generic_instance.template_uuid),generic_instance.is_deleted == False)",
         backref="parent_template",
     )
 
