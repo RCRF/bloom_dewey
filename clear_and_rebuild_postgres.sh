@@ -1,3 +1,14 @@
+# SOURCE THIS SCRIPT WITH THE BLOOM CONDA ENV ACTIVE
+
+echo "Do you really wish to stop postgres and irrevocably delete what is there, then replace it with freshly seeded templates, and that is it?"
+echo "Type 'yes' to proceed, anything else exits."
+read -r response
+
+if [[ "$response" != "yes" ]]; then
+  echo "Exiting..."
+  exit 1
+fi
+
 echo "\n\n___STOPPING POSTGRES___\n\n"
 sleep 1
 source bloom_lims/bin/stop_bloom_db.sh 

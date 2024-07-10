@@ -262,6 +262,9 @@ pytest
 # Dev Notes
 
 ## Rebuild a fresh DB, while leaving the environment untouched.
+
+**This is wrapped in a script now, please see [clear_and_rebuild_postgres.sh](bloom_lims/env/clear_and_rebuild_postgres.sh)**
+
 This is helpful if iterating on json object definitions.
 
 ### Commands
