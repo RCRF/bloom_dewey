@@ -5,12 +5,15 @@ import sys
 import re
 
 import random
+import string
+
 import yaml
 
 from pathlib import Path
 
 import logging
 from .logging_config import setup_logging
+
 setup_logging()
 
 from datetime import datetime
@@ -74,6 +77,12 @@ except Exception as e:
 
 # Universal printer behavior on
 PGLOBAL = False if os.environ.get("PGLOBAL", False) else True
+
+
+def generate_random_string(length=10):
+    characters = string.ascii_letters + string.digits
+    random_string = "".join(random.choice(characters) for _ in range(length))
+    return random_string
 
 
 def get_datetime_string():
@@ -184,7 +193,7 @@ class generic_instance(bloom_core):
         backref="parent_instance",
         lazy="dynamic",
     )
-    
+
     # removed ,generic_instance_lineage.is_deleted == False
     child_of_lineages = relationship(
         "generic_instance_lineage",
@@ -554,8 +563,8 @@ class BLOOMdb3:
         # This is so the database can log a user if changes are made
         set_current_username_sql = text("SET session.current_username = :username")
         self.session.execute(set_current_username_sql, {"username": self.app_username})
-        self.session.commit()   
-        
+        self.session.commit()
+
         # reflect and load the support tables just in case they are needed, but this can prob be disabled in prod
         self.Base.prepare(autoload_with=self.engine)
 
@@ -607,7 +616,9 @@ class BLOOMdb3:
 
 
 class BloomObj:
-    def __init__(self, bdb, is_deleted=False):  # ERROR -- the is_deleted flag should be set, I think, at the db level...
+    def __init__(
+        self, bdb, is_deleted=False
+    ):  # ERROR -- the is_deleted flag should be set, I think, at the db level...
         self.logger = logging.getLogger(__name__ + ".BloomObj")
         self.logger.debug("Instantiating BloomObj")
 
@@ -1553,9 +1564,11 @@ class BloomObj:
                 if action_ds["captured_data"]["create_metadata_file"] in ["yes"]
                 else False
             ),
-            save_path="./tmp",
+            save_path="./tmp/",
             save_pattern=action_ds["captured_data"]["download_type"],
         )
+        # from IPython import embed
+        # embed()
         return dl_file
 
     def do_stamp_plates_into_plate(self, euid, action_ds):
@@ -2956,8 +2969,10 @@ class BloomFile(BloomObj):
         super().__init__(bdb)
 
         if bucket_prefix is None:
-            bucket_prefix = os.environ.get("BLOOM_DEWEY_S3_BUCKET_PREFIX", "set-a-bucket-prefix-in-the-dotenv-file")
-        
+            bucket_prefix = os.environ.get(
+                "BLOOM_DEWEY_S3_BUCKET_PREFIX", "set-a-bucket-prefix-in-the-dotenv-file"
+            )
+
         self.bucket_prefix = bucket_prefix
 
         self.s3_client = boto3.client("s3")
@@ -3130,17 +3145,16 @@ class BloomFile(BloomObj):
 
         return new_file
 
-
-    def sanitize_tag(self,value):
+    def sanitize_tag(self, value):
         """Sanitize the tag value to conform to AWS tag requirements."""
         # Remove any invalid characters
-        sanitized_value = re.sub(r'[^a-zA-Z0-9\s\+\=._\-]', '', value)
+        sanitized_value = re.sub(r"[^a-zA-Z0-9\s\+\=._\-]", "", value)
         # Replace spaces with underscores
-        sanitized_value = sanitized_value.replace(' ', '_')
+        sanitized_value = sanitized_value.replace(" ", "_")
         # Trim the string to the maximum allowed length (256 characters for tag values)
-        sanitized_value = "SAN:"+sanitized_value[:252]
+        sanitized_value = "SAN:" + sanitized_value[:252]
 
-        return value #sanitized_value if sanitized_value != value else value
+        return value  # sanitized_value if sanitized_value != value else value
 
     def add_file_data(
         self,
@@ -3236,12 +3250,12 @@ class BloomFile(BloomObj):
                 with open(full_path_to_file, "rb") as file:
                     file_data = file.read()
                 file_size = os.path.getsize(full_path_to_file)
-                local_path_info = Path(full_path_to_file)                
+                local_path_info = Path(full_path_to_file)
                 local_ip = None
                 try:
                     local_ip = socket.gethostbyname(socket.gethostname())
                 except socket.gaierror:
-                    local_ip = '127.0.0.1'  # Fallback to localhost
+                    local_ip = "127.0.0.1"  # Fallback to localhost
 
                 self.s3_client.put_object(
                     Bucket=s3_bucket_name,
@@ -3314,12 +3328,14 @@ class BloomFile(BloomObj):
         except Exception as e:
             logging.exception(f"An error occurred while uploading the file: {e}")
             file_instance.bstatus = "error"
-            file_instance.json_addl["properties"]["comments"] = str(e) + f" FILENAM == {file_name}"
+            file_instance.json_addl["properties"]["comments"] = (
+                str(e) + f" FILENAM == {file_name}"
+            )
             flag_modified(file_instance, "json_addl")
             flag_modified(file_instance, "bstatus")
             self.session.flush()
             self.session.commit()
-            raise(e)
+            raise (e)
 
         _update_recursive(file_instance.json_addl["properties"], file_properties)
         flag_modified(file_instance, "json_addl")
@@ -3351,9 +3367,15 @@ class BloomFile(BloomObj):
         :param euid: EUID of the file to download.
         :param save_pattern: Naming pattern for the saved file. Options: 'dewey', 'orig', 'hybrid'.
         :param include_metadata: Whether to save metadata in a YAML file. Defaults to False.
-        :param save_path: Directory where the file will be saved. Defaults to the current directory.
+        :param save_path: Directory where the file will be saved. Defaults to ./tmp/, which will be created if not present.
         :return: Path of the saved file.
         """
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        else:
+            self.logger.warn(f"Directory already exists: {save_path}")
+
         file_instance = self.get_by_euid(euid)
         s3_bucket_name = file_instance.json_addl["properties"]["current_s3_bucket_name"]
         s3_key = file_instance.json_addl["properties"]["current_s3_key"]
@@ -3408,6 +3430,8 @@ class BloomFile(BloomObj):
         except Exception as e:
             raise Exception(f"An error occurred while downloading the file: {e}")
 
+        # from IPython import embed
+        # embed()
         return local_file_path
 
     def get_s3_uris(self, euids, include_metadata=False):
@@ -3454,23 +3478,23 @@ class BloomFile(BloomObj):
             self.logger.error(f"Error deleting file {euid}: {e}")
             self.session.rollback()
             return False
- 
+
     def get_s3_object_stream(self, euid):
         file_instance = self.get_file_by_euid(euid)
         s3_bucket_name = file_instance.json_addl["properties"]["current_s3_bucket_name"]
         s3_key = file_instance.json_addl["properties"]["current_s3_key"]
-        
+
         try:
             response = self.s3_client.get_object(Bucket=s3_bucket_name, Key=s3_key)
-            content_type = response['ContentType']
-            return response['Body'], content_type
+            content_type = response["ContentType"]
+            return response["Body"], content_type
         except self.s3_client.exceptions.NoSuchKey:
             raise Exception("File not found")
         except NoCredentialsError:
             raise Exception("Credentials not available")
         except Exception as e:
             raise Exception(e)
- 
+
 
 class BloomFileSet(BloomObj):
     def __init__(self, bdb):

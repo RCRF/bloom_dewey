@@ -16,6 +16,7 @@ from datetime import datetime, timedelta, date
 # The following three lines allow for dropping embed() in to block and present an IPython shell
 from IPython import embed
 import nest_asyncio
+
 nest_asyncio.apply()
 
 
@@ -27,7 +28,8 @@ def get_clean_timestamp():
 os.makedirs("logs", exist_ok=True)
 
 
-#setup_logging()
+# setup_logging()
+
 
 def get_datetime_string():
     # Choose your desired timezone, e.g., 'US/Eastern', 'Europe/London', etc.
@@ -44,6 +46,7 @@ def get_datetime_string():
 
 import logging
 from logging.handlers import RotatingFileHandler
+
 
 def setup_logging():
     # uvicorn to capture logs from all libs
@@ -71,6 +74,7 @@ def setup_logging():
     # Add handlers to the logger
     logger.addHandler(c_handler)
     logger.addHandler(f_handler)
+
 
 setup_logging()
 
@@ -113,6 +117,7 @@ from bloom_lims.bdb import (
 )
 
 from bloom_lims.bvars import BloomVars
+
 BVARS = BloomVars()
 
 from auth.supabase.connection import create_supabase_client
@@ -155,9 +160,12 @@ SKIP_AUTH = False if len(sys.argv) < 3 else True
 class AuthenticationRequiredException(HTTPException):
     def __init__(self, detail: str = "Authentication required"):
         super().__init__(status_code=401, detail=detail)
+
+
 class MissingSupabaseEnvVarsException(HTTPException):
     def __init__(self, message="The Supabase environment variables are not found."):
         super().__init__(status_code=401, detail=message)
+
 
 def proc_udat(email):
     with open(UDAT_FILE, "r+") as f:
@@ -265,20 +273,16 @@ async def authentication_required_exception_handler(
     return RedirectResponse(url="/login")
 
 
-#@app.exception_handler(MissingSupabaseEnvVarsException)
-#async def missing_supabase_env_vars_exception_handler(
-#    request: Request, exc: MissingSupabaseEnvVarsException
-#):
-#    raise HTTPError("The Supabase environment variables are not found.")
-
-
 async def require_auth(request: Request):
-    
-    if os.environ.get("SUPABASE_URL",'NA') == 'NA' and os.environ.get("SUPABASE_KEY",'NA') == 'NA':
+
+    if (
+        os.environ.get("SUPABASE_URL", "NA") == "NA"
+        and os.environ.get("SUPABASE_KEY", "NA") == "NA"
+    ):
         msg = "SUPABASE_* env variables not not set.  Is your .env file missing?"
-        logging.error( msg )
-        
-        raise MissingSupabaseEnvVarsException(msg)  
+        logging.error(msg)
+
+        raise MissingSupabaseEnvVarsException(msg)
 
     if "user_data" not in request.session:
         raise AuthenticationRequiredException()
@@ -297,7 +301,9 @@ async def auth_exception_handler(_request: Request, _exc: RequireAuthException):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, ):
+async def read_root(
+    request: Request,
+):
 
     count = request.session.get("count", 0)
     count += 1
@@ -313,7 +319,7 @@ async def read_root(request: Request, ):
 
 @app.get("/login", include_in_schema=False)
 async def get_login_page(request: Request):
-    
+
     user_data = request.session.get("user_data", {})
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
@@ -359,13 +365,11 @@ async def oauth_callback(request: Request):
     whitelist_domains = os.getenv("SUPABASE_WHITELIST_DOMAINS", "all")
     if len(whitelist_domains) == 0:
         whitelist_domains = "all"
-    if whitelist_domains.lower() != 'all':
-        allowed_domains = [domain.strip() for domain in whitelist_domains.split(',')]
-        user_domain = primary_email.split('@')[1]
+    if whitelist_domains.lower() != "all":
+        allowed_domains = [domain.strip() for domain in whitelist_domains.split(",")]
+        user_domain = primary_email.split("@")[1]
         if user_domain not in allowed_domains:
-            raise HTTPException(
-                status_code=400, detail="Email domain not allowed"
-            )
+            raise HTTPException(status_code=400, detail="Email domain not allowed")
 
     request.session["user_data"] = proc_udat(
         primary_email
@@ -374,52 +378,6 @@ async def oauth_callback(request: Request):
     # Redirect to home page or dashboard
     return RedirectResponse(url="/", status_code=303)
 
-
-@app.post("/oauth_callback0")
-async def oauth_callback0(request: Request):
-    body = await request.json()
-    access_token = body.get("accessToken")
-
-    if not access_token:
-        return "No access token provided."
-    # Attempt to decode the JWT to get email
-    try:
-        decoded_token = jwt.decode(access_token, options={"verify_signature": False})
-        primary_email = decoded_token.get("email")
-    except jwt.DecodeError:
-        primary_email = None
-
-    # Fetch user email from GitHub if not present in decoded token
-    if not primary_email:
-        async with httpx.AsyncClient() as client:
-            headers = {"Authorization": f"Bearer {access_token}"}
-            response = await client.get(
-                "https://api.github.com/user/emails", headers=headers
-            )
-            if response.status_code == 200:
-                emails = response.json()
-                primary_email = next(
-                    (email["email"] for email in emails if email.get("primary")), None
-                )
-            else:
-                raise HTTPException(
-                    status_code=400, detail="Failed to retrieve user email from GitHub"
-                )
-
-    # Check if the email domain is allowed
-    allowed_domains = ["rcrf.org", "daylilyinformatics.com","wgrbtb.farm"]
-    user_domain = primary_email.split('@')[1]
-    if user_domain not in allowed_domains:
-        raise HTTPException(
-            status_code=400, detail="Email domain not allowed"
-        )
-
-    request.session["user_data"] = proc_udat(
-        primary_email
-    )  # {"email": primary_email, "style_css": "static/skins/bloom.css"}
-
-    # Redirect to home page or dashboard
-    return RedirectResponse(url="/", status_code=303)
 
 @app.post("/login", include_in_schema=False)
 async def login(request: Request, response: Response, email: str = Form(...)):
@@ -429,41 +387,53 @@ async def login(request: Request, response: Response, email: str = Form(...)):
     supabase = create_supabase_client()
 
     if not email:
-        return JSONResponse(content={"message": "Email is required"}, status_code=status.HTTP_400_BAD_REQUEST)
+        return JSONResponse(
+            content={"message": "Email is required"},
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
-    with open(UDAT_FILE, 'r+') as f:
+    with open(UDAT_FILE, "r+") as f:
         user_data = json.load(f)
         if email not in user_data:
             # The email is not in udat.json, attempt to sign up the user
-            auth_response = supabase.auth.sign_up({"email": email, "password": password})
-            if 'error' in auth_response and auth_response['error']:
+            auth_response = supabase.auth.sign_up(
+                {"email": email, "password": password}
+            )
+            if "error" in auth_response and auth_response["error"]:
                 # Handle signup error
-                return JSONResponse(content={"message": auth_response['error']['message']},
-                                    status_code=status.HTTP_400_BAD_REQUEST)
+                return JSONResponse(
+                    content={"message": auth_response["error"]["message"]},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
             else:
-               pass # set below via proc_udat
+                pass  # set below via proc_udat
         else:
             # The email exists in udat.json, attempt to sign in the user
-            auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if 'error' in auth_response and auth_response['error']:
+            auth_response = supabase.auth.sign_in_with_password(
+                {"email": email, "password": password}
+            )
+            if "error" in auth_response and auth_response["error"]:
                 # Handle sign-in error
-                return JSONResponse(content={"message": auth_response['error']['message']},
-                                    status_code=status.HTTP_400_BAD_REQUEST)
+                return JSONResponse(
+                    content={"message": auth_response["error"]["message"]},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
 
     # Set session cookie after successful authentication, with a 60-minute expiration
-    response.set_cookie(key="session", value="user_session_token", httponly=True, max_age=3600, path="/")
-    request.session['user_data'] = proc_udat( email )
+    response.set_cookie(
+        key="session", value="user_session_token", httponly=True, max_age=3600, path="/"
+    )
+    request.session["user_data"] = proc_udat(email)
     # Redirect to the root path ("/") after successful login/signup
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     # Add this line at the end of the /login endpoint
-
 
 
 @app.get(
     "/logout"
 )  # Using a GET request for simplicity, but POST is more secure for logout operations
 async def logout(request: Request, response: Response):
-    
+
     try:
         logging.warning(f"Logging out user: Clearing session data:  {request.session}")
 
@@ -479,19 +449,19 @@ async def logout(request: Request, response: Response):
             async with httpx.AsyncClient() as client:
                 logging.debug(f"Logging out user: Calling Supabase logout endpoint")
                 response = await client.post(
-                    os.environ.get("SUPABASE_URL",'NA') + "/auth/v1/logout", headers=headers
+                    os.environ.get("SUPABASE_URL", "NA") + "/auth/v1/logout",
+                    headers=headers,
                 )
                 logging.debug(f"Logging out user: Supabase logout response: {response}")
                 if response.status_code != 204:
                     logging.error("Failed to log out from Supabase")
-
 
         # Clear the session data
         request.session.clear()
 
         # Debug the session to ensure it's cleared
         logging.warning(f"Session after clearing: {request.session}")
-        
+
         # Optionally, clear the session cookie.
         # Note: This might not be necessary if your session middleware automatically handles it upon session.clear().
         response.delete_cookie(key="session", path="/")
@@ -499,10 +469,10 @@ async def logout(request: Request, response: Response):
     except Exception as e:
         logging.error(f"Error during logout: {e}")
         return JSONResponse(
-            content={"message": "An error occurred during logout: "+ str(e)},
+            content={"message": "An error occurred during logout: " + str(e)},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-    
+
     # Redirect to the homepage
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -642,7 +612,8 @@ async def assays(request: Request, show_type: str = "all", _auth=Depends(require
         atype=atype,
         workflow_instances=assays,  # Assuming this is needed based on your template logic
         ay_stats=ay_dss,  # Assuming this is needed based on your template logic
-        udat = user_data)
+        udat=user_data,
+    )
 
     return HTMLResponse(content=content)
 
@@ -781,7 +752,7 @@ async def queue_details(
         queue_details=queue_details,
         pagination=pagination,
         user_logged_in=user_logged_in,
-        udat=request.session["user_data"]
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -843,7 +814,7 @@ async def workflow_summary(request: Request, _auth=Depends(require_auth)):
         workflows=workflows,
         workflow_statistics=workflow_statistics,
         unique_workflow_types=unique_workflow_types,
-        udat=request.session["user_data"]
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -883,7 +854,7 @@ async def equipment_overview(request: Request, _auth=Depends(require_auth)):
         style=style,
         equipment_list=equipment_instances,
         template_list=equipment_templates,
-        udat=request.session["user_data"]
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -921,7 +892,7 @@ async def reagent_overview(request: Request, _auth=Depends(require_auth)):
         style=style,
         instance_list=reagent_instances,
         template_list=reagent_templates,
-        udat=request.session["user_data"]
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -945,7 +916,10 @@ async def control_overview(request: Request, _auth=Depends(require_auth)):
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("control_overview.html").render(
-        style=style, instance_list=control_instances, template_list=control_templates,udat=request.session["user_data"]
+        style=style,
+        instance_list=control_instances,
+        template_list=control_templates,
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -981,7 +955,7 @@ async def vertical_exp(request: Request, euid=None, _auth=Depends(require_auth))
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("vertical_exp.html").render(
-        style=style, instance=instance,udat=request.session["user_data"]
+        style=style, instance=instance, udat=request.session["user_data"]
     )
     return HTMLResponse(content=content)
 
@@ -1006,7 +980,10 @@ async def plate_carosel(
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("vertical_exp.html").render(
-        style=style, main_plate=main_plate, related_plates=related_plates,udat=request.session["user_data"]
+        style=style,
+        main_plate=main_plate,
+        related_plates=related_plates,
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -1077,7 +1054,10 @@ async def plate_visualization(
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("plate_display.html").render(
-        style=style, plate=plate, get_well_color=get_well_color,udat=request.session["user_data"]
+        style=style,
+        plate=plate,
+        get_well_color=get_well_color,
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -1117,7 +1097,7 @@ async def database_statistics(request: Request, _auth=Depends(require_auth)):
         stats_7d=stats_7d,
         stats_30d=stats_30d,
         style=style,
-        udat=request.session["user_data"]
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -1145,7 +1125,7 @@ async def object_templates_summary(request: Request, _auth=Depends(require_auth)
         generic_templates=generic_templates,
         unique_discriminators=unique_discriminators,
         style=style,
-        udat=request.session["user_data"]
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -1157,9 +1137,12 @@ async def euid_details0(
     _uuid: str = Query(None, description="Optional UUID parameter"),
     _auth=Depends(require_auth),
 ):
-    
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]), is_deleted=is_deleted)
-    
+
+    bobdb = BloomObj(
+        BLOOMdb3(app_username=request.session["user_data"]["email"]),
+        is_deleted=is_deleted,
+    )
+
     # Fetch the object using euid
     obj = bobdb.get_by_euid(euid)
     relationship_data = get_relationship_data(obj) if obj else {}
@@ -1201,7 +1184,10 @@ async def euid_details(
     is_deleted: bool = Query(False, description="Flag to include deleted items"),
     _auth=Depends(require_auth),
 ):
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]), is_deleted=is_deleted)
+    bobdb = BloomObj(
+        BLOOMdb3(app_username=request.session["user_data"]["email"]),
+        is_deleted=is_deleted,
+    )
 
     try:
         # Fetch the object using euid
@@ -1248,16 +1234,21 @@ async def euid_details(
         else:
             # Re-raise the exception if already tried with is_deleted = True
             raise e
+
+
 @app.get("/un_delete_by_uuid")
 async def un_delete_by_uuid(
     request: Request,
     uuid: str = Query(..., description="The UUID to un-delete"),
     euid: str = Query(..., description="The EUID associated with the UUID"),
     _auth=Depends(require_auth),
-    is_deleted: bool = True
+    is_deleted: bool = True,
 ):
     try:
-        bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]), is_deleted=is_deleted)
+        bobdb = BloomObj(
+            BLOOMdb3(app_username=request.session["user_data"]["email"]),
+            is_deleted=is_deleted,
+        )
 
         # Fetch the object using uuid
         obj = bobdb.get(uuid)
@@ -1268,18 +1259,32 @@ async def un_delete_by_uuid(
         obj.is_deleted = False
         bobdb.session.commit()
 
-        logging.info(f"Successfully un-deleted object with UUID: {uuid} and EUID: {euid}")
+        logging.info(
+            f"Successfully un-deleted object with UUID: {uuid} and EUID: {euid}"
+        )
         return RedirectResponse(url=f"/euid_details?euid={euid}", status_code=303)
 
     except Exception as e:
-        logging.error(f"Error un-deleting object with UUID: {uuid} and EUID: {euid} - {e}", exc_info=True)
+        logging.error(
+            f"Error un-deleting object with UUID: {uuid} and EUID: {euid} - {e}",
+            exc_info=True,
+        )
         if is_deleted:
             try:
-                logging.info(f"Retrying with is_deleted=True for UUID: {uuid} and EUID: {euid}")
-                return await un_delete_by_uuid(request, uuid, euid, _auth, is_deleted=False)
+                logging.info(
+                    f"Retrying with is_deleted=True for UUID: {uuid} and EUID: {euid}"
+                )
+                return await un_delete_by_uuid(
+                    request, uuid, euid, _auth, is_deleted=False
+                )
             except Exception as inner_e:
-                logging.error(f"Retry failed for UUID: {uuid} and EUID: {euid} - {inner_e}", exc_info=True)
-                raise HTTPException(status_code=404, detail="Object not found after retry")
+                logging.error(
+                    f"Retry failed for UUID: {uuid} and EUID: {euid} - {inner_e}",
+                    exc_info=True,
+                )
+                raise HTTPException(
+                    status_code=404, detail="Object not found after retry"
+                )
         else:
             raise HTTPException(status_code=404, detail="Object not found")
 
@@ -1300,7 +1305,11 @@ async def bloom_schema_report(request: Request, _auth=Depends(require_auth)):
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
     content = templates.get_template("bloom_schema_report.html").render(
-        request=request, reports=reports, nrows=nrows, style=style,udat=request.session["user_data"]
+        request=request,
+        reports=reports,
+        nrows=nrows,
+        style=style,
+        udat=request.session["user_data"],
     )
     return HTMLResponse(content=content)
 
@@ -1322,11 +1331,9 @@ async def delete_object(request: Request, _auth=Depends(require_auth)):
     data = await request.json()
     euid = data.get("euid")
     bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-
     bobdb.delete(bobdb.get_by_euid(euid))
     bobdb.session.flush()
     bobdb.session.commit()
-
     return {
         "status": "success",
         "message": f"Delete object performed for EUID {euid}",
@@ -1706,17 +1713,6 @@ async def update_dag(request: Request, _auth=Depends(require_auth)):
     return {"status": "success", "filename": filename}
 
 
-@app.post("/delete_object")
-async def delete_object(request: Request, _auth=Depends(require_auth)):
-    data = await request.json()
-    euid = data.get("euid")
-    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-
-    bobdb.delete(bobdb.get_by_euid(euid))
-    bobdb.session.flush()
-    bobdb.session.commit()
-
-
 @app.post("/add_new_edge")
 async def add_new_edge(request: Request, _auth=Depends(require_auth)):
     input_data = await request.json()  # Corrected call to request.json()
@@ -1759,6 +1755,7 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
 
 
 ## File Manager // Dewey (pull into separate file   )
+
 
 def generate_unique_upload_key():
     color = random.choice(BVARS.pantone_colors)
@@ -2053,15 +2050,6 @@ def delete_file(file_path: Path):
         logging.error(f"Error deleting file {file_path}: {e}")
 
 
-@app.get("/download/{filename}")
-async def download(filename: str, background_tasks: BackgroundTasks):
-    file_path = Path("./tmp") / filename
-    if file_path.exists():
-        background_tasks.add_task(delete_file, file_path)
-        return FileResponse(file_path, filename=filename)
-    return HTMLResponse(f"File {filename} not found.", status_code=404)
-
-
 @app.get("/delete_temp_file")
 async def delete_temp_file(
     request: Request, filename: str, background_tasks: BackgroundTasks
@@ -2073,87 +2061,6 @@ async def delete_temp_file(
         background_tasks.add_task(delete_file, file_path)
         background_tasks.add_task(delete_file, file_path_yaml)
     return RedirectResponse(url="/create_file_form", status_code=303)
-
-
-@app.post("/search_files0", response_class=HTMLResponse)
-async def search_files0(
-    request: Request,
-    euid: str = Form(None),
-    is_greedy: str = Form(...),
-    key_1: str = Form(None),
-    value_1: str = Form(None),
-    key_2: str = Form(None),
-    value_2: str = Form(None),
-    key_3: str = Form(None),
-    value_3: str = Form(None),
-):
-
-    search_criteria = {}
-
-    greedy = True
-    if is_greedy != "yes":
-        greedy = False
-
-    properties = {}
-    if key_1 and value_1:
-        properties[key_1] = value_1
-    if key_2 and value_2:
-        properties[key_2] = value_2
-    if key_3 and value_3:
-        properties[key_3] = value_3
-
-    if properties:
-        search_criteria["properties"] = properties
-
-    try:
-        bfi = BloomFile(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-        euid_results = bfi.search_objs_by_addl_metadata(
-            search_criteria, greedy, "file", super_type="file"
-        )
-
-        # Fetch details for each EUID
-        detailed_results = [bfi.get_by_euid(euid) for euid in euid_results]
-
-        # Create a list of columns for the table
-        columns = ["EUID", "Date Created", "Status"]
-        if detailed_results and detailed_results[0].json_addl.get("properties"):
-            columns += list(detailed_results[0].json_addl["properties"].keys())
-
-        # Prepare the data for the template
-        table_data = []
-        for result in detailed_results:
-            row = {
-                "EUID": result.euid,
-                "Date Created": result.created_dt.strftime("%Y-%m-%d %H:%M:%S"),
-                "Status": result.bstatus,
-            }
-            for key in columns[3:]:
-                row[key] = result.json_addl["properties"].get(key, "N/A")
-            table_data.append(row)
-
-        user_data = request.session.get("user_data", {})
-        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
-
-        content = templates.get_template("search_results.html").render(
-            request=request,
-            columns=columns,
-            table_data=table_data,
-            style=style,
-            udat=user_data,
-        )
-        return HTMLResponse(content=content)
-
-    except Exception as e:
-        logging.error(f"Error searching files: {e}")
-        user_data = request.session.get("user_data", {})
-        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
-        content = templates.get_template("search_error.html").render(
-            request=request,
-            error=f"An error occurred: {e}",
-            style=style,
-            udat=user_data,
-        )
-        return HTMLResponse(content=content)
 
 
 @app.post("/search_files", response_class=HTMLResponse)
@@ -2234,6 +2141,7 @@ async def search_files(
             udat=user_data,
         )
         return HTMLResponse(content=content)
+
 
 @app.get("/get_node_property")
 async def get_node_property(request: Request, euid: str, key: str):
