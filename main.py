@@ -155,7 +155,9 @@ SKIP_AUTH = False if len(sys.argv) < 3 else True
 class AuthenticationRequiredException(HTTPException):
     def __init__(self, detail: str = "Authentication required"):
         super().__init__(status_code=401, detail=detail)
-
+class MissingSupabaseEnvVarsException(HTTPException):
+    def __init__(self, message="The Supabase environment variables are not found."):
+        super().__init__(status_code=401, detail=message)
 
 def proc_udat(email):
     with open(UDAT_FILE, "r+") as f:
@@ -263,13 +265,20 @@ async def authentication_required_exception_handler(
     return RedirectResponse(url="/login")
 
 
-async def require_auth(request: Request):
-    # Bypass auth check for the home page
+#@app.exception_handler(MissingSupabaseEnvVarsException)
+#async def missing_supabase_env_vars_exception_handler(
+#    request: Request, exc: MissingSupabaseEnvVarsException
+#):
+#    raise HTTPError("The Supabase environment variables are not found.")
 
-    if request.url.path == "/":
-        return {
-            "email": "anonymous@user.com"
-        }  # Return a default user or any placeholder
+
+async def require_auth(request: Request):
+    
+    if os.environ.get("SUPABASE_URL",'NA') == 'NA' and os.environ.get("SUPABASE_KEY",'NA') == 'NA':
+        msg = "SUPABASE_* env variables not not set.  Is your .env file missing?"
+        logging.error( msg )
+        
+        raise MissingSupabaseEnvVarsException(msg)  
 
     if "user_data" not in request.session:
         raise AuthenticationRequiredException()
@@ -304,6 +313,7 @@ async def read_root(request: Request, ):
 
 @app.get("/login", include_in_schema=False)
 async def get_login_page(request: Request):
+    
     user_data = request.session.get("user_data", {})
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
 
