@@ -2,6 +2,9 @@ from auth.supabase.connection import create_supabase_client
 
 class UserContext:
     def __init__(self):
+        
+        from IPython import embed
+        embed() 
         self.supabase = create_supabase_client()
 
     def get_current_session(self):
@@ -16,7 +19,6 @@ class UserContext:
         """Create a new user with the given email and password."""
         credentials = {'email': email, 'password': password}
         return self.supabase.auth.sign_up(credentials)
-
 
 # Example usage
 user_context = UserContext()
@@ -34,3 +36,4 @@ email = "joshswebdevelopment@gmail.com"
 password = "notapplicable"
 response = user_context.create_new_user(email, password)
 print(response)  # This will print the response from the Supabase API
+

@@ -13,9 +13,10 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime, timedelta, date
 
-# Do the logging thing
-import logging
-from logging.handlers import RotatingFileHandler
+# The following three lines allow for dropping embed() in to block and present an IPython shell
+from IPython import embed
+import nest_asyncio
+nest_asyncio.apply()
 
 
 def get_clean_timestamp():
@@ -25,6 +26,24 @@ def get_clean_timestamp():
 
 os.makedirs("logs", exist_ok=True)
 
+
+#setup_logging()
+
+def get_datetime_string():
+    # Choose your desired timezone, e.g., 'US/Eastern', 'Europe/London', etc.
+    timezone = pytz.timezone("US/Eastern")
+
+    # Get current datetime with timezone
+    current_datetime_with_tz = datetime.now(timezone)
+
+    # Format as string
+    datetime_string = current_datetime_with_tz.strftime("%Y-%m-%d %H:%M:%S %Z%z")
+
+    return str(datetime_string)
+
+
+import logging
+from logging.handlers import RotatingFileHandler
 
 def setup_logging():
     # uvicorn to capture logs from all libs
@@ -53,14 +72,8 @@ def setup_logging():
     logger.addHandler(c_handler)
     logger.addHandler(f_handler)
 
-
 setup_logging()
 
-# The following three lines allow for dropping embed() in to block and present an IPython shell
-from IPython import embed
-import nest_asyncio
-
-nest_asyncio.apply()
 
 from fastapi import (
     FastAPI,
@@ -275,7 +288,8 @@ async def auth_exception_handler(_request: Request, _exc: RequireAuthException):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, _=Depends(require_auth)):
+async def read_root(request: Request, ):
+
     count = request.session.get("count", 0)
     count += 1
     request.session["count"] = count
@@ -343,87 +357,48 @@ async def oauth_callback(request: Request):
     "/logout"
 )  # Using a GET request for simplicity, but POST is more secure for logout operations
 async def logout(request: Request, response: Response):
-    # Clear the session data
-    request.session.clear()
+    
+    try:
+        logging.warning(f"Logging out user: Clearing session data:  {request.session}")
 
-    # Optionally, clear the session cookie.
-    # Note: This might not be necessary if your session middleware automatically handles it upon session.clear().
-    response.delete_cookie(key="session", path="/")
+        # Initialize the Supabase client
+        supabase = create_supabase_client()
 
+        # Get the user's access token
+        access_token = request.session.get("user_data", {}).get("access_token")
+
+        if access_token:
+            # Call the Supabase sign-out endpoint
+            headers = {"Authorization": f"Bearer {access_token}"}
+            async with httpx.AsyncClient() as client:
+                logging.debug(f"Logging out user: Calling Supabase logout endpoint")
+                response = await client.post(
+                    os.environ.get("SUPABASE_URL",'NA') + "/auth/v1/logout", headers=headers
+                )
+                logging.debug(f"Logging out user: Supabase logout response: {response}")
+                if response.status_code != 204:
+                    logging.error("Failed to log out from Supabase")
+
+
+        # Clear the session data
+        request.session.clear()
+
+        # Debug the session to ensure it's cleared
+        logging.warning(f"Session after clearing: {request.session}")
+        
+        # Optionally, clear the session cookie.
+        # Note: This might not be necessary if your session middleware automatically handles it upon session.clear().
+        response.delete_cookie(key="session", path="/")
+
+    except Exception as e:
+        logging.error(f"Error during logout: {e}")
+        return JSONResponse(
+            content={"message": "An error occurred during logout: "+ str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    
     # Redirect to the homepage
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-
-
-@app.post("/login", include_in_schema=False)
-async def login_without_network(
-    request: Request, response: Response, email: str = Form(...)
-):
-    if not email:
-        return JSONResponse(
-            content={"message": "Email is required"},
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
-    # Set session cookie after successful login, with a 60-minute expiration
-    response.set_cookie(
-        key="session", value="user_session_token", httponly=True, max_age=3600, path="/"
-    )
-    request.session["user_data"] = proc_udat(email)
-    print(request.session)
-
-    # Redirect to the root path ("/") after successful login
-    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-
-
-@app.post("/login", include_in_schema=False)
-async def login(request: Request, response: Response, email: str = Form(...)):
-    # Use a static password for simplicity (not recommended for production)
-    password = "notapplicable"
-    # Initialize the Supabase client
-    supabase = create_supabase_client()
-
-    if not email:
-        return JSONResponse(
-            content={"message": "Email is required"},
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
-    with open(UDAT_FILE, "r+") as f:
-        user_data = json.load(f)
-        if email not in user_data:
-            # The email is not in udat.json, attempt to sign up the user
-            auth_response = supabase.auth.sign_up(
-                {"email": email, "password": password}
-            )
-            if "error" in auth_response and auth_response["error"]:
-                # Handle signup error
-                return JSONResponse(
-                    content={"message": auth_response["error"]["message"]},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
-            else:
-                pass
-
-        else:
-            # The email exists in udat.json, attempt to sign in the user
-            auth_response = supabase.auth.sign_in_with_password(
-                {"email": email, "password": password}
-            )
-            if "error" in auth_response and auth_response["error"]:
-                # Handle sign-in error
-                return JSONResponse(
-                    content={"message": auth_response["error"]["message"]},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
-
-    # Set session cookie after successful authentication, with a 60-minute expiration
-    response.set_cookie(
-        key="session", value="user_session_token", httponly=True, max_age=3600, path="/"
-    )
-    request.session["user_data"] = proc_udat(email)
-    # Redirect to the root path ("/") after successful login/signup
-    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-    # Add this line at the end of the /login endpoint
 
 
 #
