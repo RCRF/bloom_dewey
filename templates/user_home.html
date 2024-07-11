@@ -48,20 +48,23 @@
     
     {% include 'bloom_header.html' %}
 
+    <table><tr><td>
     <div class="container">
         <h1>Welcome, {{ user_data.email }}</h1>
         <ul>
         <div class="user-info">
-            <h2>User Information</h2>
             <hr>
+            <h2>User Information</h2>
+            
             <ul>
             <p><strong>Email:</strong> {{ user_data.email }}</p>
             <p><strong>Style Sheet:</strong> {{ user_data.style_css }}</p>
             </ul>
         </div>
         <div class="session-info">
-            <h2>Session Information</h2>
             <hr>
+            <h2>Session Information</h2>
+            
             <ul>
             <p><strong>Last Login:</strong> {{ session_data.last_login }}</p>
             <p><strong>Session Duration:</strong> {{ session_data.session_duration }}</p>
@@ -69,8 +72,9 @@
             </ul>
         </div>
         <div id="skin-css-section">
-            <h3>Change The Bloom Skin CSS</h3>
             <hr>
+            <h3>Change The Bloom Skin CSS</h3>
+            
             <ul>
             <small>Placing a valid css file in static/skins will make the CSS available here.</small>
             <ul>
@@ -89,16 +93,26 @@
                 </table>
             </ul></ul>
         </div>
-        <div class="actions">
-            <h2>Actions</h2>
+    </td><td>
+        <div class="dew">
             <hr>
+            <h2>Dewey Global Variables</h2>
+            <ul>
+                 <p>Supabase URL: {{ supabase_url }}</p>
+                <p>Whitelisted Domains: {{ whitelisted_domains }}</p>
+                <p>3 Pucket Prefix: {{ s3_bucket_prefix }}</p>
+            </ul>
+        </div>
+        <div class="actions">
+            <hr>
+            <h2>Actions</h2>
             <ul>
             <a href="/user_audit_logs?username={{ user_data.email }}">View Your Audit Logs</a>
             </ul>
         </div>
     </ul>
     </div>
-
+</td></tr></table>
     <script>
         function updatePreferenceAndReload(key, value) {
             console.log('Updating', key, 'to', value);
