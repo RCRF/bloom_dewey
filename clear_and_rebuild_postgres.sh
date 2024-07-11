@@ -1,6 +1,6 @@
 # SOURCE THIS SCRIPT WITH THE BLOOM CONDA ENV ACTIVE
 
-echo "Do you really wish to stop postgres and irrevocably delete what is there, then replace it with freshly seeded templates, and that is it?"
+echo "\n\nDo you really wish to stop postgres and irrevocably delete what is there, then replace it with freshly seeded templates, and that is it?"
 echo "Type 'yes' to proceed, anything else exits."
 read -r response
 

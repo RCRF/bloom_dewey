@@ -1,0 +1,29 @@
+<div class="accordion-content">
+    <ul>
+        <h3>Search File Sets By</h3>
+        <form id="searchFileSetForm" action="search_file_sets" method="post" enctype="multipart/form-data">
+            <label for="file_set_name">Name: </label>
+            <input type="text" id="file_set_name" name="file_set_name" value=""><br><br>
+
+            <label for="file_set_description">Description: </label>
+            <input type="text" id="file_set_description" name="file_set_description" value=""><br><br>
+
+            <label for="file_set_tag">Tag: </label>
+            <input type="text" id="file_set_tag" name="file_set_tag" value=""><br><br>
+
+            <label for="comments">Comments: </label>
+            <input type="text" id="comments" name="comments" value=""><br><br>
+
+            <label for="file_euids">File EUIDs (not working presently): </label>
+            <input type="text" id="file_euids" name="file_euids" value=""><br><br>
+
+            <label for="is_greedy">Greedy Search: </label>
+            <select name="is_greedy">
+                <option value="yes" selected>yes</option>
+                <option value="no">no</option>
+            </select><br><br>
+
+            <button type="submit">Search File Sets</button>
+        </form>
+    </ul>
+</div>
