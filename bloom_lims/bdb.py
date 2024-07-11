@@ -1166,6 +1166,45 @@ class BloomObj:
         # Execute the query
         return query.all()
 
+   
+    def query_user_audit_logs(self, username):
+        logging.debug(f"Querying audit log for user: {username}")
+
+        q = text(
+            """
+            SELECT
+                al.rel_table_euid_fk AS euid,
+                al.changed_by,
+                al.operation_type,
+                al.changed_at,
+                COALESCE(gt.name, gi.name, gil.name) AS name,
+                COALESCE(gt.polymorphic_discriminator, gi.polymorphic_discriminator, gil.polymorphic_discriminator) AS polymorphic_discriminator,
+                COALESCE(gt.super_type, gi.super_type, gil.super_type) AS super_type,
+                COALESCE(gt.btype, gi.btype, gil.btype) AS btype,
+                COALESCE(gt.b_sub_type, gi.b_sub_type, gil.b_sub_type) AS b_sub_type,
+                COALESCE(gt.bstatus, gi.bstatus, gil.bstatus) AS status,
+                al.old_value,
+                al.new_value
+            FROM
+                audit_log al
+                LEFT JOIN generic_template gt ON al.rel_table_uuid_fk = gt.uuid
+                LEFT JOIN generic_instance gi ON al.rel_table_uuid_fk = gi.uuid
+                LEFT JOIN generic_instance_lineage gil ON al.rel_table_uuid_fk = gil.uuid
+            WHERE
+                al.changed_by = :username
+            ORDER BY
+                al.changed_at DESC;
+            """
+        )
+
+        logging.debug(f"Executing query: {q}")
+
+        result = self.session.execute(q, {'username': username})
+        rows = result.fetchall()
+
+        logging.debug(f"Query returned {len(rows)} rows")
+
+        return rows
     # Aggregate Report SQL
     def query_generic_template_stats(self):
         q = text(

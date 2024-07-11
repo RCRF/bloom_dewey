@@ -258,70 +258,81 @@
         <ul>
             <h3>Search Files</h3><ul>
             <table>
-                <tr><td style="align:top;">
-        <form id="searchFileForm" action="search_files" method="post" enctype="multipart/form-data">
-            <input type="hidden" value="" id="euid" name="euid"><br>
+                <tr>
+                    <td style="align:top;">
+                        <!-- New form for querying by EUIDs -->
+                        <form id="queryByEuidsForm" action="query_by_euids" method="post" enctype="multipart/form-data">
+                            <label for="file_euids">File EUIDs (one per line):</label>
+                            <textarea id="file_euids" name="file_euids" rows="10" cols="25" style="resize: both;"></textarea><br>
+                            <button type="submit">Query by EUIDs</button>
+                        </form>
+                    </td>
+                    <td style="align:top;">
+                        <!-- Existing search form -->
+                        <form id="searchFileForm" action="search_files" method="post" enctype="multipart/form-data">
+                            <input type="hidden" value="" id="euid" name="euid"><br>
 
-            <label for="is_greedy">Greedy Search: </label>
-            <select name="is_greedy">
-                <option value="yes" selected>yes</option>
-                <option value="no">no</option>
-            </select>
-            <br>
-            <br>
-            <label for="key">Specify search KEY and VALUE: </label>
-            <ul>
-            <small>
-            CRUDE ATM. Manually set key and key value to search, up to 3 pairs (this is a limitation of my crude ui, not the db, which can use arbitrary numbers of search terms).
-            </small></br>
-            <br>
-            <label for="key_1">Key 1: </label>
-            <input type="text" id="key_1" name="key_1"><br>
+                            <label for="is_greedy">Greedy Search: </label>
+                            <select name="is_greedy">
+                                <option value="yes" selected>yes</option>
+                                <option value="no">no</option>
+                            </select>
+                            <br>
+                            <br>
+                            <label for="key">Specify search KEY and VALUE: </label>
+                            <ul>
+                            <small>
+                            CRUDE ATM. Manually set key and key value to search, up to 3 pairs (this is a limitation of my crude ui, not the db, which can use arbitrary numbers of search terms).
+                            </small></br>
+                            <br>
+                            <label for="key_1">Key 1: </label>
+                            <input type="text" id="key_1" name="key_1"><br>
 
-            <label for="value_1">Value 1: </label>
-            <input type="text" id="value_1" name="value_1"><br><br>
+                            <label for="value_1">Value 1: </label>
+                            <input type="text" id="value_1" name="value_1"><br><br>
 
-            <label for="key_2">Key 2: </label>
-            <input type="text" id="key_2" name="key_2"><br>
+                            <label for="key_2">Key 2: </label>
+                            <input type="text" id="key_2" name="key_2"><br>
 
-            <label for="value_2">Value 2: </label>
-            <input type="text" id="value_2" name="value_2"><br><br>
+                            <label for="value_2">Value 2: </label>
+                            <input type="text" id="value_2" name="value_2"><br><br>
 
-            <label for="key_3">Key 3: </label>
-            <input type="text" id="key_3" name="key_3"><br>
+                            <label for="key_3">Key 3: </label>
+                            <input type="text" id="key_3" name="key_3"><br>
 
-            <label for="value_3">Value 3: </label>
-            <input type="text" id="value_3" name="value_3"><br>
-            <br>
-        </ul>
-        <button type="submit">Search Files</button>
-        </form>
-
-        </td><td> 
-            <ul>
-            Keys available in all File records.
-                <pre>
-            "lab_code":"",
-            "original_file_name": "",
-            "original_file_path": "",
-            "original_file_size_bytes": "",
-            "original_file_md5": "",
-            "original_server_ip": "",
-            "original_local_server_name": "",
-            "original_file_suffix": "",
-            "current_s3_key": "",
-            "current_s3_bucket_name": "",
-            "x_rcrf_patient_uid": "",
-            "x_clinician_id": "",
-            "x_relevant_datetime": "",
-            "x_health_event_id": "",
-            "x_study_id": "",
-            "upload_group_key": ""
-                </pre>
-    </ul>
-    </td>
-    </tr></table>
-    </ul></ul>
+                            <label for="value_3">Value 3: </label>
+                            <input type="text" id="value_3" name="value_3"><br>
+                            <br>
+                        </ul>
+                        <button type="submit">Search Files</button>
+                        </form>
+                    </td>
+                    <td style="align:top;">
+                        <ul>
+                        Keys available in all File records.
+                            <pre>
+                        "lab_code":"",
+                        "original_file_name": "",
+                        "original_file_path": "",
+                        "original_file_size_bytes": "",
+                        "original_file_md5": "",
+                        "original_server_ip": "",
+                        "original_local_server_name": "",
+                        "original_file_suffix": "",
+                        "current_s3_key": "",
+                        "current_s3_bucket_name": "",
+                        "x_rcrf_patient_uid": "",
+                        "x_clinician_id": "",
+                        "x_relevant_datetime": "",
+                        "x_health_event_id": "",
+                        "x_study_id": "",
+                        "upload_group_key": ""
+                            </pre>
+                    </ul>
+                    </td>
+                </tr>
+            </table>
+        </ul></ul>
     </div>
 
     <hr><hr>
@@ -371,7 +382,7 @@
                 <label for="comments">Comments: </label>
                 <input type="text" id="comments" name="comments" value=""><br><br>
 
-                <label for="file_euids">File EUIDs (not working presentle): </label>
+                <label for="file_euids">File EUIDs (not working presently): </label>
                 <input type="text" id="file_euids" name="file_euids" value=""><br><br>
 
                 <label for="is_greedy">Greedy Search: </label>
@@ -391,6 +402,7 @@
             document.getElementById('downloadFileForm').reset();
             document.getElementById('searchFileForm').reset();
             document.getElementById('searchFileSetForm').reset();
+            document.getElementById('queryByEuidsForm').reset();
         }
 
         window.onload = resetForms;

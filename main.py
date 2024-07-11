@@ -13,12 +13,17 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime, timedelta, date
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 # The following three lines allow for dropping embed() in to block and present an IPython shell
 from IPython import embed
 import nest_asyncio
 
 nest_asyncio.apply()
 
+import difflib
 
 def get_clean_timestamp():
     # Format: YYYY-MM-DD hh:mm:ss
@@ -26,10 +31,6 @@ def get_clean_timestamp():
 
 
 os.makedirs("logs", exist_ok=True)
-
-
-# setup_logging()
-
 
 def get_datetime_string():
     # Choose your desired timezone, e.g., 'US/Eastern', 'Europe/London', etc.
@@ -197,6 +198,33 @@ def get_well_color(quant_value):
         b = int(255 - 255 * ((quant_value - 0.5) / 0.5))  # From 255 to 0
 
     return f"rgb({r}, {g}, {b})"
+
+
+def highlight_json_changes(old_json_str, new_json_str):
+    try:
+        old_json = json.loads(old_json_str)
+        new_json = json.loads(new_json_str)
+    except json.JSONDecodeError:
+        return old_json_str, new_json_str
+    
+    old_json_formatted = json.dumps(old_json, indent=2)
+    new_json_formatted = json.dumps(new_json, indent=2)
+    
+    diff = difflib.ndiff(old_json_formatted.splitlines(), new_json_formatted.splitlines())
+    
+    old_json_highlighted = []
+    new_json_highlighted = []
+    
+    for line in diff:
+        if line.startswith("- "):
+            old_json_highlighted.append(f'<span class="deleted">{line[2:]}</span>')
+        elif line.startswith("+ "):
+            new_json_highlighted.append(f'<span class="added">{line[2:]}</span>')
+        elif line.startswith("  "):
+            old_json_highlighted.append(line[2:])
+            new_json_highlighted.append(line[2:])
+    
+    return '\n'.join(old_json_highlighted), '\n'.join(new_json_highlighted)
 
 
 async def get_relationship_data(obj):
@@ -626,6 +654,55 @@ async def Acalculate_cogs_children(euid, request: Request, _auth=Depends(require
         return json.dumps({"success": True, "cogs_value": cogs_value})
     except Exception as e:
         return json.dumps({"success": False, "message": str(e)})
+
+@app.post("/query_by_euids", response_class=HTMLResponse)
+async def query_by_euids(request: Request, file_euids: str = Form(...)):
+    try:
+        bfi = BloomFile(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+        euid_list = [euid.strip() for euid in file_euids.split("\n") if euid.strip()]
+
+        detailed_results = [bfi.get_by_euid(euid) for euid in euid_list if euid]
+
+        # Create a list of columns for the table
+        columns = ["EUID", "Date Created", "Status"]
+        if detailed_results and detailed_results[0].json_addl.get("properties"):
+            columns += list(detailed_results[0].json_addl["properties"].keys())
+
+        # Prepare the data for the template
+        table_data = []
+        for result in detailed_results:
+            row = {
+                "EUID": result.euid,
+                "Date Created": result.created_dt.strftime("%Y-%m-%d %H:%M:%S"),
+                "Status": result.bstatus,
+            }
+            for key in columns[3:]:
+                row[key] = result.json_addl["properties"].get(key, "N/A")
+            table_data.append(row)
+
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+
+        content = templates.get_template("search_results.html").render(
+            request=request,
+            columns=columns,
+            table_data=table_data,
+            style=style,
+            udat=user_data,
+        )
+        return HTMLResponse(content=content)
+
+    except Exception as e:
+        logging.error(f"Error querying files: {e}", exc_info=True)
+        user_data = request.session.get("user_data", {})
+        style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+        content = templates.get_template("search_error.html").render(
+            request=request,
+            error=f"An error occurred: {e}",
+            style=style,
+            udat=user_data,
+        )
+        return HTMLResponse(content=content)
 
 
 async def calculate_cogs_parents(euid, request: Request, _auth=Depends(require_auth)):
@@ -1145,7 +1222,7 @@ async def euid_details0(
 
     # Fetch the object using euid
     obj = bobdb.get_by_euid(euid)
-    relationship_data = get_relationship_data(obj) if obj else {}
+    relationship_data = await get_relationship_data(obj) if obj else {}
 
     if not obj:
         return HTTPException(status_code=404, detail="Object not found")
@@ -1192,7 +1269,7 @@ async def euid_details(
     try:
         # Fetch the object using euid
         obj = bobdb.get_by_euid(euid)
-        relationship_data = get_relationship_data(obj) if obj else {}
+        relationship_data = await get_relationship_data(obj) if obj else {}
 
         if not obj:
             raise HTTPException(status_code=404, detail="Object not found")
@@ -1535,6 +1612,46 @@ async def get_node_info(request: Request, euid, _auth=Depends(require_auth)):
     else:
         return {"error": "Node not found"}
 
+@app.get("/user_audit_logs", response_class=HTMLResponse)
+async def user_audit_logs(request: Request, username: str, _auth=Depends(require_auth)):
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    results = bobdb.query_user_audit_logs(username)
+    
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+    
+    content = templates.get_template("audit_log_by_user.html").render(
+        results=results, username=username, style=style, udat=user_data, request=request, highlight_json_changes=highlight_json_changes
+
+    )
+    
+    return HTMLResponse(content=content)
+
+@app.get("/user_home", response_class=HTMLResponse)
+async def user_home(request: Request):
+    user_data = request.session.get("user_data", {})
+    session_data = request.session.get("session_data", {})  # Extract session_data from session
+
+    if not user_data:
+        return RedirectResponse(url="/login")
+
+    # Directory containing the CSS files
+    skins_directory = "static/skins"
+    css_files = [f"{skins_directory}/{file}" for file in os.listdir(skins_directory) if file.endswith(".css")]
+
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+    dest_section = request.query_params.get("dest_section", {"section": ""})  # Example value
+
+    content = templates.get_template("user_home.html").render(
+        request=request,
+        user_data=user_data,
+        session_data=session_data,  # Pass session_data to template
+        css_files=css_files,
+        style=style,
+        dest_section=dest_section
+    )
+    return HTMLResponse(content=content)
+
 
 def generate_dag_json_from_all_objects_v2(
     request: Request, euid="AY1", depth=6, _auth=Depends(require_auth)
@@ -1764,15 +1881,15 @@ def generate_unique_upload_key():
     return f"{color.replace(' ','_')}_{invertebrate.replace(' ','_')}_{number}"
 
 
-@app.get("/create_file_form", response_class=HTMLResponse)
-async def create_file_form(request: Request, _auth=Depends(require_auth)):
+@app.get("/dewey", response_class=HTMLResponse)
+async def dewey(request: Request, _auth=Depends(require_auth)):
     request.session.pop("form_data", None)
 
     accordion_states = dict(request.session)
     user_data = request.session.get("user_data", {})
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
     upload_group_key = generate_unique_upload_key()
-    content = templates.get_template("create_file.html").render(
+    content = templates.get_template("dewey.html").render(
         request=request,
         accordion_states=accordion_states,
         style=style,
@@ -1960,7 +2077,7 @@ async def create_file(
         accordion_states = dict(request.session)
         user_data = request.session.get("user_data", {})
         style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
-        content = templates.get_template("create_file.html").render(
+        content = templates.get_template("dewey.html").render(
             request=request,
             error=f"An error occurred: {e}",
             accordion_states=accordion_states,
@@ -2060,7 +2177,7 @@ async def delete_temp_file(
     if file_path.exists():
         background_tasks.add_task(delete_file, file_path)
         background_tasks.add_task(delete_file, file_path_yaml)
-    return RedirectResponse(url="/create_file_form", status_code=303)
+    return RedirectResponse(url="/dewey", status_code=303)
 
 
 @app.post("/search_files", response_class=HTMLResponse)
@@ -2197,8 +2314,6 @@ async def create_file_set(
 
     except Exception as e:
         raise (e)
-        #    return RedirectResponse(url="/create_file_form", status_code=303)
-
 
 # The following is very redundant to the file_search and <s>probably</s> should be refactored
 @app.post("/search_file_sets", response_class=HTMLResponse)

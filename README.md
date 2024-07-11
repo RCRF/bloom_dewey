@@ -1,5 +1,5 @@
 # Bloom : Templated Abstract Polymorphic (and opinionated) LIMS 
-_a conceptual gambit in collaboration with chatGPT4_  /// _POC v0.8.43_
+_a conceptual gambit in collaboration with chatGPT4_  /// _POC v0.9.2_
 
 
 [![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/macos.yaml) [![BLOOM LIMS Build Tests, MacOS, Ubuntu & CentOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/ubuntu.yaml) [![BLOOM CENTOS](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml/badge.svg)](https://github.com/Daylily-Informatics/bloom/actions/workflows/centos.yaml) 
@@ -259,15 +259,18 @@ pytest
 
 
 
-# Dev Notes
+# Dev Tools
+__note:__ all commands below are expected to be run from a shell with conda activated.
+`conda activate BLOOM`
 
-## Rebuild a fresh DB, while leaving the environment untouched.
-This is helpful if iterating on json object definitions.
+## Drop The Entire Database(loose all data!) > Rebuild The Database / Re-seed With All Accessible json Templates
 
-### Commands
-It is assumed:
--  That a fresh installation was successful (_see the install section if you are starting out with a new install_).
-- You are in the repo root directory and have run `conda activate BLOOM`.
+**The steps are wrapped in a script, please see [clear_and_rebuild_postgres.sh](bloom_lims/env/clear_and_rebuild_postgres.sh).**
+
+It is executed as follows:
+```bash
+source clear_and_rebuild_postgres.sh
+```
 
 ### Stop pgsql
 - `source bloom_lims/bin/stop_bloom_db.sh` 
@@ -283,11 +286,12 @@ Similar to `pytest`, but more extensive. Largely useful in development work.  Th
 - `python tx.py 2 `.
 
 ### Run the bloom UI
-- `uvicorn main:app --reload --log-level trace --port 8911 --timeout-keep-alive 303`
-_or_
-- `source source run_bloomui.sh` # this runs the command above
+- `source source run_bloomui.sh`
  
- 
- 
+### Run the pgadmin UI
+- `source bloom_lims/env/install_pgadmin.sh`
+
+### Start Interactive Shell w/Core Bloom Objects Instantiated
+`python bloom_shell.py` 
  
  

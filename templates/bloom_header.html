@@ -10,7 +10,7 @@
         {% elif bloom_mod == 'lims' %}
             <a href="/lims">lims</a>
         {% elif bloom_mod == 'dewey' %}
-            <a href="/create_file_form">dewey</a>
+            <a href="/dewey">dewey</a>
         {% else %}
             n/a
         {% endif %}
@@ -28,18 +28,19 @@
         {% endif %}
     </small>
     <span style="margin: 0 5px;"> /// </span>
-    <a href="#" style="margin: 0 5px;">
         <small>
             hello 
             {% if udat and 'email' in udat %}
+                <a href="/user_home" style="margin: 0 5px;">
                 {{ udat['email'] }}
+                </a>
             {% else %}
                 <a href=login>==> please login <==</a>
             {% endif %}
         </small>
-    </a>
+    
     <span style="margin: 0 5px;"> /// </span>
     <small style="margin: 0 5px;"><a href="logout">logout</a></small>
 </div>
 <hr>
-<ul>
+
