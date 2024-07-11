@@ -14,7 +14,7 @@ sudo apt-get install -y htop glances atop emacs tmux git rclone fd-find # this m
 
 
 # Create place to clone repos
-mkdir -p projects/git && projects/git
+mkdir -p ~/projects/git && cd ~/projects/git
 
 # Clone bloom & move into it
 git clone git@github.com:Daylily-Informatics/bloom.git
