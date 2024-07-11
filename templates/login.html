@@ -61,12 +61,14 @@
     }
     
     function handleGoogleLogin() {
+
         try {
-            window.location.href = 'https://kslpzwcmkyrbxqmlhgln.supabase.co/auth/v1/authorize?provider=google&userinfo.email&prompt=select_account';
+            // Update the Supabase authentication URL with your correct IP address and port
+            window.location.href = '{{ supabase_url }}/auth/v1/authorize?provider=google&userinfo.email&prompt=select_account'; // Replace with your actual IP and port
         } catch (error) {
             console.error("Google login error:", error);
             alert('An error occurred while attempting to log in with Google. Please try again.');
-        }
+      }
     }
 </script>
 

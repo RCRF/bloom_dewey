@@ -49,7 +49,7 @@ exit
 
 # You now should see a '(base)' to the left of your prompt.  This means conda is active.  If you don't see it, you can activate it with `conda activate base`   
 
-cd projects/git/bloom/
+cd ~/projects/git/bloom/
 
 
  ##
