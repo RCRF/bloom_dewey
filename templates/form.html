@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create New Instance</title>
+</head>
+<body>
+    <h1>Create New Instance</h1>
+    <form method="post" action="/create_instance">
+        {% for field in fields %}
+            <div>
+                <label for="{{ field.name }}">{{ field.label }}</label>
+                {% if field.type == "select" %}
+                    <select name="{{ field.name }}">
+                        {% for option in field.options %}
+                            <option value="{{ option }}">{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    <input type="{{ field.type }}" name="{{ field.name }}" />
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

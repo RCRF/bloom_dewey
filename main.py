@@ -1206,52 +1206,6 @@ async def object_templates_summary(request: Request, _auth=Depends(require_auth)
     )
     return HTMLResponse(content=content)
 
-
-@app.get("/euid_details0")
-async def euid_details0(
-    request: Request,
-    euid: str = Query(..., description="The EUID to fetch details for"),
-    _uuid: str = Query(None, description="Optional UUID parameter"),
-    _auth=Depends(require_auth),
-):
-
-    bobdb = BloomObj(
-        BLOOMdb3(app_username=request.session["user_data"]["email"]),
-        is_deleted=is_deleted,
-    )
-
-    # Fetch the object using euid
-    obj = bobdb.get_by_euid(euid)
-    relationship_data = await get_relationship_data(obj) if obj else {}
-
-    if not obj:
-        return HTTPException(status_code=404, detail="Object not found")
-
-    # Convert the SQLAlchemy object to a dictionary, checking for attribute existence
-    obj_dict = {
-        column.key: getattr(obj, column.key)
-        for column in obj.__table__.columns
-        if hasattr(obj, column.key)
-    }
-    obj_dict["parent_template_euid"] = (
-        obj.parent_template.euid if hasattr(obj, "parent_template") else ""
-    )
-    audit_logs = bobdb.query_audit_log_by_euid(euid)
-    user_data = request.session.get("user_data", {})
-    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
-
-    content = templates.get_template("euid_details.html").render(
-        request=request,
-        object=obj_dict,
-        style=style,
-        relationships=relationship_data,
-        audit_logs=audit_logs,
-        oobj=obj,
-        udat=request.session["user_data"],
-    )
-    return HTMLResponse(content=content)
-
-
 # Quick hack to allow the details page to display deleted items.  Need to rework how the rest of the system juggles this.
 @app.get("/euid_details")
 async def euid_details(
@@ -2456,3 +2410,113 @@ async def visual_report(request: Request):
     context = {"request": request, "plots": plots}
 
     return HTMLResponse(content=template.render(context), status_code=200)
+
+### 
+#  INSTANCE INSTANTIATION FORMS !!!
+###
+
+from typing import List, Dict
+from pydantic import BaseModel
+
+# Add this class for form fields
+class FormField(BaseModel):
+    name: str
+    type: str
+    label: str
+    options: List[str] = []
+
+def get_template_data(template_euid: str) -> Dict:
+    # Fetch the template data from the database based on the template EUID
+    # For demonstration, let's assume we have the data as a dictionary
+    template_data = {
+        "description": "Generic File",
+        "properties": {
+            "name": "A Generic File",
+            "comments": "",
+            "lab_code": "",
+            "original_file_name": "",
+            # ...
+        },
+        "controlled_properties": {
+            "purpose": {
+                "type": "string",
+                "enum": ["Clinical", "Research", "Other"]
+            },
+            "variable": {
+                "type": "string",
+                "enum": ["Diagnosis", "Staging", "Procedure", "Treatments", "Testing", "Imaging", "Hospitalization", "Biospecimen collection", "Disease status", "Other"]
+            },
+            "sub_variable": {
+                "type": "dependent string",
+                "on": "variable",
+                "enum": {
+                    "Staging": ["", "Stage", "Metastases"],
+                    "Procedure": ["", "Surgery", "Biopsy"],
+                    "Treatments": ["", "Anti-cancer medication", "Supportive medication", "Vaccine", "Radiation therapy", "Clinical Trial"],
+                    "Testing": ["", "Pathology testing", "Genetic testing", "ctDNA monitoring", "Cancer markers", "Blood panels", "ELISPOT etc?"],
+                    "Imaging": ["", "Chest, abdomen, pelvis", "Chest", "Abdomen", "Pelvis"],
+                    "Biospecimen collection": ["", "Blood"],
+                    "Disease status": ["", "Progression"]
+                }
+            },
+            # ...
+        }
+    }
+    return template_data
+
+def generate_form_fields(template_data: Dict) -> List[FormField]:
+    properties = template_data.get("properties", {})
+    controlled_properties = template_data.get("controlled_properties", {})
+    form_fields = []
+
+    for prop, prop_type in properties.items():
+        if prop in controlled_properties:
+            cp = controlled_properties[prop]
+            if cp["type"] == "dependent string":
+                # Handle dependent controlled properties
+                for key, value in cp["enum"].items():
+                    form_fields.append(FormField(
+                        name=f"{prop}_{key}",
+                        type="select",
+                        label=f"{prop.replace('_', ' ').capitalize()} ({key})",
+                        options=value
+                    ))
+            else:
+                # Handle regular controlled properties
+                form_fields.append(FormField(
+                    name=prop,
+                    type="select",
+                    label=prop.replace("_", " ").capitalize(),
+                    options=cp.get("enum", [])
+                ))
+        else:
+            form_fields.append(FormField(
+                name=prop,
+                type="text",
+                label=prop.replace("_", " ").capitalize()
+            ))
+
+    return form_fields
+
+@app.get("/create_instance/{template_euid}", response_class=HTMLResponse)
+async def create_instance_form(request: Request, template_euid: str):
+    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    
+    tempi = BO.get_by_euid(template_euid)
+    template_data = tempi.json_addl
+    form_fields = generate_form_fields(template_data)
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+    content = templates.get_template("form.html").render(
+        request=request, 
+        fields=form_fields,
+        style=style,
+        udat=user_data
+    )
+    return HTMLResponse(content=content)
+
+@app.post("/create_instance")
+async def create_instance(request: Request):
+    form_data = await request.form()
+    # Process and save the form data
+    return HTMLResponse(content="Instance created successfully!", status_code=200)
