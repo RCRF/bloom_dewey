@@ -13,6 +13,10 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime, timedelta, date
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 # The following three lines allow for dropping embed() in to block and present an IPython shell
 from IPython import embed
 import nest_asyncio
