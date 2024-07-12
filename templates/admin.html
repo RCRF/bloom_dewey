@@ -31,120 +31,27 @@
 <body>
 
     {% include 'bloom_header.html' %}
-
-    <h2>Bloom Administration</h2>
+    <br>
+<ul>
+    <h2>Bloom Administration TBA</h2>
+    <ul><small><a href="/user_home">user preferences may be edited here</a></small></ul>
         <hr>
         <ul>
 
 
-    <h2> LOGOUT // END SESSION </h2>
-    <ul>
-        <li><a href="/logout">logout</a></li>
-    </ul>
+    <h2><a href="/bloom_schema_report"> Schema Summary Statistics</a> </h2>
 
-    <br>
-
-
-    <h2> Schema Summary Statistics </h2>
-    <ul>
-        <li><a href="/bloom_schema_report">report</a></li>
-    </ul>
-
-    <br>
-
-
-    <h2>User Session Configuration </h2>
-    <hr>
-
-    <ul><ul>
-
-        <div id="zebra-css-section" >
-    <h3>Zebra Printer Config</h3>
-    <ul>
     
-    <table>
-        <!-- Display select dropdowns for specific keys and their current value from user data -->
-        {% for key in ['print_lab', 'printer_name', 'label_zpl_style'] %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>
-                Current: {{ user_data.get(key, 'Not set') }} 
-                <select name="{{ key }}" onchange="updatePreferenceAndReload('{{ key }}', this.value)">
-                    {% for option in printer_info[key] %}
-                        <option value="{{ option }}" {% if user_data.get(key) == option %}selected{% endif %}>{{ option }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        
-        {% endfor %}
-    </table></div>
-    <br>
-    </ul><ul>
-    
-    <div id="skin-css-section" >
-    <h3 >Change The Bloom Skin CSS</h3>
-    <small>Placing a valid css file in static/skins will make the CSS available here.</small>
 
-    <ul>
-    <table>
-        <!-- Display select dropdowns for specific keys and their current value from user data -->
-        {% for key in ['style_css'] %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>
-                Current: {{ user_data.get(key, 'Not set') }} 
-                <select name="{{ key }}" onchange="updatePreferenceAndReload('{{ key }}', this.value)">
-                    {% for option in printer_info[key] %}
-                        <option value="{{ option }}" {% if user_data.get(key) == option %}selected{% endif %}>{{ option }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        {% endfor %}
-    </table></div>
-    <br>
-    
-    <h3>Bloom Other Session Settings</h3>
-    <ul>
+    <h2> <a href="/object_templates_summary">All Instantiable Templates Loaded Into The Database (not for operational use)</h2></a>
 
-    <table>
-        <!-- Display other user data that are not in the specified keys -->
-        {% for key, value in user_data.items() %}
-            {% if key not in ['print_lab', 'printer_name', 'label_zpl_style', 'style_css' ] %}
-                <tr>
-                    <td>{{ key }}</td>
-                    <td>{{ value }}</td>
-                </tr>
-            {% endif %}
-        {% endfor %}
-    </table>
-    </ul>
-</ul></ul>
+
     <h2>
-        Raw Workflow View (not intended for operational use)
-       </h2>
-       <hr>
-
-       <ul>
-           <li>   <a href="/workflow_summary">All visible workflows</a></li>
-       </ul>
-    <br>
-    <div id="template-css-section" >
-
-    <h2> Complete Report Detailing All Loaded Template Models (not for operational use)</h2>
-    <hr>
-
-    <ul>
-        <li><a href="/object_templates_summary">all object templates available for instantiation (there are currently ~100)</a></li>
-    </ul>
-</div>
+        <a href="/workflow_summary">Original Raw Workflow View (not intended for operational use)</a>
+    </h2>
 
 
-</ul></ul>
-    <script>
-
-        
+     <script>    
     function updatePreferenceAndReload(key, value) {
         console.log('Updating', key, 'to', value);
         $.ajax({

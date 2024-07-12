@@ -1602,7 +1602,7 @@ async def user_home(request: Request):
         css_files=css_files,
         style=style,
         dest_section=dest_section,
-        whitelisted_domains=os.environ.get("SUPABASE_WHITELIST", "all"),
+        whitelisted_domains=" , ".join(os.environ.get("SUPABASE_WHITELIST_DOMAINS", "all").split(",")), 
         s3_bucket_prefix=os.environ.get("BLOOM_DEWEY_S3_BUCKET_PREFIX", "NEEDS TO BE SET!"),
         supabase_url=os.environ.get("SUPABASE_URL", "NEEDS TO BE SET!"),
         printer_info=printer_info,
