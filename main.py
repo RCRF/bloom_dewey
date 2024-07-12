@@ -3,6 +3,7 @@ import jwt
 import httpx
 import os
 import json
+import subprocess
 import shutil
 from typing import List
 from pathlib import Path
@@ -1535,8 +1536,8 @@ def add_new_node(request: Request, _auth=Depends(require_auth)):
 
 @app.get("/get_node_info")
 async def get_node_info(request: Request, euid, _auth=Depends(require_auth)):
-    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-    node_dat = BO.get_by_euid(euid)
+    bobj = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    node_dat = bobj.get_by_euid(euid)
 
     if node_dat:
         return {
@@ -1595,6 +1596,14 @@ async def user_home(request: Request):
         "style_css": css_files,
     }
 
+
+    # Fetching version details
+    github_tag = subprocess.check_output(["git", "describe", "--tags"]).decode().strip()
+    setup_py_version = subprocess.check_output(["python", "setup.py", "--version"]).decode().strip()
+    fedex_version = os.popen("pip freeze | grep fedex_tracking_day | cut -d = -f 3").readline().rstrip()  
+    zebra_printer_version = os.popen("pip freeze | grep zebra-day | cut -d = -f 3").readline().rstrip()  
+
+
     content = templates.get_template("user_home.html").render(
         request=request,
         user_data=user_data,
@@ -1606,6 +1615,11 @@ async def user_home(request: Request):
         s3_bucket_prefix=os.environ.get("BLOOM_DEWEY_S3_BUCKET_PREFIX", "NEEDS TO BE SET!"),
         supabase_url=os.environ.get("SUPABASE_URL", "NEEDS TO BE SET!"),
         printer_info=printer_info,
+        github_tag=github_tag,
+        setup_py_version=setup_py_version,
+        fedex_version=fedex_version,
+        zebra_printer_version=zebra_printer_version,
+        udat=user_data
     )
     return HTMLResponse(content=content)
 
@@ -1617,8 +1631,8 @@ def generate_dag_json_from_all_objects_v2(
     if euid in [None, "", "None"]:
         euid = "AY1"
 
-    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-    last_schema_edit_dt = BO.get_most_recent_schema_audit_log_entry()
+    bobj = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    last_schema_edit_dt = bobj.get_most_recent_schema_audit_log_entry()
 
     # Simplify file naming and ensure directory exists
     user_email_sanitized = (
@@ -1674,7 +1688,7 @@ def generate_dag_json_from_all_objects_v2(
     instance_result = {}
     lineage_result = {}
 
-    for r in BO.fetch_graph_data_by_node_depth(euid, depth):
+    for r in bobj.fetch_graph_data_by_node_depth(euid, depth):
         if r[0] in [None, "", "None"]:
             pass
         else:
@@ -1792,11 +1806,11 @@ async def add_new_edge(request: Request, _auth=Depends(require_auth)):
     input_data = await request.json()  # Corrected call to request.json()
     parent_euid = input_data["parent_uuid"]
     child_euid = input_data["child_uuid"]
-    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    bobj = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     # Assuming the method returns the new edge object, you might need to adjust this part
-    new_edge = BO.create_generic_instance_lineage_by_euids(parent_euid, child_euid)
-    BO.session.flush()
-    BO.session.commit()
+    new_edge = bobj.create_generic_instance_lineage_by_euids(parent_euid, child_euid)
+    bobj.session.flush()
+    bobj.session.commit()
     return {"euid": str(new_edge.euid)}
 
 
@@ -1804,10 +1818,10 @@ async def add_new_edge(request: Request, _auth=Depends(require_auth)):
 async def delete_node(request: Request, _auth=Depends(require_auth)):
     input_data = await request.json()
     node_euid = input_data["euid"]
-    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
-    BO.delete(euid=node_euid)
-    BO.session.flush()
-    BO.session.commit()
+    bobj = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    bobj.delete(euid=node_euid)
+    bobj.session.flush()
+    bobj.session.commit()
 
     return {
         "status": "success",
@@ -2442,7 +2456,6 @@ async def visual_report(request: Request):
 from typing import List, Dict
 from pydantic import BaseModel
 
-# Add this class for form fields
 class FormField(BaseModel):
     name: str
     type: str
@@ -2459,7 +2472,9 @@ def get_template_data(template_euid: str) -> Dict:
             "comments": "",
             "lab_code": "",
             "original_file_name": "",
-            # ...
+            "purpose": "",
+            "variable": "",
+            "sub_variable": "",
         },
         "controlled_properties": {
             "purpose": {
@@ -2483,7 +2498,6 @@ def get_template_data(template_euid: str) -> Dict:
                     "Disease status": ["", "Progression"]
                 }
             },
-            # ...
         }
     }
     return template_data
@@ -2493,20 +2507,17 @@ def generate_form_fields(template_data: Dict) -> List[FormField]:
     controlled_properties = template_data.get("controlled_properties", {})
     form_fields = []
 
-    for prop, prop_type in properties.items():
+    for prop in properties:
         if prop in controlled_properties:
             cp = controlled_properties[prop]
             if cp["type"] == "dependent string":
-                # Handle dependent controlled properties
-                for key, value in cp["enum"].items():
-                    form_fields.append(FormField(
-                        name=f"{prop}_{key}",
-                        type="select",
-                        label=f"{prop.replace('_', ' ').capitalize()} ({key})",
-                        options=value
-                    ))
+                form_fields.append(FormField(
+                    name=prop,
+                    type="select",
+                    label=prop.replace("_", " ").capitalize(),
+                    options=[]
+                ))
             else:
-                # Handle regular controlled properties
                 form_fields.append(FormField(
                     name=prop,
                     type="select",
@@ -2524,9 +2535,9 @@ def generate_form_fields(template_data: Dict) -> List[FormField]:
 
 @app.get("/create_instance/{template_euid}", response_class=HTMLResponse)
 async def create_instance_form(request: Request, template_euid: str):
-    BO = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    bobj = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     
-    tempi = BO.get_by_euid(template_euid)
+    tempi = bobj.get_by_euid(template_euid)
     template_data = tempi.json_addl
     form_fields = generate_form_fields(template_data)
     user_data = request.session.get("user_data", {})
@@ -2535,12 +2546,29 @@ async def create_instance_form(request: Request, template_euid: str):
         request=request, 
         fields=form_fields,
         style=style,
-        udat=user_data
+        udat=user_data,
+        template_euid=template_euid,
+        polymorphic_discriminator=tempi.polymorphic_discriminator,
+        super_type=tempi.super_type,
+        btype=tempi.btype,
+        b_sub_type=tempi.b_sub_type,
+        version=tempi.version, 
+        name=tempi.name,
+        controlled_properties=template_data.get("controlled_properties", {})
     )
     return HTMLResponse(content=content)
 
 @app.post("/create_instance")
 async def create_instance(request: Request):
+    bobj = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
     form_data = await request.form()
-    # Process and save the form data
-    return HTMLResponse(content="Instance created successfully!", status_code=200)
+    #form_data_dict = form_data._dict
+    template_euid = form_data['template_euid']
+    #del form_data_dict['template_euid']
+
+    jaddl = {'properties': dict(form_data)}
+    ni = bobj.create_instance(template_euid, jaddl)
+
+    return RedirectResponse(
+        url=f"/euid_details?euid={ni.euid}", status_code=303
+    )
