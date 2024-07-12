@@ -3,6 +3,7 @@ import jwt
 import httpx
 import os
 import json
+import subprocess
 import shutil
 from typing import List
 from pathlib import Path
@@ -1595,6 +1596,14 @@ async def user_home(request: Request):
         "style_css": css_files,
     }
 
+
+    # Fetching version details
+    github_tag = subprocess.check_output(["git", "describe", "--tags"]).decode().strip()
+    setup_py_version = subprocess.check_output(["python", "setup.py", "--version"]).decode().strip()
+    fedex_version = os.popen("pip freeze | grep fedex_tracking_day | cut -d = -f 3").readline().rstrip()  
+    zebra_printer_version = os.popen("pip freeze | grep zebra-day | cut -d = -f 3").readline().rstrip()  
+
+
     content = templates.get_template("user_home.html").render(
         request=request,
         user_data=user_data,
@@ -1606,6 +1615,11 @@ async def user_home(request: Request):
         s3_bucket_prefix=os.environ.get("BLOOM_DEWEY_S3_BUCKET_PREFIX", "NEEDS TO BE SET!"),
         supabase_url=os.environ.get("SUPABASE_URL", "NEEDS TO BE SET!"),
         printer_info=printer_info,
+        github_tag=github_tag,
+        setup_py_version=setup_py_version,
+        fedex_version=fedex_version,
+        zebra_printer_version=zebra_printer_version,
+        udat=user_data
     )
     return HTMLResponse(content=content)
 

@@ -24,6 +24,24 @@
         .user-info, .session-info, .actions {
             margin-bottom: 20px;
         }
+
+        .label-value {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .label-value strong {
+            margin-right: 10px;
+        }
+
+        .value-box {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-grow: 1;
+        }
+
         .actions a {
             display: inline-block;
             margin: 10px 0;
@@ -32,6 +50,7 @@
             text-decoration: none;
             border-radius: 5px;
         }
+
         .actions a:hover {
             background-color: #45a049;
         }
@@ -56,8 +75,14 @@
             <h2>User Information</h2>
             <hr>
             <ul>
-            <p><strong>Email:</strong> {{ user_data.email }}</p>
-            <p><strong>Style Sheet:</strong> {{ user_data.style_css }}</p>
+                <div class="label-value">
+                    <strong>Email:</strong>
+                    <span class="value-box">{{ user_data.email }}</span>
+                </div>
+                <div class="label-value">
+                    <strong>Style Sheet:</strong>
+                    <span class="value-box">{{ user_data.style_css }}</span>
+                </div>
             </ul>
         </div>
         <div class="session-info">
@@ -67,23 +92,23 @@
             <ul>
             <table style="width:100%; border-collapse: collapse;">
                 <tr>
-                    <td style="width:50%; white-space: nowrap;">Last Login</td>
-                    <td>{{ session_data.last_login }}</td>
+                    <td style="width:40%; white-space: nowrap;"><strong>Last Login</strong></td>
+                    <td class="value-box" style="width:40%;">{{ session_data.last_login }}</td>
                 </tr>
                 <tr>
-                    <td style="width:50%; white-space: nowrap;">Session Duration</td>
-                    <td>{{ session_data.session_duration }}</td>
+                    <td style="width:40%; white-space: nowrap;"><strong>Session Duration</strong> {{ session_data.session_duration }}</td>
+                    <td class="value-box" style="width:40%;">{{ session_data.session_duration }}</td>
                 </tr>
                 <tr>
-                    <td style="width:50%; white-space: nowrap;">Login Count</td>
-                    <td>{{ session_data.login_count }}</td>
+                    <td style="width:40%; white-space: nowrap;"><strong>Login Count:</strong> {{ session_data.login_count }}</td>
+                    <td class="value-box" style="width:40%;">{{ session_data.login_count }}</td>
                 </tr>
                 <!-- Display other user data that are not in the specified keys -->
                 {% for key, value in user_data.items() %}
                 {% if key not in ['print_lab', 'printer_name', 'label_zpl_style', 'style_css' ] %}
                 <tr>
-                    <td style="width:50%; white-space: nowrap;">{{ key }}</td>
-                    <td>{{ value }}</td>
+                    <td style="width:40%; white-space: nowrap;"><strong>{{ key }}</strong></td>
+                    <td class="value-box" style="width:40%;" >{{ value }}</td>
                 </tr>
                 {% endif %}
                 {% endfor %}
@@ -94,9 +119,40 @@
             <h2>Dewey Global Variables</h2>
             <hr>
             <ul>
-                 <p>Supabase URL: {{ supabase_url }}</p>
-                <p>Whitelisted Domains: {{ whitelisted_domains }}</p>
-                <p>S3 Bucket Prefix: {{ s3_bucket_prefix }}</p>
+                <div class="label-value">
+                    <strong>Supabase URL:</strong>
+                    <span class="value-box">{{ supabase_url }}</span>
+                </div>
+                <div class="label-value">
+                    <strong>Whitelisted Domains:</strong>
+                    <span class="value-box">{{ whitelisted_domains }}</span>
+                </div>
+                <div class="label-value">
+                    <strong>S3 Bucket Prefix:</strong>
+                    <span class="value-box">{{ s3_bucket_prefix }}</span>
+                </div>
+            </ul>
+        </div>
+        <div class="system-info">
+            <h2>Software Systems</h2>
+            <hr>
+            <ul>
+                <div class="label-value">
+                    <strong>GitHub Tag:</strong>
+                    <span class="value-box">{{ github_tag }}</span>
+                </div>
+                <div class="label-value">
+                    <strong>Bloom Version (setup.py):</strong>
+                    <span class="value-box">{{ setup_py_version }}</span>
+                </div>
+                <div class="label-value">
+                    <strong>FedEx Library Version:</strong>
+                    <span class="value-box">{{ fedex_version }}</span>
+                </div>
+                <div class="label-value">
+                    <strong>Zebra Printer Version:</strong>
+                    <span class="value-box">{{ zebra_printer_version }}</span>
+                </div>
             </ul>
         </div>
     </td><td style="width: 3%;"> </td><td>
@@ -109,9 +165,9 @@
             <ul>
                 <table>
                     <tr>
-                        <td>style_css</td>
+                        <td><strong>style_css</strong></td>
                         <td>
-                            Current: {{ user_data.get('style_css', 'Not set') }}
+                            Current: <span class="value-box">{{ user_data.get('style_css', 'Not set') }}</span>
                             <select name="style_css" onchange="updatePreferenceAndReload('style_css', this.value)">
                                 {% for css_file in css_files %}
                                     <option value="{{ css_file }}" {% if user_data.get('style_css') == css_file %}selected{% endif %}>{{ css_file }}</option>
@@ -142,9 +198,9 @@
             <!-- Display select dropdowns for specific keys and their current value from user data -->
             {% for key in ['print_lab', 'printer_name', 'label_zpl_style'] %}
             <tr>
-                <td>{{ key }}</td>
+                <td><strong>{{ key }}</strong></td>
                 <td>
-                    Current: {{ user_data.get(key, 'Not set') }} 
+                    Current: <span class="value-box">{{ user_data.get(key, 'Not set') }}</span>
                     <select name="{{ key }}" onchange="updatePreferenceAndReload('{{ key }}', this.value)">
                         {% for option in printer_info[key] %}
                             <option value="{{ option }}" {% if user_data.get(key) == option %}selected{% endif %}>{{ option }}</option>
