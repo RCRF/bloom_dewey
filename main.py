@@ -26,24 +26,9 @@ nest_asyncio.apply()
 import difflib
 
 def get_clean_timestamp():
-    # Format: YYYY-MM-DD hh:mm:ss
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-
 os.makedirs("logs", exist_ok=True)
-
-def get_datetime_string():
-    # Choose your desired timezone, e.g., 'US/Eastern', 'Europe/London', etc.
-    timezone = pytz.timezone("US/Eastern")
-
-    # Get current datetime with timezone
-    current_datetime_with_tz = datetime.now(timezone)
-
-    # Format as string
-    datetime_string = current_datetime_with_tz.strftime("%Y-%m-%d %H:%M:%S %Z%z")
-
-    return str(datetime_string)
-
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -55,7 +40,7 @@ def setup_logging():
     logger.setLevel(logging.INFO)
 
     # Define the log file name with a timestamp
-    log_filename = f"logs/bloom_{get_clean_timestamp()}.log"
+    log_filename = f"logs/bloomui_{get_clean_timestamp()}.log"
 
     # Stream handler (to console)
     c_handler = logging.StreamHandler()
@@ -67,7 +52,7 @@ def setup_logging():
 
     # Common log format
     formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d"
     )
     c_handler.setFormatter(formatter)
     f_handler.setFormatter(formatter)
@@ -1583,8 +1568,12 @@ async def user_audit_logs(request: Request, username: str, _auth=Depends(require
 
 @app.get("/user_home", response_class=HTMLResponse)
 async def user_home(request: Request):
+
     user_data = request.session.get("user_data", {})
     session_data = request.session.get("session_data", {})  # Extract session_data from session
+
+
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
 
     if not user_data:
         return RedirectResponse(url="/login")
@@ -1596,6 +1585,16 @@ async def user_home(request: Request):
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
     dest_section = request.query_params.get("dest_section", {"section": ""})  # Example value
 
+    if "print_lab" in user_data:
+        bobdb.get_lab_printers(user_data["print_lab"])
+        
+    printer_info = {
+        "print_lab": bobdb.printer_labs,
+        "printer_name": bobdb.site_printers,
+        "label_zpl_style": bobdb.zpl_label_styles,
+        "style_css": css_files,
+    }
+
     content = templates.get_template("user_home.html").render(
         request=request,
         user_data=user_data,
@@ -1605,7 +1604,8 @@ async def user_home(request: Request):
         dest_section=dest_section,
         whitelisted_domains=os.environ.get("SUPABASE_WHITELIST", "all"),
         s3_bucket_prefix=os.environ.get("BLOOM_DEWEY_S3_BUCKET_PREFIX", "NEEDS TO BE SET!"),
-        supabase_url=os.environ.get("SUPABASE_URL", "NEEDS TO BE SET!")
+        supabase_url=os.environ.get("SUPABASE_URL", "NEEDS TO BE SET!"),
+        printer_info=printer_info,
     )
     return HTMLResponse(content=content)
 
@@ -1834,7 +1834,7 @@ async def delete_edge(request: Request, _auth=Depends(require_auth)):
 def generate_unique_upload_key():
     color = random.choice(BVARS.pantone_colors)
     invertebrate = random.choice(BVARS.marine_invertebrates)
-    number = random.randint(0, 1000)
+    number = random.randint(0, 1000000)
     return f"{color.replace(' ','_')}_{invertebrate.replace(' ','_')}_{number}"
 
 
@@ -1881,8 +1881,20 @@ async def create_file(
             content={"detail": "Too many files. Maximum number of files is 1000."},
         )
         raise
-
+    
     try:
+     
+        # Creating a file set to tag all the files uploaded in the same batch together.
+        bfs = BloomFileSet(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+        file_set_metadata = {
+            "name": upload_group_key,
+            "description": "File set created by Dewey file manager",
+            "tag": "on-create",
+            "comments": "",
+        }
+        # Create the file set
+        new_file_set = bfs.create_file_set(file_set_metadata=file_set_metadata)
+        
         bfi = BloomFile(BLOOMdb3(app_username=request.session["user_data"]["email"]))
         file_metadata = {
             "name": name,
@@ -1918,6 +1930,9 @@ async def create_file(
                                 ],
                             }
                         )
+                        bfs.add_files_to_file_set(
+                            file_set_euid=new_file_set.euid, file_euids=[new_file.euid]
+                        )   
                     except Exception as e:
                         results.append(
                             {
@@ -1956,6 +1971,9 @@ async def create_file(
                                 ],
                             }
                         )
+                        bfs.add_files_to_file_set(
+                            file_set_euid=new_file_set.euid, file_euids=[new_file.euid]
+                        )  
                     except Exception as e:
                         results.append(
                             {
@@ -1983,6 +2001,9 @@ async def create_file(
                                 ],
                             }
                         )
+                        bfs.add_files_to_file_set(
+                            file_set_euid=new_file_set.euid, file_euids=[new_file.euid]
+                        )  
                     except Exception as e:
                         results.append(
                             {"identifier": url.strip(), "status": f"Failed: {str(e)}"}
@@ -2005,6 +2026,9 @@ async def create_file(
                                 ],
                             }
                         )
+                        bfs.add_files_to_file_set(
+                            file_set_euid=new_file_set.euid, file_euids=[new_file.euid]
+                        )  
                     except Exception as e:
                         results.append(
                             {

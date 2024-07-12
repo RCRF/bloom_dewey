@@ -46,8 +46,8 @@ To use Supabase, you need to create an account, then set up an organization whic
 8. You can now run the bloom UI and test the auth functionality.
 
 ## URL Configuration
-If you run bloom as a specific IP, and not simply as localhost, then you may need to go tweak the `URL_Configuration` found in the supabase project Authentication settings. It defaults to http://localhost:3000, but you can add your IP address to the list of allowed domains. This is not necessary if you are running on localhost.
-* It appears that setting this to `http://127.0.0.1:3000` works for all random IPs (in my 3 machine test cases).
+If you run bloom on the machine your web browser is running, then there is nothing more for you to do. However, if you are running bloom on a remote server, the `url configuration` must be changed to match the IP specifically used to run bloom remotely. You can not use self shorcuts like `localhost` or `0.0.0.0`, etc.
+So, change this `http://127.0.0.1:3000` to `http://your.ip.address:3000` in the `URL_Configuration` found in the supabase project Authentication settings.
 
 # NOTE ... HTTPS NEEDS TO BE ENABLED ^^^^^ I JUST NOTICED THIS IS USING HTTP :-/
 

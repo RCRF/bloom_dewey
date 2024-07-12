@@ -12,7 +12,43 @@ import yaml
 from pathlib import Path
 
 import logging
+from logging.handlers import RotatingFileHandler
 from .logging_config import setup_logging
+from datetime import datetime, timedelta, date
+
+
+os.makedirs("logs", exist_ok=True)
+
+def get_clean_timestamp():
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+def setup_logging():
+    # uvicorn to capture logs from all libs
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # Define the log file name with a timestamp
+    log_filename = f"logs/bdb_{get_clean_timestamp()}.log"
+
+    # Stream handler (to console)
+    c_handler = logging.StreamHandler()
+    c_handler.setLevel(logging.INFO)
+
+    # File handler (to file, with rotation)
+    f_handler = RotatingFileHandler(log_filename, maxBytes=10485760, backupCount=10)
+    f_handler.setLevel(logging.INFO)
+
+    # Common log format
+    formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(pathname)s:%(lineno)d"
+    )
+    c_handler.setFormatter(formatter)
+    f_handler.setFormatter(formatter)
+
+    # Add handlers to the logger
+    logger.addHandler(c_handler)
+    logger.addHandler(f_handler)
+
 
 setup_logging()
 
