@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+
     {% set page_title = 'User Audit Log' %}
     <title>{{ page_title }}</title>
     
@@ -21,7 +23,6 @@
         }
         th {
             cursor: pointer;
-            background-color: #f2f2f2;
         }
         .deleted {
             background-color: pink;
@@ -29,10 +30,39 @@
         .added {
             background-color: aqua;
         }
+        th.ascending::after {
+            content: ' \25B2'; /* Up arrow */
+        }
+
+        th.descending::after {
+            content: ' \25BC'; /* Down arrow */
+        }
+
+        .floating-button {
+            position: fixed;
+            padding: 10px;
+            z-index: 1000;
+            background-color: var(--primary-color);
+            color: white; /* White text */
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .floating-button.download-tsv {
+            top: 20px;
+            right: 20px;
+        }
     </style>
 </head>
 <body>
     {% include 'bloom_header.html' %}
+
+    <button class="floating-button download-tsv" onclick="downloadTSV()">⬇️</button>
 
     <h1>Audit Log for {{ username }}</h1>
     Filters:
@@ -41,18 +71,18 @@
     <table id="resultsTable">
         <thead>
             <tr>
-                <th>EUID</th>
-                <th>Changed By</th>
-                <th>Operation Type</th>
-                <th>Changed At</th>
-                <th>Name</th>
-                <th>Polymorphic Discriminator</th>
-                <th>Super Type</th>
-                <th>BType</th>
-                <th>B Sub Type</th>
-                <th>Status</th>
-                <th>Old Value</th>
-                <th>New Value</th>
+                <th onclick="sortTable(0)">EUID</th>
+                <th onclick="sortTable(1)">Changed By</th>
+                <th onclick="sortTable(2)">Operation Type</th>
+                <th onclick="sortTable(3)">Changed At</th>
+                <th onclick="sortTable(4)">Name</th>
+                <th onclick="sortTable(5)">Polymorphic Discriminator</th>
+                <th onclick="sortTable(6)">Super Type</th>
+                <th onclick="sortTable(7)">BType</th>
+                <th onclick="sortTable(8)">B Sub Type</th>
+                <th onclick="sortTable(9)">Status</th>
+                <th onclick="sortTable(10)">Old Value</th>
+                <th onclick="sortTable(11)">New Value</th>
             </tr>
         </thead>
         <tbody>
@@ -88,7 +118,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <button onclick="downloadTSV()">Download TSV</button>
     <script>
         function toggleJSON(id) {
             var element = document.getElementById(id);
@@ -159,11 +188,40 @@
             }
             var tsvFile = new Blob([tsv.join("\n")], { type: "text/tsv" });
             var downloadLink = document.createElement("a");
-            downloadLink.download = "audit_log.tsv";
+            var now = new Date();
+            var timestamp = now.getFullYear().toString() +
+                            (now.getMonth() + 1).toString().padStart(2, '0') +
+                            now.getDate().toString().padStart(2, '0');
+            var username = "{{ username }}";
+            downloadLink.download = `${timestamp}_${username}_audit.log`;
             downloadLink.href = window.URL.createObjectURL(tsvFile);
             downloadLink.style.display = "none";
             document.body.appendChild(downloadLink);
             downloadLink.click();
+        }
+
+        function sortTable(columnIndex) {
+            const table = document.querySelector('table');
+            const rows = Array.from(table.querySelectorAll('tbody > tr'));
+            const header = table.querySelector(`thead > tr > th:nth-child(${columnIndex + 1})`);
+            const isAscending = header.classList.contains('ascending');
+
+            rows.sort((a, b) => {
+                const aText = a.children[columnIndex].innerText.trim();
+                const bText = b.children[columnIndex].innerText.trim();
+
+                if (!isNaN(aText) && !isNaN(bText)) {
+                    return isAscending ? aText - bText : bText - aText;
+                } else {
+                    return isAscending ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                }
+            });
+
+            rows.forEach(row => table.querySelector('tbody').appendChild(row));
+            table.querySelectorAll('thead > tr > th').forEach(th => th.classList.remove('ascending', 'descending'));
+
+            header.classList.toggle('ascending', !isAscending);
+            header.classList.toggle('descending', isAscending);
         }
     </script>
 </body>
