@@ -3140,19 +3140,19 @@ class BloomFile(BloomObj):
         )
         self.session.commit()
 
-        # Special handling for x_rcrf_patient_uid
+        # Special handling for patient_id
         if (
-            "x_rcrf_patient_uid" in file_metadata
-            and len(file_metadata["x_rcrf_patient_uid"]) > 0
+            "patient_id" in file_metadata
+            and len(file_metadata["patient_id"]) > 0
         ):
-            patient_id = file_metadata["x_rcrf_patient_uid"]
-            search_criteria = {"properties": {"rcrf_patient_uid": patient_id}}
+            patient_id = file_metadata["patient_id"]
+            search_criteria = {"properties": {"patient_id": patient_id}}
             existing_euids = self.search_objs_by_addl_metadata(
                 search_criteria,
                 True,
                 super_type="actor",
                 btype="generic",
-                b_sub_type="rcrf-patient",
+                b_sub_type="patient",
             )
 
             if existing_euids:
@@ -3160,12 +3160,12 @@ class BloomFile(BloomObj):
                 for euid in existing_euids:
                     self.create_generic_instance_lineage_by_euids(euid, new_file.euid)
             else:
-                # Create a new actor/generic/rcrf-patient object
+                # Create a new actor/generic/patient object
                 new_patient = self.create_instance(
                     self.query_template_by_component_v2(
-                        "actor", "generic", "rcrf-patient", "1.0"
+                        "actor", "generic", "patient", "1.0"
                     )[0].euid,
-                    {"properties": {"rcrf_patient_uid": patient_id}},
+                    {"properties": {"patient_id": patient_id}},
                 )
                 self.session.commit()
                 self.create_generic_instance_lineage_by_euids(

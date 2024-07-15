@@ -8,7 +8,7 @@ import shutil
 from typing import List
 from pathlib import Path
 import random
-
+ 
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -1852,8 +1852,45 @@ def generate_unique_upload_key():
     return f"{color.replace(' ','_')}_{invertebrate.replace(' ','_')}_{number}"
 
 
+
 @app.get("/dewey", response_class=HTMLResponse)
 async def dewey(request: Request, _auth=Depends(require_auth)):
+    request.session.pop("form_data", None)
+
+    accordion_states = dict(request.session)
+    user_data = request.session.get("user_data", {})
+    style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
+    upload_group_key = generate_unique_upload_key()
+
+    # Fetch template data for dynamic fields    
+    bobdb = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
+    f_templates = bobdb.query_template_by_component_v2("file","file","generic","1.0")
+    # these should only be 1
+    if len(f_templates) > 1:
+        logging.error(f"Multiple file templates found for file/file/generic/1.0")
+        raise HTTPException(status_code=500, detail="Multiple file templates found for file/file/generic/1.0")
+    f_template = f_templates[0]
+    form_fields = generate_form_fields(f_template.json_addl)
+    ui_form_properties = f_template.json_addl.get("ui_form_properties", [])
+    ui_form_fields = generate_ui_form_fields(ui_form_properties, f_template.json_addl.get("controlled_properties", {}))
+
+    content = templates.get_template("dewey.html").render(
+        request=request,
+        accordion_states=accordion_states,
+        style=style,
+        upload_group_key=upload_group_key,
+        udat=user_data,
+        fields=form_fields,
+        ui_fields=ui_form_fields,
+        controlled_properties=f_template.json_addl.get("controlled_properties", {}),
+        has_ui_form_properties=bool(ui_form_properties),
+        searchable_properties=sorted(f_template.json_addl['properties'].keys()),
+    )
+
+    return HTMLResponse(content=content)
+
+@app.get("/dewey0", response_class=HTMLResponse)
+async def dewey0(request: Request, _auth=Depends(require_auth)):
     request.session.pop("form_data", None)
 
     accordion_states = dict(request.session)
@@ -1881,12 +1918,18 @@ async def create_file(
     directory: List[UploadFile] = File(None),
     urls: str = Form(None),
     s3_uris: str = Form(None),
-    x_study_id: str = Form(""),
-    x_clinician_id: str = Form(""),
-    x_health_event_id: str = Form(""),
-    x_relevant_datetime: str = Form(""),
-    x_rcrf_patient_uid: str = Form(""),
+    study_id: str = Form(""),
+    clinician_id: str = Form(""),
+    health_event_id: str = Form(""),
+    relevant_datetime: str = Form(""),
+    patient_id: str = Form(""),
     upload_group_key: str = Form(""),
+    purpose: str = Form(""),
+    category: str = Form(""),   
+    sub_category: str = Form(""),
+    sub_category_2: str = Form(""),
+    variable: str = Form(""),
+    sub_variable: str = Form(""),
 ):
 
     if directory and len(directory) > 1000:
@@ -1914,13 +1957,19 @@ async def create_file(
             "name": name,
             "comments": comments,
             "lab_code": lab_code,
-            "x_clinician_id": x_clinician_id,
-            "x_health_event_id": x_health_event_id,
-            "x_relevant_datetime": x_relevant_datetime,
-            "x_rcrf_patient_uid": x_rcrf_patient_uid,
+            "clinician_id": clinician_id,
+            "health_event_id": health_event_id,
+            "relevant_datetime": relevant_datetime,
+            "patient_id": patient_id,
             "upload_ui_user": request.session["user_data"]["email"],
             "upload_group_key": upload_group_key,
-            "x_study_id": x_study_id,
+            "study_id": study_id,
+            "purpose": purpose,
+            "category": category,
+            "sub_category": sub_category,
+            "sub_category_2": sub_category_2,
+            "variable": variable,
+            "sub_variable": sub_variable,
         }
 
         results = []
@@ -2462,46 +2511,6 @@ class FormField(BaseModel):
     label: str
     options: List[str] = []
 
-def get_template_data(template_euid: str) -> Dict:
-    # Fetch the template data from the database based on the template EUID
-    # For demonstration, let's assume we have the data as a dictionary
-    template_data = {
-        "description": "Generic File",
-        "properties": {
-            "name": "A Generic File",
-            "comments": "",
-            "lab_code": "",
-            "original_file_name": "",
-            "purpose": "",
-            "variable": "",
-            "sub_variable": "",
-        },
-        "controlled_properties": {
-            "purpose": {
-                "type": "string",
-                "enum": ["Clinical", "Research", "Other"]
-            },
-            "variable": {
-                "type": "string",
-                "enum": ["Diagnosis", "Staging", "Procedure", "Treatments", "Testing", "Imaging", "Hospitalization", "Biospecimen collection", "Disease status", "Other"]
-            },
-            "sub_variable": {
-                "type": "dependent string",
-                "on": "variable",
-                "enum": {
-                    "Staging": ["", "Stage", "Metastases"],
-                    "Procedure": ["", "Surgery", "Biopsy"],
-                    "Treatments": ["", "Anti-cancer medication", "Supportive medication", "Vaccine", "Radiation therapy", "Clinical Trial"],
-                    "Testing": ["", "Pathology testing", "Genetic testing", "ctDNA monitoring", "Cancer markers", "Blood panels", "ELISPOT etc?"],
-                    "Imaging": ["", "Chest, abdomen, pelvis", "Chest", "Abdomen", "Pelvis"],
-                    "Biospecimen collection": ["", "Blood"],
-                    "Disease status": ["", "Progression"]
-                }
-            },
-        }
-    }
-    return template_data
-
 def generate_form_fields(template_data: Dict) -> List[FormField]:
     properties = template_data.get("properties", {})
     controlled_properties = template_data.get("controlled_properties", {})
@@ -2533,6 +2542,39 @@ def generate_form_fields(template_data: Dict) -> List[FormField]:
 
     return form_fields
 
+
+def generate_ui_form_fields(ui_form_properties: List[Dict], controlled_properties: Dict) -> List[FormField]:
+    form_fields = []
+
+    for prop in ui_form_properties:
+        property_key = prop["property_key"]
+        form_label = prop["form_label"]
+
+        if property_key in controlled_properties:
+            cp = controlled_properties[property_key]
+            if cp["type"] == "dependent string":
+                form_fields.append(FormField(
+                    name=property_key,
+                    type="select",
+                    label=form_label,
+                    options=[]
+                ))
+            else:
+                form_fields.append(FormField(
+                    name=property_key,
+                    type="select",
+                    label=form_label,
+                    options=cp.get("enum", [])
+                ))
+        else:
+            form_fields.append(FormField(
+                name=property_key,
+                type="text",
+                label=form_label
+            ))
+
+    return form_fields
+
 @app.get("/create_instance/{template_euid}", response_class=HTMLResponse)
 async def create_instance_form(request: Request, template_euid: str):
     bobj = BloomObj(BLOOMdb3(app_username=request.session["user_data"]["email"]))
@@ -2540,11 +2582,19 @@ async def create_instance_form(request: Request, template_euid: str):
     tempi = bobj.get_by_euid(template_euid)
     template_data = tempi.json_addl
     form_fields = generate_form_fields(template_data)
+
+    ui_form_properties = template_data.get("ui_form_properties")
+    if ui_form_properties:
+        ui_form_fields = generate_ui_form_fields(ui_form_properties, template_data.get("controlled_properties", {}))
+    else:
+        ui_form_fields = form_fields
+
     user_data = request.session.get("user_data", {})
     style = {"skin_css": user_data.get("style_css", "static/skins/bloom.css")}
-    content = templates.get_template("form.html").render(
-        request=request, 
+    content = templates.get_template("create_instance_form.html").render(
+        request=request,
         fields=form_fields,
+        ui_fields=ui_form_fields,
         style=style,
         udat=user_data,
         template_euid=template_euid,
@@ -2552,11 +2602,13 @@ async def create_instance_form(request: Request, template_euid: str):
         super_type=tempi.super_type,
         btype=tempi.btype,
         b_sub_type=tempi.b_sub_type,
-        version=tempi.version, 
+        version=tempi.version,
         name=tempi.name,
-        controlled_properties=template_data.get("controlled_properties", {})
+        controlled_properties=template_data.get("controlled_properties", {}),
+        has_ui_form_properties=bool(ui_form_properties)
     )
     return HTMLResponse(content=content)
+
 
 @app.post("/create_instance")
 async def create_instance(request: Request):
