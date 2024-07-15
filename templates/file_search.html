@@ -25,7 +25,7 @@
                         <label for="key">Specify search KEY and VALUE: </label>
                         <ul>
                             <small>
-                                CRUDE ATM. Manually set key and key value to search, up to 3 pairs (this is a limitation of my crude ui, not the db, which can use arbitrary numbers of search terms).
+                                Manually set key and key value to search, up to 3 pairs<br> (this is a limitation of my simple ui, not the db,<br> which can use arbitrary numbers of search terms).
                             </small><br>
                             <br>
                             <label for="key_1">Key 1: </label>
@@ -51,26 +51,14 @@
                     </form>
                 </td>
                 <td style="align:top;">
-                    <ul>
-                        Keys available in all File records:
-                        <pre>
-                        "lab_code":"",
-                        "original_file_name": "",
-                        "original_file_path": "",
-                        "original_file_size_bytes": "",
-                        "original_file_md5": "",
-                        "original_server_ip": "",
-                        "original_local_server_name": "",
-                        "original_file_suffix": "",
-                        "current_s3_key": "",
-                        "current_s3_bucket_name": "",
-                        "x_rcrf_patient_uid": "",
-                        "x_clinician_id": "",
-                        "x_relevant_datetime": "",
-                        "x_health_event_id": "",
-                        "x_study_id": "",
-                        "upload_group_key": ""
-                        </pre>
+
+                        Searchable Properties
+                        <ul>
+                        <small>
+                        {% for sp in searchable_properties %}
+                            <li>{{ sp }}</li>
+                        {% endfor %}
+                        </small>
                     </ul>
                 </td>
             </tr>

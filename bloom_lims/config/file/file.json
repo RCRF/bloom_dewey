@@ -3,7 +3,7 @@
     "1.0": {
       "description": "Generic File",
       "properties": {
-        "name": "A Generic File",
+        "name": "",
         "comments": "",
         "lab_code":"",
         "original_file_name": "",
@@ -17,13 +17,13 @@
         "current_s3_key": "",
         "current_s3_bucket_name": "",
         "current_s3_uri": "",
-        "x_rcrf_patient_uid": "",
-        "x_clinician_id": "",
-        "x_relevant_datetime": "",
-        "x_health_event_id": "",
-        "x_external_ids": [],
-        "x_study_id": "",
-        "x_outcome_comment": "",
+        "patient_id": "",
+        "clinician_id": "",
+        "relevant_datetime": "",
+        "health_event_id": "",
+        "external_ids": [],
+        "study_id": "",
+        "outcome_comment": "",
         "upload_group_key": "",
         "purpose":"",
         "variable":"",
@@ -32,6 +32,7 @@
         "sub_category":"",
         "sub_category_2":""        
       },
+      "ui_form_properties" : [ {"property_key":"patient_id","form_label":"Patient ID"}, {"property_key":"clinician_id","form_label":"Clinician ID"}, {"property_key":"relevant_datetime","form_label":"Relevant Date/Time"}, {"property_key":"lab_code","form_label":"Lab Code"}, {"property_key":"purpose","form_label":"Purpose"}, {"property_key":"category","form_label":"Category"}, {"property_key":"sub_category","form_label":"Sub Category"}, {"property_key":"sub_category_2","form_label":"Sub Category 2"}, {"property_key":"variable","form_label":"Variable"}, {"property_key":"sub_variable","form_label":"Sub Variable"}, {"property_key":"study_id","form_label":"Study ID"}, {"property_key":"comments","form_label":"Comments"} ],  
       "controlled_properties": { 
         "purpose": {
           "type": "string",

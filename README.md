@@ -295,6 +295,33 @@ Similar to `pytest`, but more extensive. Largely useful in development work.  Th
 `python bloom_shell.py` 
  
  
- 
+ # Random Notes
+ ## File System Case Sensitivity
+ ### MacOS is Not Case Sensitive
+```tsh
+echo "test" >test.log
+echo "TEST" >TEST.LOG
+more test.log
+TEST
+more TEST.log
+TEST
+```
+ * This still shocks me & is worth a reminder.
+
+### Ubuntu Is Case Sensitive
+```bash
+echo "test" > test.log
+echo "TEST" > TEST.LOG
+more test.log
+test
+TEST.LOG
+TEST
+```
+
+### Assume Case Insensitivity In All File Names 
+ *  Given we can not be certain where files will be reconstituted, we must assume that files might be created in a cases insensitive file system when allowing download. 
+
+#### Bloom UUIDs and EUIDs Are Safe As File Names
+A widely adopted UUID spec (and used by postgres), [rfc4122](https://datatracker.ietf.org/doc/html/rfc4122), treates uc and lc as the same character. Bloom EUIDs only contain uc characters in a prefix followed by integers.
  
  
