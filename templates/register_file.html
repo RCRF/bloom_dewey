@@ -32,46 +32,25 @@
                         <ul>
                             <small>upload group key: <code>{{ upload_group_key }}</code></small>
                             <br><br>
-                            <label class="switch" style="display: none;">
-                                <input type="checkbox" id="toggleSwitch" checked style="display: none;">
-                                <span class="slider round"></span>
-                            </label>
-                            <label style="display: none;" for="toggleSwitch">Toggle UI Form Properties</label>
-                            <br><br>
 
-                            <div id="defaultFields" style="display: none;">
-                                {% for field in fields %}
-                                    <div>
-                                        <label for="default_{{ field.name }}">{{ field.label }}</label>
-                                        {% if field.type == "select" %}
-                                            <select name="default_{{ field.name }}" id="default_{{ field.name }}">
-                                                {% for option in field.options %}
-                                                    <option value="{{ option }}">{{ option }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        {% else %}
-                                            <input type="{{ field.type }}" name="default_{{ field.name }}" id="default_{{ field.name }}" />
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                            </div>
-
-                            <div id="uiFields">
-                                {% for field in ui_fields %}
-                                    <div>
-                                        <label for="{{ field.name }}">{{ field.label }}</label>
-                                        {% if field.type == "select" %}
-                                            <select name="{{ field.name }}" id="{{ field.name }}">
-                                                {% for option in field.options %}
-                                                    <option value="{{ option }}">{{ option }}</option>
-                                                {% endfor %}
-                                            </select>
+                            {% for field in ui_fields %}
+                                <div>
+                                    <label for="{{ field.name }}">{{ field.label }}</label>
+                                    {% if field.type == "select" %}
+                                        <select name="{{ field.name }}" id="{{ field.name }}">
+                                            {% for option in field.options %}
+                                                <option value="{{ option }}">{{ option }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% else %}
+                                        {% if field.name.endswith('_datetime') %}
+                                            <input type="datetime-local" name="{{ field.name }}" id="{{ field.name }}" />
                                         {% else %}
                                             <input type="{{ field.type }}" name="{{ field.name }}" id="{{ field.name }}" />
                                         {% endif %}
-                                    </div>
-                                {% endfor %}
-                            </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
                         </ul>
                     </td>
                 </tr>
@@ -88,11 +67,11 @@
 <script>
     const controlledProperties = {{ controlled_properties | tojson | safe }};
 
-    function updateDependentFields(prefix) {
-        $('#' + prefix + 'variable').change(function() {
+    function updateDependentFields() {
+        $('#variable').change(function() {
             const selectedVariable = $(this).val();
             const subVariableOptions = controlledProperties.sub_variable.enum[selectedVariable] || [];
-            const subVariableSelect = $('#' + prefix + 'sub_variable');
+            const subVariableSelect = $('#sub_variable');
 
             subVariableSelect.empty();
             subVariableOptions.forEach(function(option) {
@@ -100,10 +79,10 @@
             });
         });
 
-        $('#' + prefix + 'category').change(function() {
+        $('#category').change(function() {
             const selectedCategory = $(this).val();
             const subCategoryOptions = controlledProperties.sub_category.enum[selectedCategory] || [];
-            const subCategorySelect = $('#' + prefix + 'sub_category');
+            const subCategorySelect = $('#sub_category');
 
             subCategorySelect.empty();
             subCategoryOptions.forEach(function(option) {
@@ -111,10 +90,10 @@
             });
         });
 
-        $('#' + prefix + 'sub_category').change(function() {
+        $('#sub_category').change(function() {
             const selectedSubCategory = $(this).val();
             const subCategory2Options = controlledProperties.sub_category_2.enum[selectedSubCategory] || [];
-            const subCategory2Select = $('#' + prefix + 'sub_category_2');
+            const subCategory2Select = $('#sub_category_2');
 
             subCategory2Select.empty();
             subCategory2Options.forEach(function(option) {
@@ -124,19 +103,6 @@
     }
 
     $(document).ready(function() {
-        updateDependentFields('');
-        updateDependentFields('default_');
-
-        $('#toggleSwitch').change(function() {
-            if ($(this).is(':checked')) {
-                $('#defaultFields').hide();
-                $('#uiFields').show();
-                updateDependentFields('');  // Ensure dependent fields are updated after toggling
-            } else {
-                $('#defaultFields').show();
-                $('#uiFields').hide();
-                updateDependentFields('default_');  // Ensure dependent fields are updated after toggling
-            }
-        }).trigger('change'); // Trigger change to set initial state
+        updateDependentFields();
     });
 </script>
