@@ -18,6 +18,7 @@ A system to manage intake, storage, query, retrieval of all files RCRF interacts
     * *_this is just a suggestion, no code tries to find files by inferring anything regarding locations from the file name or path._* 
     * This is intended as a simple mechanism to allow rolling to a new S3 bucket when needed. [Learn more in the dewey docs](./dewey.md).
   * buckets should not be renamed w/out coordinating updating the database for all affected files.
+* When creating the bucket, `enable versioning` and `enable object lock`.  Once the bucket is created, go to the `properties` tab, scroll down to the object lock section, clik `edit` and set the lock type to `Governance` with a default lock time to the desired duration (years ideally?).
 
 ### BLOOM_DEWEY_S3_BUCKET_PREFIX= In The .env File
 The S3 prefix all of your buckets will share should be set in the `.env` file as `BLOOM_DEWEY_S3_BUCKET_PREFIX=a-prefix-for-your-s3-bucket`. [More on the .env file](./supabase.md).
@@ -25,4 +26,7 @@ The S3 prefix all of your buckets will share should be set in the `.env` file as
 # Design
 
 # Use Cases & Worked Examples
+
+
+
 
