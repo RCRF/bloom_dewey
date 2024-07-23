@@ -3049,7 +3049,6 @@ class BloomFile(BloomObj):
             )
 
         self.bucket_prefix = bucket_prefix
-
         self.s3_client = boto3.client("s3")
 
     def _derive_bucket_name(self, euid):
@@ -3129,6 +3128,7 @@ class BloomFile(BloomObj):
         url=None,
         full_path_to_file=None,
         s3_uri=None,
+        create_locked=True,
     ):
         file_properties = {"properties": file_metadata}
 
@@ -3185,6 +3185,9 @@ class BloomFile(BloomObj):
         else:
             logging.warning(f"No data provided for file creation: {file_data, url}")
 
+        if create_locked:
+            self.lock_file(new_file.euid)
+
         return new_file
 
     def create_filex(
@@ -3194,6 +3197,7 @@ class BloomFile(BloomObj):
         file_name=None,
         url=None,
         full_path_to_file=None,
+        create_locked=False,
     ):
         file_properties = {"properties": file_metadata}
 
@@ -3217,6 +3221,9 @@ class BloomFile(BloomObj):
             )
         else:
             logging.warning(f"No data provided for file creation: {file_data, url}")
+
+        if create_locked:
+            self.lock_file(new_file.euid)
 
         return new_file
 
@@ -3505,8 +3512,6 @@ class BloomFile(BloomObj):
         except Exception as e:
             raise Exception(f"An error occurred while downloading the file: {e}")
 
-        # from IPython import embed
-        # embed()
         return local_file_path
 
     def get_s3_uris(self, euids, include_metadata=False):
@@ -3569,6 +3574,33 @@ class BloomFile(BloomObj):
             raise Exception("Credentials not available")
         except Exception as e:
             raise Exception(e)
+
+    def lock_file(self, euid, lock=True):
+        """
+        Locks or unlocks the specified S3 file.
+
+        :param euid: EUID of the file to lock/unlock.
+        :param lock: Boolean indicating whether to lock (True) or unlock (False) the file. Defaults to True.
+        """
+        file_instance = self.get_by_euid(euid)
+        s3_bucket_name = file_instance.json_addl["properties"]["current_s3_bucket_name"]
+        s3_key = file_instance.json_addl["properties"]["current_s3_key"]
+
+        try:
+            if lock:                
+                self.s3_client.put_object_retention(
+                    Bucket=s3_bucket_name,
+                    Key=s3_key,
+                    Retention={
+                        'Mode': 'GOVERNANCE',
+                        'RetainUntilDate': (datetime.now() + timedelta(days=36500)).isoformat()
+                    }
+                )
+
+            return True
+        except Exception as e:
+            logging.exception(f"An error occurred while {'locking' if lock else 'unlocking'} the file: {e}")
+            return False
 
 
 class BloomFileSet(BloomObj):

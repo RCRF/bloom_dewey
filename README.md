@@ -325,3 +325,4 @@ TEST
 A widely adopted UUID spec (and used by postgres), [rfc4122](https://datatracker.ietf.org/doc/html/rfc4122), treates uc and lc as the same character. Bloom EUIDs only contain uc characters in a prefix followed by integers.
  
  
+ 
